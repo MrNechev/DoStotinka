@@ -391,3 +391,25 @@ export const goalContributionInput = z.object({
   /** Positive to add savings, negative to take money out. */
   amount: minorAmount.refine((v) => v !== 0, 'Amount cannot be zero'),
 });
+
+// ───────────────────────────── Administration ─────────────────────────────
+
+export const adminCreateUserInput = z.object({
+  name: z.string().trim().min(1).max(100),
+  email: z.email().trim().toLowerCase().max(254),
+  password: passwordSchema,
+  isAdmin: z.boolean().default(false),
+  baseCurrency: currencyCode.optional(),
+});
+export type AdminCreateUserInput = z.input<typeof adminCreateUserInput>;
+
+export const adminUpdateUserInput = z.object({
+  name: z.string().trim().min(1).max(100).optional(),
+  isAdmin: z.boolean().optional(),
+  password: passwordSchema.optional(),
+});
+export type AdminUpdateUserInput = z.input<typeof adminUpdateUserInput>;
+
+export const adminSettingsInput = z.object({
+  registrationEnabled: z.boolean(),
+});

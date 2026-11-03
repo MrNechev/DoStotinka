@@ -12,6 +12,7 @@ import {
   useUser,
 } from '@/api/queries';
 import { AccountCard } from '@/components/accounts/account-card';
+import { GettingStarted } from '@/components/dashboard/getting-started';
 import { UpcomingList } from '@/components/planned/upcoming-list';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { RecordRow, useRecordLookups } from '@/components/records/record-list';
@@ -82,6 +83,8 @@ export default function DashboardPage() {
           <Plus /> Add record
         </Button>
       </div>
+
+      <GettingStarted />
 
       {/* Accounts */}
       <section>

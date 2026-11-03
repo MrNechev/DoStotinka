@@ -2,6 +2,7 @@ import type { ServerConfig } from '@slavotax/shared';
 import { CURRENCIES } from '@slavotax/shared';
 import { sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { registrationOpen } from '../services/settings';
 
 export const metaRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -23,7 +24,7 @@ export const metaRoutes: FastifyPluginAsyncZod = async (app) => {
     async () => {
       const body: ServerConfig = {
         version: app.config.version,
-        registrationEnabled: app.config.ALLOW_REGISTRATION,
+        registrationEnabled: await registrationOpen(app.db, app.config),
         demo: {
           enabled: app.config.DEMO_ENABLED,
           email: app.config.DEMO_ENABLED ? app.config.DEMO_EMAIL : null,

@@ -8,6 +8,7 @@ import { conflict, forbidden, HttpError, unauthorized } from '../lib/errors';
 import { clearSessionCookie, createSession, setSessionCookie } from '../plugins/auth';
 import { seedDefaultCategories } from '../services/categories';
 import { toUser } from '../services/dto';
+import { realUserCount, registrationOpen } from '../services/settings';
 
 // A valid hash used to keep login timing constant for unknown e-mails.
 let dummyHash: Promise<string> | null = null;
@@ -25,8 +26,10 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       config: { rateLimit },
     },
     async (req, reply) => {
-      if (!app.config.ALLOW_REGISTRATION)
+      if (!(await registrationOpen(app.db, app.config))) {
         throw forbidden('Registration is disabled on this server');
+      }
+      const firstUser = (await realUserCount(app.db)) === 0;
       const input = req.body;
       const [existing] = await app.db
         .select({ id: users.id })
@@ -43,6 +46,8 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
             passwordHash,
             baseCurrency: input.baseCurrency ?? 'EUR',
             timezone: safeTimeZone(input.timezone),
+            // The first account of a fresh installation administers the server.
+            isAdmin: firstUser,
           })
           .returning();
         await seedDefaultCategories(tx, created!.id);

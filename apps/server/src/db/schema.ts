@@ -6,6 +6,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -56,6 +57,7 @@ export const users = pgTable(
     theme: text('theme').notNull().default('system'),
     locale: text('locale').notNull().default('en'),
     isDemo: boolean('is_demo').notNull().default(false),
+    isAdmin: boolean('is_admin').notNull().default(false),
     ...timestamps,
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],
@@ -288,6 +290,13 @@ export const exchangeRates = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.currency] })],
 );
+
+/** Server-wide settings changed by administrators (key → JSON value). */
+export const appSettings = pgTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
 
 /** Global cache of the latest ECB reference rates (EUR based). */
 export const referenceRates = pgTable('reference_rates', {

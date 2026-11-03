@@ -28,6 +28,7 @@ const CategoriesPage = lazy(() => import('./pages/categories-page'));
 const SettingsPage = lazy(() => import('./pages/settings-page'));
 const ImportPage = lazy(() => import('./pages/import-page'));
 const GoalsPage = lazy(() => import('./pages/goals-page'));
+const AdminPage = lazy(() => import('./pages/admin-page'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +133,7 @@ const router = createBrowserRouter([
           { path: 'categories', element: page(<CategoriesPage />) },
           { path: 'settings', element: page(<SettingsPage />) },
           { path: 'import', element: page(<ImportPage />) },
+          { path: 'admin', element: page(<AdminPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

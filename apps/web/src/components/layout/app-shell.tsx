@@ -12,6 +12,7 @@ import {
   Moon,
   Plus,
   Settings,
+  Shield,
   Sun,
   Target,
   Wallet,
@@ -56,9 +57,13 @@ const MOBILE_NAV = [
 ];
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
+  const user = useUser();
+  const items = user.isAdmin
+    ? [...NAV, { to: '/admin', label: 'Administration', icon: Shield, end: false }]
+    : NAV;
   return (
     <nav className="grid gap-0.5">
-      {NAV.map((item) => (
+      {items.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}

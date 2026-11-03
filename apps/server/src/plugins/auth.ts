@@ -4,7 +4,7 @@ import type { Config } from '../config';
 import type { Database } from '../db';
 import { sessions, type UserRow, users } from '../db/schema';
 import { generateToken, sha256 } from '../lib/crypto';
-import { unauthorized } from '../lib/errors';
+import { forbidden, unauthorized } from '../lib/errors';
 
 export const SESSION_COOKIE = 'slavotax_session';
 const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
@@ -51,6 +51,11 @@ export function registerAuth(app: FastifyInstance, db: Database, config: Config)
 
 export async function requireAuth(req: FastifyRequest) {
   if (!req.user) throw unauthorized();
+}
+
+export async function requireAdmin(req: FastifyRequest) {
+  if (!req.user) throw unauthorized();
+  if (!req.user.isAdmin) throw forbidden('Administrator rights required');
 }
 
 /** Returns the authenticated user or throws 401 (for use inside protected handlers). */

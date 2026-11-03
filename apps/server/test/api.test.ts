@@ -794,3 +794,61 @@ describe('goals', () => {
     expect((await call<any[]>('GET', '/api/goals')).body).toHaveLength(1);
   });
 });
+
+describe('administration', () => {
+  it('lets admins manage users and registration', async () => {
+    const { eq } = await import('drizzle-orm');
+    const { users } = await import('../src/db/schema');
+    const admin = await registerUser(ctx.app);
+    const other = await registerUser(ctx.app);
+    expect((await other.call('GET', '/api/admin/users')).status).toBe(403);
+    await ctx.db.update(users).set({ isAdmin: true }).where(eq(users.email, admin.email));
+
+    const list = await admin.call<any[]>('GET', '/api/admin/users');
+    expect(list.status).toBe(200);
+    expect(list.body.some((u) => u.email === other.email)).toBe(true);
+
+    const created = await admin.call('POST', '/api/admin/users', {
+      name: 'Partner',
+      email: `partner${Date.now()}@example.com`,
+      password: 'first password',
+    });
+    expect(created.status).toBe(201);
+    const login = (email: string, password: string) =>
+      ctx.app.inject({ method: 'POST', url: '/api/auth/login', payload: { email, password } });
+    const partnerEmail = (await admin.call<any[]>('GET', '/api/admin/users')).body.find(
+      (u) => u.name === 'Partner',
+    ).email;
+    expect((await login(partnerEmail, 'first password')).statusCode).toBe(200);
+
+    expect(
+      (
+        await admin.call('PATCH', `/api/admin/users/${created.body.id}`, {
+          password: 'second password',
+        })
+      ).status,
+    ).toBe(204);
+    expect((await login(partnerEmail, 'first password')).statusCode).toBe(401);
+    expect((await login(partnerEmail, 'second password')).statusCode).toBe(200);
+
+    // Registration can be closed from the UI.
+    expect(
+      (await admin.call('PATCH', '/api/admin/settings', { registrationEnabled: false })).body
+        .registrationEnabled,
+    ).toBe(false);
+    expect(
+      (await ctx.app.inject({ method: 'GET', url: '/api/config' })).json().registrationEnabled,
+    ).toBe(false);
+    const blocked = await ctx.app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { name: 'X', email: 'blocked@example.com', password: 'long enough password' },
+    });
+    expect(blocked.statusCode).toBe(403);
+    await admin.call('PATCH', '/api/admin/settings', { registrationEnabled: true });
+
+    expect((await admin.call('DELETE', `/api/admin/users/${admin.user.id}`)).status).toBe(400);
+    expect((await admin.call('DELETE', `/api/admin/users/${created.body.id}`)).status).toBe(204);
+    expect((await login(partnerEmail, 'second password')).statusCode).toBe(401);
+  });
+});

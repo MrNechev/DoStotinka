@@ -18,6 +18,9 @@ All notable changes to this project are documented in this file. The format is b
 - Savings goals with target date, monthly saving suggestion and progress from manual contributions or
   from the balance of a linked account.
 - Searching records by amount.
+- Administration page: the first user becomes administrator and can create users, reset passwords,
+  grant admin rights, delete users and open/close sign-ups without editing `.env`.
+- “Getting started” checklist on the dashboard for new users.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 

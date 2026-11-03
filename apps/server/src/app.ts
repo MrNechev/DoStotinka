@@ -17,8 +17,9 @@ import {
 import type { Config } from './config';
 import type { Database } from './db';
 import { HttpError } from './lib/errors';
-import { registerAuth, requireAuth } from './plugins/auth';
+import { registerAuth, requireAdmin, requireAuth } from './plugins/auth';
 import { accountRoutes } from './routes/accounts';
+import { adminRoutes } from './routes/admin';
 import { authRoutes } from './routes/auth';
 import { budgetRoutes } from './routes/budgets';
 import { categoryRoutes } from './routes/categories';
@@ -153,6 +154,10 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(currencyRoutes, { prefix: '/currencies' });
         await authed.register(exportRoutes, { prefix: '/export' });
         await authed.register(importRoutes, { prefix: '/import' });
+      });
+      await api.register(async (admin) => {
+        admin.addHook('preHandler', requireAdmin);
+        await admin.register(adminRoutes, { prefix: '/admin' });
       });
     },
     { prefix: '/api' },

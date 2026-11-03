@@ -28,7 +28,8 @@ leaves it.
 
 ## Features
 
-- **Multiple users** – everyone has their own private data. Registration can be disabled.
+- **Multiple users** – everyone has their own private data. The first user becomes the
+  administrator and can add users, reset passwords and close sign-ups from the web UI.
 - **Accounts** – cash, bank, savings, credit cards, deposits, investments, loans … each with its own
   balance and currency. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
@@ -135,8 +136,9 @@ Database migrations run automatically when the container starts.
 
 ### After installing
 
-- Create your account, then set `ALLOW_REGISTRATION=false` in `.env` and run `docker compose up -d`
-  if nobody else should be able to sign up.
+- Create your account – the first account on a server becomes its **administrator**. Under
+  *Administration* you can add accounts for your family and switch off public sign-ups (or set
+  `ALLOW_REGISTRATION=false` in `.env`).
 - Disable the demo account on private servers with `DEMO_ENABLED=false`.
 - Put Slavotax behind a reverse proxy with HTTPS if it is reachable from the internet (see below).
 
@@ -154,7 +156,7 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Database host and port (Compose sets the host automatically). |
 | `DATABASE_URL` | – | Full connection string; overrides the `DB_*` variables. |
 | `DB_DATA_LOCATION` | `./postgres` | Where the database files are stored on the host (Compose only). |
-| `ALLOW_REGISTRATION` | `true` | Allow new users to sign up. |
+| `ALLOW_REGISTRATION` | `true` | Allow new users to sign up (default; administrators can override it in the UI). The very first user can always register. |
 | `DEMO_ENABLED` | `true` | Create the demo account with example data. |
 | `DEMO_EMAIL` / `DEMO_PASSWORD` | `demo@slavotax.app` / `demo1234` | Credentials of the demo account. |
 | `DEMO_RESET_HOURS` | `24` | Regenerate the demo data every N hours (`0` = only on start). |

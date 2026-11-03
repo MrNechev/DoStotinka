@@ -28,6 +28,7 @@ export function toUser(u: UserRow): User {
     theme: (['light', 'dark'].includes(u.theme) ? u.theme : 'system') as User['theme'],
     locale: u.locale,
     isDemo: u.isDemo,
+    isAdmin: u.isAdmin,
     createdAt: u.createdAt.toISOString(),
   };
 }

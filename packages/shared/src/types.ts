@@ -19,7 +19,28 @@ export interface User {
   theme: 'system' | 'light' | 'dark';
   locale: string;
   isDemo: boolean;
+  isAdmin: boolean;
   createdAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  isAdmin: boolean;
+  isDemo: boolean;
+  createdAt: string;
+  lastActiveAt: string | null;
+  accountCount: number;
+  recordCount: number;
+}
+
+export interface AdminSettings {
+  registrationEnabled: boolean;
+  /** Value of ALLOW_REGISTRATION (used when no admin override is stored). */
+  registrationDefault: boolean;
+  demoEnabled: boolean;
+  version: string;
 }
 
 export interface AuthResponse {
