@@ -7,6 +7,7 @@ import {
   budgets,
   categories,
   exchangeRates,
+  goals,
   labels,
   plannedPayments,
   recordLabels,
@@ -146,6 +147,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
         plannedRows,
         budgetRows,
         rateRows,
+        goalRows,
       ] = await Promise.all([
         db.select().from(accounts).where(eq(accounts.userId, user.id)),
         db.select().from(categories).where(eq(categories.userId, user.id)),
@@ -163,6 +165,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
         db.select().from(plannedPayments).where(eq(plannedPayments.userId, user.id)),
         db.select().from(budgets).where(eq(budgets.userId, user.id)),
         db.select().from(exchangeRates).where(eq(exchangeRates.userId, user.id)),
+        db.select().from(goals).where(eq(goals.userId, user.id)),
       ]);
       const strip = <T extends { userId?: string }>(rows: T[]) =>
         rows.map(({ userId: _u, ...rest }) => rest);
@@ -180,6 +183,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
         plannedPayments: strip(plannedRows),
         budgets: strip(budgetRows),
         exchangeRates: strip(rateRows),
+        goals: strip(goalRows),
       };
       const stamp = new Date().toISOString().slice(0, 10);
       return reply

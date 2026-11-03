@@ -9,6 +9,7 @@ import {
   format,
   parseISO,
   startOfDay,
+  startOfHour,
   startOfMonth,
   startOfWeek,
   startOfYear,
@@ -168,6 +169,34 @@ export function bucketLabel(date: string, interval: Interval, long = false): str
   if (interval === 'month') return format(d, long ? 'MMMM yyyy' : "MMM ''yy");
   if (interval === 'week') return long ? `Week of ${format(d, 'd MMM yyyy')}` : format(d, 'd MMM');
   return format(d, long ? 'EEE, d MMM yyyy' : 'd MMM');
+}
+
+/**
+ * The period to compare with. Calendar periods compare with the previous week/month/year –
+ * while a period is still running only the same elapsed part ("month to date").
+ * Rolling periods (last 30 days …) use the server default: the same length right before.
+ */
+export function comparisonRange(
+  state: PeriodState,
+  resolved: ResolvedPeriod,
+  now = new Date(),
+): { compareFrom: string; compareTo: string } | undefined {
+  const shift =
+    state.preset === 'week'
+      ? (d: Date) => addWeeks(d, -1)
+      : state.preset === 'month'
+        ? (d: Date) => addMonths(d, -1)
+        : state.preset === 'year'
+          ? (d: Date) => addYears(d, -1)
+          : null;
+  if (!shift) return undefined;
+  // Rounded to the hour so the query key stays stable between renders.
+  const hour = startOfHour(now);
+  const ongoing = resolved.to > hour && resolved.from <= hour;
+  return {
+    compareFrom: shift(resolved.from).toISOString(),
+    compareTo: shift(ongoing ? hour : resolved.to).toISOString(),
+  };
 }
 
 export { endOfDay };

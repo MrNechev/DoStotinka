@@ -852,3 +852,174 @@ describe('administration', () => {
     expect((await login(partnerEmail, 'second password')).statusCode).toBe(401);
   });
 });
+
+describe('review regressions', () => {
+  it('PATCH /accounts only changes the fields that were sent', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Old',
+        type: 'savings',
+        currency: 'EUR',
+        initialBalance: 50000,
+        color: '#10B981',
+        archived: true,
+        excludeFromStats: true,
+        note: 'keep me',
+      })
+    ).body;
+    const res = await call('PATCH', `/api/accounts/${acc.id}`, { name: 'New' });
+    expect(res.body).toMatchObject({
+      name: 'New',
+      initialBalance: 50000,
+      archived: true,
+      excludeFromStats: true,
+      note: 'keep me',
+    });
+  });
+
+  it('editing a finished planned payment does not reopen paid occurrences', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const input = {
+      name: 'Course',
+      type: 'expense',
+      accountId: acc.id,
+      amount: 1000,
+      frequency: 'monthly',
+      startDate: '2026-01-01',
+      endDate: '2026-03-01',
+    };
+    const plan = (await call('POST', '/api/planned-payments', input)).body;
+    for (let i = 0; i < 3; i++) await call('POST', `/api/planned-payments/${plan.id}/pay`, {});
+    expect((await call('GET', `/api/planned-payments/${plan.id}`)).body.nextDueDate).toBeNull();
+    const extended = (
+      await call('PUT', `/api/planned-payments/${plan.id}`, { ...input, endDate: '2026-06-01' })
+    ).body;
+    expect(extended.nextDueDate).toBe('2026-04-01');
+  });
+
+  it('confirming the same occurrence twice creates only one record', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const plan = (
+      await call('POST', '/api/planned-payments', {
+        name: 'Rent',
+        type: 'expense',
+        accountId: acc.id,
+        amount: 1000,
+        frequency: 'monthly',
+        startDate: '2026-01-01',
+      })
+    ).body;
+    const [a, b] = await Promise.all([
+      call('POST', `/api/planned-payments/${plan.id}/pay`, { dueDate: '2026-01-01' }),
+      call('POST', `/api/planned-payments/${plan.id}/pay`, { dueDate: '2026-01-01' }),
+    ]);
+    expect([a.status, b.status].sort()).toEqual([200, expect.any(Number)].sort());
+    expect([a.status, b.status].filter((s) => s === 200)).toHaveLength(1);
+    expect((await call('GET', `/api/records?accountIds=${acc.id}`)).body.items).toHaveLength(1);
+  });
+
+  it('import converts cross-currency transfers and keeps identical rows of the file', async () => {
+    const { call } = await registerUser(ctx.app);
+    await call('PUT', '/api/currencies/rates', { rates: [{ currency: 'CZK', rate: 0.04 }] });
+    const res = await call('POST', '/api/import/records', {
+      accounts: [
+        { key: 'EUR', create: { name: 'EUR', currency: 'EUR' } },
+        { key: 'CZK', create: { name: 'CZK', currency: 'CZK' } },
+      ],
+      records: [
+        {
+          accountKey: 'EUR',
+          type: 'transfer',
+          toAccountKey: 'CZK',
+          amount: 10000,
+          occurredAt: iso('2026-01-01T12:00:00Z'),
+        },
+        {
+          accountKey: 'EUR',
+          type: 'expense',
+          amount: 200,
+          occurredAt: iso('2026-01-02T12:00:00Z'),
+          labels: ['Bus', 'bus'],
+        },
+        {
+          accountKey: 'EUR',
+          type: 'expense',
+          amount: 200,
+          occurredAt: iso('2026-01-02T12:00:00Z'),
+        },
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.imported).toBe(3);
+    const accounts = (await call<any[]>('GET', '/api/accounts')).body;
+    expect(accounts.find((a) => a.name === 'CZK')!.balance).toBe(250000);
+    expect(accounts.find((a) => a.name === 'EUR')!.balance).toBe(-10000 - 400);
+  });
+
+  it('rejects empty time zones and invalid cursors, accepts empty patches', async () => {
+    const { call } = await registerUser(ctx.app);
+    expect((await call('PATCH', '/api/me', { timezone: '' })).status).toBe(400);
+    expect((await call('PATCH', '/api/me', { timezone: '+01:00' })).status).toBe(400);
+    expect((await call('PATCH', '/api/me', {})).status).toBe(200);
+    const label = (await call('POST', '/api/labels', { name: 'X', color: '#3B82F6' })).body;
+    expect((await call('PATCH', `/api/labels/${label.id}`, {})).status).toBe(200);
+    const badCursor = Buffer.from('2025-01-01T00:00:00Z|abc').toString('base64url');
+    expect((await call('GET', `/api/records?cursor=${badCursor}`)).status).toBe(400);
+  });
+
+  it('compares with an explicit period and includes goals in the backup', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 75000,
+      occurredAt: iso('2026-03-01T10:00:00Z'),
+    });
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 75000,
+      occurredAt: iso('2026-04-01T10:00:00Z'),
+    });
+    const q = (extra: string) =>
+      `/api/stats/summary?from=${encodeURIComponent('2026-04-01T00:00:00Z')}&to=${encodeURIComponent('2026-05-01T00:00:00Z')}&tz=UTC${extra}`;
+    // Default: the 30 days before April 1st miss March 1st.
+    expect((await call('GET', q(''))).body.previous.expense).toBe(0);
+    const calendar = await call(
+      'GET',
+      q(
+        `&compareFrom=${encodeURIComponent('2026-03-01T00:00:00Z')}&compareTo=${encodeURIComponent('2026-04-01T00:00:00Z')}`,
+      ),
+    );
+    expect(calendar.body.previous.expense).toBe(75000);
+
+    await call('POST', '/api/goals', { name: 'Trip', targetAmount: 1000 });
+    const backup = (await call('GET', '/api/export/backup.json')).body;
+    expect(backup.goals).toHaveLength(1);
+  });
+});

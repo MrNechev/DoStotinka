@@ -31,7 +31,10 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       if (user.isDemo && input.email && input.email !== user.email) {
         throw forbidden('The e-mail of the demo account cannot be changed');
       }
-      if (input.timezone && !isValidTimeZone(input.timezone)) throw badRequest('Unknown time zone');
+      if (input.timezone !== undefined && !isValidTimeZone(input.timezone)) {
+        throw badRequest('Unknown time zone');
+      }
+      if (Object.values(input).every((v) => v === undefined)) return { user: toUser(user) };
       if (input.email && input.email !== user.email) {
         const [taken] = await app.db
           .select({ id: users.id })

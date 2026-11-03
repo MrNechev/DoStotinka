@@ -451,12 +451,17 @@ export interface StatsScope {
   from: string;
   to: string;
   accountIds?: string[];
+  /** Optional comparison period (defaults to the same length right before `from`). */
+  compareFrom?: string;
+  compareTo?: string;
 }
 
 const scopeQuery = (s: StatsScope) => ({
   from: s.from,
   to: s.to,
   accountIds: s.accountIds,
+  compareFrom: s.compareFrom,
+  compareTo: s.compareTo,
   tz: browserTimeZone(),
 });
 

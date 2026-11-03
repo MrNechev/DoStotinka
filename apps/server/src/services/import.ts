@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import type { ImportResult, importInput } from '@slavotax/shared';
+import { convertMinor, type ImportResult, type importInput } from '@slavotax/shared';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';
 import { accounts, categories, labels, recordLabels, records, type UserRow } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
-import { ensureRate } from './rates';
+import { ensureRate, getRateMap } from './rates';
 
 type ImportParsed = z.output<typeof importInput>;
 
@@ -76,7 +76,15 @@ export async function importRecords(
     }
 
     // ─── Duplicate detection ───
-    const seen = new Set<string>();
+    // How many identical records (same account, time and amount) already exist. Each one
+    // "absorbs" one row of the file, so genuine repeats inside the file are still imported.
+    const existingCount = new Map<string, number>();
+    const isDuplicate = (key: string) => {
+      const n = existingCount.get(key) ?? 0;
+      if (n <= 0) return false;
+      existingCount.set(key, n - 1);
+      return true;
+    };
     if (input.skipDuplicates) {
       const times = input.records.map((r) => new Date(r.occurredAt).getTime());
       const accountIds = [...new Set([...accountByKey.values()].map((a) => a.id))];
@@ -95,8 +103,17 @@ export async function importRecords(
             lte(records.occurredAt, new Date(Math.max(...times))),
           ),
         );
-      for (const e of existing) seen.add(`${e.accountId}|${e.occurredAt.getTime()}|${e.amount}`);
+      for (const e of existing) {
+        const key = `${e.accountId}|${e.occurredAt.getTime()}|${e.amount}`;
+        existingCount.set(key, (existingCount.get(key) ?? 0) + 1);
+      }
     }
+
+    let rateCache: Awaited<ReturnType<typeof getRateMap>> | null = null;
+    const rates = async () => {
+      rateCache ??= await getRateMap(tx, user.id, user.baseCurrency);
+      return rateCache;
+    };
 
     // ─── Records ───
     type Row = typeof records.$inferInsert;
@@ -107,20 +124,24 @@ export async function importRecords(
       const account = accountByKey.get(r.accountKey);
       if (!account) throw badRequest(`Unknown account “${r.accountKey}”`);
       const occurredAt = new Date(r.occurredAt);
-      const labelIds = (r.labels ?? [])
-        .map((n) => labelByName.get(n.toLowerCase())!)
-        .filter(Boolean);
+      const labelIds = [
+        ...new Set((r.labels ?? []).map((n) => labelByName.get(n.toLowerCase())!).filter(Boolean)),
+      ];
       const base = { userId: user.id, occurredAt, note: r.note ?? null, payee: r.payee ?? null };
       if (r.type === 'transfer') {
         const target = r.toAccountKey ? accountByKey.get(r.toAccountKey) : undefined;
         if (!target || target.id === account.id)
           throw badRequest('A transfer needs two different accounts');
-        const key = `${account.id}|${occurredAt.getTime()}|${-r.amount}`;
-        if (seen.has(key)) {
+        if (isDuplicate(`${account.id}|${occurredAt.getTime()}|${-r.amount}`)) {
           skipped++;
           continue;
         }
-        seen.add(key);
+        // Without an explicit received amount, convert between the account currencies.
+        const toAmount =
+          r.toAmount ??
+          (target.currency === account.currency
+            ? r.amount
+            : convertMinor(r.amount, account.currency, target.currency, await rates()));
         const group = randomUUID();
         const outId = randomUUID();
         const inId = randomUUID();
@@ -140,7 +161,7 @@ export async function importRecords(
             id: inId,
             accountId: target.id,
             type: 'transfer',
-            amount: r.toAmount ?? r.amount,
+            amount: toAmount,
             currency: target.currency,
             transferGroupId: group,
             counterpartAccountId: account.id,
@@ -150,12 +171,10 @@ export async function importRecords(
           links.push({ recordId: outId, labelId }, { recordId: inId, labelId });
       } else {
         const amount = r.type === 'expense' ? -r.amount : r.amount;
-        const key = `${account.id}|${occurredAt.getTime()}|${amount}`;
-        if (seen.has(key)) {
+        if (isDuplicate(`${account.id}|${occurredAt.getTime()}|${amount}`)) {
           skipped++;
           continue;
         }
-        seen.add(key);
         const id = randomUUID();
         rows.push({
           ...base,

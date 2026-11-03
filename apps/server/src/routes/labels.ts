@@ -47,9 +47,18 @@ export const labelRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (req) => {
       const user = currentUser(req);
+      const patch = Object.fromEntries(Object.entries(req.body).filter(([, v]) => v !== undefined));
+      if (!Object.keys(patch).length) {
+        const [current] = await db
+          .select()
+          .from(labels)
+          .where(and(eq(labels.id, req.params.id), eq(labels.userId, user.id)));
+        if (!current) throw notFound('Label');
+        return toLabel(current);
+      }
       const [row] = await db
         .update(labels)
-        .set(req.body)
+        .set(patch)
         .where(and(eq(labels.id, req.params.id), eq(labels.userId, user.id)))
         .returning();
       if (!row) throw notFound('Label');

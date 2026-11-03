@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 import { Checkbox, Segmented } from '@/components/ui/misc';
 import {
+  comparisonRange,
   isoDay,
   PERIOD_PRESETS,
   type PeriodState,
@@ -69,6 +70,7 @@ export function useStatsFilters(
     from: resolved.from.toISOString(),
     to: resolved.to.toISOString(),
     accountIds: accountIds.length ? [...accountIds].sort() : undefined,
+    ...comparisonRange(period, resolved),
   };
 
   return {

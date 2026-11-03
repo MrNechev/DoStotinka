@@ -296,7 +296,8 @@ function encodeCursor(row: { occurredAt: Date; id: string }): string {
 function decodeCursor(cursor: string): { occurredAt: Date; id: string } | null {
   try {
     const [iso, id] = Buffer.from(cursor, 'base64url').toString('utf8').split('|');
-    if (!iso || !id) return null;
+    if (!iso || !id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+      return null;
     const occurredAt = new Date(iso);
     if (Number.isNaN(occurredAt.getTime())) return null;
     return { occurredAt, id };

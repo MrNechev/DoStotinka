@@ -19,6 +19,17 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Fixed
 - Forms opened right after a page load could keep an empty account.
+- `PATCH /api/accounts/:id` reset fields that were not sent (starting balance, archived, note …).
+- Editing a finished planned payment re-opened occurrences that had already been paid.
+- Confirming the same planned occurrence twice (double click or together with the automatic job)
+  could create two records.
+- Import: cross-currency transfers without a received amount are now converted, and identical rows
+  inside one file are no longer dropped as duplicates.
+- “vs previous period” compares calendar months/weeks/years with the previous calendar period
+  (month-to-date while a month is running) instead of a shifted window.
+- Invalid time zones are rejected and can no longer break automatic planned payments.
+- The JSON backup now contains savings goals.
+- Several invalid requests returned 500 instead of 400.
 
 ## [0.1.0] – 2026-11-04
 

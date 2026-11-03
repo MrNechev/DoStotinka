@@ -84,7 +84,7 @@ export const updateProfileInput = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   email: z.email().trim().toLowerCase().max(254).optional(),
   baseCurrency: currencyCode.optional(),
-  timezone: z.string().max(64).optional(),
+  timezone: z.string().min(1).max(64).optional(),
   weekStartsOn: z.union([z.literal(0), z.literal(1), z.literal(6)]).optional(),
   theme: z.enum(THEMES).optional(),
   locale: z.string().max(16).optional(),
@@ -115,7 +115,18 @@ export const accountInput = z.object({
 });
 export type AccountInput = z.input<typeof accountInput>;
 
-export const accountUpdateInput = accountInput.partial();
+/** Partial update: fields that are not sent stay unchanged (no defaults are applied). */
+export const accountUpdateInput = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(60).optional(),
+  type: z.enum(ACCOUNT_TYPES).optional(),
+  currency: currencyCode.optional(),
+  initialBalance: minorAmount.optional(),
+  color: hexColor.optional(),
+  icon: iconName.nullable().optional(),
+  excludeFromStats: z.boolean().optional(),
+  archived: z.boolean().optional(),
+  note: z.string().trim().max(500).nullable().optional(),
+});
 export type AccountUpdateInput = z.input<typeof accountUpdateInput>;
 
 export const adjustBalanceInput = z.object({
@@ -266,6 +277,9 @@ export const statsQuery = z.object({
   to: isoDateTime,
   accountIds: uuidList,
   tz: z.string().max(64).default('UTC'),
+  /** Period to compare with (defaults to the same length right before `from`). */
+  compareFrom: isoDateTime.optional(),
+  compareTo: isoDateTime.optional(),
 });
 export type StatsQuery = z.input<typeof statsQuery>;
 

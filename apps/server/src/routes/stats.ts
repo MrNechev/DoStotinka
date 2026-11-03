@@ -23,7 +23,14 @@ import {
 const MAX_RANGE_MS = 50 * 366 * 86_400_000;
 
 function scopeOf(
-  q: { from: string; to: string; accountIds?: string[]; tz: string },
+  q: {
+    from: string;
+    to: string;
+    accountIds?: string[];
+    tz: string;
+    compareFrom?: string;
+    compareTo?: string;
+  },
   fallbackTz: string,
 ): StatsScope {
   const from = new Date(q.from);
@@ -31,7 +38,19 @@ function scopeOf(
   if (!(to > from)) throw badRequest('`to` must be after `from`');
   if (to.getTime() - from.getTime() > MAX_RANGE_MS)
     throw badRequest('The requested range is too long');
-  return { from, to, accountIds: q.accountIds, tz: safeTimeZone(q.tz, fallbackTz) };
+  const compareFrom = q.compareFrom ? new Date(q.compareFrom) : undefined;
+  const compareTo = q.compareTo ? new Date(q.compareTo) : undefined;
+  if (compareFrom && compareTo && compareTo.getTime() - compareFrom.getTime() > MAX_RANGE_MS) {
+    throw badRequest('The comparison range is too long');
+  }
+  return {
+    from,
+    to,
+    accountIds: q.accountIds,
+    tz: safeTimeZone(q.tz, fallbackTz),
+    compareFrom,
+    compareTo,
+  };
 }
 
 export const statsRoutes: FastifyPluginAsyncZod = async (app) => {

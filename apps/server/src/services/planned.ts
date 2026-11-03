@@ -7,7 +7,7 @@ import {
   type RecurrenceRule,
   type UpcomingOccurrence,
 } from '@slavotax/shared';
-import { and, asc, eq, inArray, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, lte, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';
 import {
@@ -19,8 +19,8 @@ import {
   type UserRow,
   users,
 } from '../db/schema';
-import { toLocalDate, zonedTimeToUtc } from '../lib/dates';
-import { badRequest, notFound } from '../lib/errors';
+import { safeTimeZone, toLocalDate, zonedTimeToUtc } from '../lib/dates';
+import { badRequest, conflict, notFound } from '../lib/errors';
 import { toPlannedPayment } from './dto';
 import { createRecord } from './records';
 
@@ -158,9 +158,17 @@ export async function updatePlanned(db: Database, userId: string, id: string, in
   let nextDueDate = existing.nextDueDate;
   if (scheduleChanged) {
     // Keep already settled occurrences settled: continue from the previous position.
-    const anchor = existing.nextDueDate ?? existing.startDate;
-    const from = input.startDate > anchor ? input.startDate : anchor;
-    nextDueDate = nextOccurrence(rule, from, true);
+    if (existing.nextDueDate) {
+      const from = input.startDate > existing.nextDueDate ? input.startDate : existing.nextDueDate;
+      nextDueDate = nextOccurrence(rule, from, true);
+    } else {
+      // The schedule had finished: everything up to its old end was paid or skipped.
+      const settledUntil = existing.endDate ?? existing.startDate;
+      nextDueDate =
+        input.startDate > settledUntil
+          ? nextOccurrence(rule, input.startDate, true)
+          : nextOccurrence(rule, settledUntil, false);
+    }
   }
   const [row] = await db
     .update(plannedPayments)
@@ -190,11 +198,30 @@ export async function deletePlanned(db: Database, userId: string, id: string) {
   await db.delete(plannedPayments).where(eq(plannedPayments.id, existing.id));
 }
 
-async function advance(db: Database, row: PlannedPaymentRow) {
-  if (!row.nextDueDate) return null;
+const dueIs = (value: string | null) =>
+  value === null ? isNull(plannedPayments.nextDueDate) : eq(plannedPayments.nextDueDate, value);
+
+/**
+ * Atomically moves the schedule from `from` to `to` (compare-and-set). Returns false when another
+ * request (a double click, the auto-confirm job …) already settled this occurrence.
+ */
+async function moveDue(db: Database, id: string, from: string | null, to: string | null) {
+  const rows = await db
+    .update(plannedPayments)
+    .set({ nextDueDate: to })
+    .where(and(eq(plannedPayments.id, id), dueIs(from)))
+    .returning({ id: plannedPayments.id });
+  return rows.length > 0;
+}
+
+/** Claims the next due occurrence of a plan; throws 409 when it is already settled. */
+async function claimNext(db: Database, row: PlannedPaymentRow) {
+  if (!row.nextDueDate) throw badRequest('This planned payment has no open occurrences');
   const next = nextOccurrence(ruleOf(row), row.nextDueDate, false);
-  await db.update(plannedPayments).set({ nextDueDate: next }).where(eq(plannedPayments.id, row.id));
-  return next;
+  if (!(await moveDue(db, row.id, row.nextDueDate, next))) {
+    throw conflict('This occurrence has already been confirmed or skipped');
+  }
+  return { due: row.nextDueDate, next };
 }
 
 /** Confirms the next due occurrence: creates the record and advances the schedule. */
@@ -204,6 +231,7 @@ export async function payPlanned(db: Database, user: UserRow, id: string, input:
   if (input.dueDate && input.dueDate !== row.nextDueDate) {
     throw badRequest('Only the next due occurrence can be confirmed');
   }
+  const { due, next } = await claimNext(db, row);
   const occurredAt = input.occurredAt ?? new Date().toISOString();
   const base = {
     accountId: input.accountId ?? row.accountId,
@@ -212,28 +240,33 @@ export async function payPlanned(db: Database, user: UserRow, id: string, input:
     note: input.note ?? row.note ?? row.name,
     payee: row.payee,
   };
-  const created =
-    row.type === 'transfer'
-      ? await createRecord(
-          db,
-          user,
-          { ...base, type: 'transfer', toAccountId: row.toAccountId!, toAmount: input.toAmount },
-          { plannedPaymentId: row.id, plannedDueDate: row.nextDueDate },
-        )
-      : await createRecord(
-          db,
-          user,
-          { ...base, type: row.type, categoryId: row.categoryId },
-          { plannedPaymentId: row.id, plannedDueDate: row.nextDueDate },
-        );
-  await advance(db, row);
+  let created: Awaited<ReturnType<typeof createRecord>>;
+  try {
+    created =
+      row.type === 'transfer'
+        ? await createRecord(
+            db,
+            user,
+            { ...base, type: 'transfer', toAccountId: row.toAccountId!, toAmount: input.toAmount },
+            { plannedPaymentId: row.id, plannedDueDate: due },
+          )
+        : await createRecord(
+            db,
+            user,
+            { ...base, type: row.type, categoryId: row.categoryId },
+            { plannedPaymentId: row.id, plannedDueDate: due },
+          );
+  } catch (err) {
+    // Give the occurrence back when the record could not be created.
+    await moveDue(db, row.id, next, due);
+    throw err;
+  }
   return { records: created, plannedPayment: await getPlanned(db, user.id, id) };
 }
 
 export async function skipPlanned(db: Database, userId: string, id: string) {
   const row = await getOwned(db, userId, id);
-  if (!row.nextDueDate) throw badRequest('This planned payment has no open occurrences');
-  await advance(db, row);
+  await claimNext(db, row);
   return getPlanned(db, userId, id);
 }
 
@@ -276,25 +309,36 @@ export async function processAutoConfirm(db: Database, now = new Date()): Promis
     );
   let created = 0;
   for (const { plan, user } of rows) {
-    const today = toLocalDate(now, user.timezone);
-    let due = plan.nextDueDate;
-    for (let guard = 0; due && due <= today && guard < 400; guard++) {
-      const occurredAt = zonedTimeToUtc(
-        Number(due.slice(0, 4)),
-        Number(due.slice(5, 7)),
-        Number(due.slice(8, 10)),
-        8,
-        0,
-        user.timezone,
-      );
-      const res = await payPlanned(db, user, plan.id, {
-        dueDate: due,
-        occurredAt: occurredAt.toISOString(),
-        note: null,
-      });
-      created++;
-      due = res.plannedPayment.nextDueDate;
+    try {
+      created += await autoConfirmPlan(db, plan, user, now);
+    } catch {
+      // One broken plan (e.g. a deleted account) must not block everybody else's.
     }
+  }
+  return created;
+}
+
+async function autoConfirmPlan(db: Database, plan: PlannedPaymentRow, user: UserRow, now: Date) {
+  const tz = safeTimeZone(user.timezone);
+  const today = toLocalDate(now, tz);
+  let created = 0;
+  let due = plan.nextDueDate;
+  for (let guard = 0; due && due <= today && guard < 400; guard++) {
+    const occurredAt = zonedTimeToUtc(
+      Number(due.slice(0, 4)),
+      Number(due.slice(5, 7)),
+      Number(due.slice(8, 10)),
+      8,
+      0,
+      tz,
+    );
+    const res = await payPlanned(db, user, plan.id, {
+      dueDate: due,
+      occurredAt: occurredAt.toISOString(),
+      note: null,
+    });
+    created++;
+    due = res.plannedPayment.nextDueDate;
   }
   return created;
 }

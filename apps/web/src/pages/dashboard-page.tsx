@@ -1,5 +1,5 @@
 import { convertMinor } from '@slavotax/shared';
-import { addMonths, format, startOfMonth, subDays } from 'date-fns';
+import { addMonths, format, startOfHour, startOfMonth, subDays } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
@@ -48,7 +48,13 @@ export default function DashboardPage() {
 
   const now = new Date();
   const monthStart = startOfMonth(now);
-  const month = { from: monthStart.toISOString(), to: addMonths(monthStart, 1).toISOString() };
+  // Compare the month so far with the same days of last month.
+  const month = {
+    from: monthStart.toISOString(),
+    to: addMonths(monthStart, 1).toISOString(),
+    compareFrom: addMonths(monthStart, -1).toISOString(),
+    compareTo: addMonths(startOfHour(now), -1).toISOString(),
+  };
   const last30 = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

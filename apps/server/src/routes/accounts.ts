@@ -106,11 +106,12 @@ export const accountRoutes: FastifyPluginAsyncZod = async (app) => {
       if (req.body.currency && req.body.currency !== existing.currency && (t?.count ?? 0) > 0) {
         throw badRequest('The currency cannot be changed once the account has records');
       }
-      const [row] = await db
-        .update(accounts)
-        .set(req.body)
-        .where(eq(accounts.id, existing.id))
-        .returning();
+      // Only touch the fields that were sent.
+      const patch = Object.fromEntries(Object.entries(req.body).filter(([, v]) => v !== undefined));
+      if (typeof patch.note === 'string' && !patch.note) patch.note = null;
+      const [row] = Object.keys(patch).length
+        ? await db.update(accounts).set(patch).where(eq(accounts.id, existing.id)).returning()
+        : [existing];
       if (req.body.currency) await ensureRate(db, user.id, user.baseCurrency, req.body.currency);
       return toAccount(row!, t);
     },

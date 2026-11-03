@@ -1,5 +1,11 @@
-/** Returns true when the given IANA time zone is known to the runtime. */
+/**
+ * Returns true for IANA time zone names known to the runtime (e.g. "Europe/Sofia", "UTC").
+ * Offset strings like "+01:00" are rejected on purpose – PostgreSQL would read them as POSIX
+ * zones with the opposite sign.
+ */
 export function isValidTimeZone(tz: string): boolean {
+  if (!tz || tz.length > 64 || !/^[A-Za-z][A-Za-z0-9_+-]*(\/[A-Za-z0-9_+-]+)*$/.test(tz))
+    return false;
   try {
     new Intl.DateTimeFormat('en-US', { timeZone: tz });
     return true;
@@ -9,7 +15,8 @@ export function isValidTimeZone(tz: string): boolean {
 }
 
 export function safeTimeZone(tz: string | undefined | null, fallback = 'UTC'): string {
-  return tz && isValidTimeZone(tz) ? tz : fallback;
+  if (tz && isValidTimeZone(tz)) return tz;
+  return isValidTimeZone(fallback) ? fallback : 'UTC';
 }
 
 /** Calendar date (YYYY-MM-DD) of an instant in the given time zone. */

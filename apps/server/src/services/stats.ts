@@ -21,6 +21,17 @@ export interface StatsScope {
   to: Date;
   accountIds?: string[];
   tz: string;
+  /** Range to compare with; defaults to the same length right before `from`. */
+  compareFrom?: Date;
+  compareTo?: Date;
+}
+
+function comparison(scope: StatsScope): { from: Date; to: Date } {
+  if (scope.compareFrom && scope.compareTo && scope.compareTo > scope.compareFrom) {
+    return { from: scope.compareFrom, to: scope.compareTo };
+  }
+  const length = scope.to.getTime() - scope.from.getTime();
+  return { from: new Date(scope.from.getTime() - length), to: scope.from };
 }
 
 interface Ctx {
@@ -98,8 +109,7 @@ export async function summary(
   scope: StatsScope,
 ): Promise<StatsSummary> {
   const ctx = await context(db, user);
-  const length = scope.to.getTime() - scope.from.getTime();
-  const prevFrom = new Date(scope.from.getTime() - length);
+  const prev = comparison(scope);
 
   const totals = async (from: Date, to: Date) => {
     const rows = (await db.execute(sql`
@@ -130,7 +140,7 @@ export async function summary(
 
   const [current, previous, balanceRows] = await Promise.all([
     totals(scope.from, scope.to),
-    totals(prevFrom, scope.from),
+    totals(prev.from, prev.to),
     db.execute(sql`
       select a.currency,
         sum(a.initial_balance + coalesce((
@@ -166,8 +176,9 @@ export async function categoryBreakdown(
   parentId?: string,
 ): Promise<CategoryStatsResponse> {
   const ctx = await context(db, user);
-  const length = scope.to.getTime() - scope.from.getTime();
-  const prevFrom = new Date(scope.from.getTime() - length);
+  const prev = comparison(scope);
+  const inCurrent = sql`r.occurred_at >= ${scope.from.toISOString()}::timestamptz and r.occurred_at < ${scope.to.toISOString()}::timestamptz`;
+  const inPrevious = sql`r.occurred_at >= ${prev.from.toISOString()}::timestamptz and r.occurred_at < ${prev.to.toISOString()}::timestamptz`;
 
   const groupExpr = parentId ? sql`c.id` : sql`coalesce(c.parent_id, c.id)`;
   const parentFilter = parentId
@@ -176,15 +187,14 @@ export async function categoryBreakdown(
 
   const rows = (await db.execute(sql`
     select ${groupExpr} as category_id, r.currency,
-      sum(case when r.occurred_at >= ${scope.from.toISOString()}::timestamptz then r.amount else 0 end)::bigint as total,
-      count(*) filter (where r.occurred_at >= ${scope.from.toISOString()}::timestamptz)::int as cnt,
-      sum(case when r.occurred_at < ${scope.from.toISOString()}::timestamptz then r.amount else 0 end)::bigint as prev
+      coalesce(sum(r.amount) filter (where ${inCurrent}), 0)::bigint as total,
+      count(*) filter (where ${inCurrent})::int as cnt,
+      coalesce(sum(r.amount) filter (where ${inPrevious}), 0)::bigint as prev
     from records r
     left join categories c on c.id = r.category_id
     where ${accountScope(user.id, scope.accountIds)}
       and r.type = ${type}
-      and r.occurred_at >= ${prevFrom.toISOString()}::timestamptz
-      and r.occurred_at < ${scope.to.toISOString()}::timestamptz
+      and ((${inCurrent}) or (${inPrevious}))
       ${parentFilter}
     group by 1, 2
   `)) as unknown as {

@@ -2,7 +2,7 @@ import { type CurrenciesResponse, type ExchangeRate, ratesUpdateInput } from '@s
 import { and, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { exchangeRates } from '../db/schema';
+import { budgets, exchangeRates, goals } from '../db/schema';
 import { HttpError } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
 import {
@@ -102,6 +102,17 @@ export const currencyRoutes: FastifyPluginAsyncZod = async (app) => {
       const code = req.params.currency.toUpperCase();
       if (used.includes(code))
         throw new HttpError(400, 'This currency is used by one of your accounts');
+      const [budget] = await db
+        .select({ id: budgets.id })
+        .from(budgets)
+        .where(and(eq(budgets.userId, user.id), eq(budgets.currency, code)))
+        .limit(1);
+      const [goal] = await db
+        .select({ id: goals.id })
+        .from(goals)
+        .where(and(eq(goals.userId, user.id), eq(goals.currency, code)))
+        .limit(1);
+      if (budget || goal) throw new HttpError(400, 'This currency is used by a budget or a goal');
       await db
         .delete(exchangeRates)
         .where(and(eq(exchangeRates.userId, user.id), eq(exchangeRates.currency, code)));

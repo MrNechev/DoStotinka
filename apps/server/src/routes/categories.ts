@@ -127,11 +127,9 @@ export const categoryRoutes: FastifyPluginAsyncZod = async (app) => {
         }
         patch.parentId = input.parentId;
       }
-      const [row] = await db
-        .update(categories)
-        .set(patch)
-        .where(eq(categories.id, existing.id))
-        .returning();
+      const [row] = Object.keys(patch).length
+        ? await db.update(categories).set(patch).where(eq(categories.id, existing.id)).returning()
+        : [existing];
       if (input.archived !== undefined && !existing.parentId) {
         await db
           .update(categories)

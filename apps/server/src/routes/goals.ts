@@ -6,7 +6,7 @@ import type { Database } from '../db';
 import { accounts, type GoalRow, goals, records, type UserRow } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
-import { getRateMap } from '../services/rates';
+import { ensureRate, getRateMap } from '../services/rates';
 
 const idParams = z.object({ id: z.uuid() });
 
@@ -125,6 +125,7 @@ export const goalRoutes: FastifyPluginAsyncZod = async (app) => {
           note: req.body.note ?? null,
         })
         .returning();
+      await ensureRate(db, user.id, user.baseCurrency, row!.currency);
       return reply.status(201).send((await present(db, user, [row!]))[0]);
     },
   );
@@ -151,6 +152,7 @@ export const goalRoutes: FastifyPluginAsyncZod = async (app) => {
         })
         .where(eq(goals.id, existing.id))
         .returning();
+      await ensureRate(db, user.id, user.baseCurrency, row!.currency);
       return (await present(db, user, [row!]))[0];
     },
   );
