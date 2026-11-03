@@ -624,22 +624,55 @@ describe('import', () => {
 describe('bulk editing', () => {
   it('changes category, account and labels of many records', async () => {
     const { call } = await registerUser(ctx.app);
-    const a = (await call('POST', '/api/accounts', { name: 'A', type: 'checking', currency: 'EUR', color: '#3B82F6' })).body;
-    const b = (await call('POST', '/api/accounts', { name: 'B', type: 'cash', currency: 'EUR', color: '#22C55E' })).body;
-    const usd = (await call('POST', '/api/accounts', { name: 'USD', type: 'cash', currency: 'USD', color: '#6366F1' })).body;
+    const a = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const b = (
+      await call('POST', '/api/accounts', {
+        name: 'B',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const usd = (
+      await call('POST', '/api/accounts', {
+        name: 'USD',
+        type: 'cash',
+        currency: 'USD',
+        color: '#6366F1',
+      })
+    ).body;
     const label = (await call('POST', '/api/labels', { name: 'Trip', color: '#14B8A6' })).body;
     const cats = (await call<any[]>('GET', '/api/categories')).body;
     const taxi = cats.find((c) => c.systemKey === 'transport.taxi')!;
     const ids: string[] = [];
     for (let i = 0; i < 3; i++) {
-      const r = await call<any[]>('POST', '/api/records', { type: 'expense', accountId: a.id, amount: 1000 + i, occurredAt: iso(`2026-02-0${i + 1}T10:00:00Z`) });
+      const r = await call<any[]>('POST', '/api/records', {
+        type: 'expense',
+        accountId: a.id,
+        amount: 1000 + i,
+        occurredAt: iso(`2026-02-0${i + 1}T10:00:00Z`),
+      });
       ids.push(r.body[0].id);
     }
-    const res = await call('POST', '/api/records/bulk-update', { ids, categoryId: taxi.id, accountId: b.id, addLabelIds: [label.id] });
+    const res = await call('POST', '/api/records/bulk-update', {
+      ids,
+      categoryId: taxi.id,
+      accountId: b.id,
+      addLabelIds: [label.id],
+    });
     expect(res.body.updated).toBe(3);
     const list = (await call('GET', `/api/records?accountIds=${b.id}`)).body.items;
     expect(list).toHaveLength(3);
-    expect(list.every((r: any) => r.categoryId === taxi.id && r.labelIds.includes(label.id))).toBe(true);
+    expect(list.every((r: any) => r.categoryId === taxi.id && r.labelIds.includes(label.id))).toBe(
+      true,
+    );
 
     const cross = await call('POST', '/api/records/bulk-update', { ids, accountId: usd.id });
     expect(cross.status).toBe(400);

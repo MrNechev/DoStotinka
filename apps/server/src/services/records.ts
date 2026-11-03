@@ -462,10 +462,19 @@ export interface BulkUpdate {
 }
 
 /** Applies the same change to many records. Returns the number of records touched. */
-export async function bulkUpdateRecords(db: Database, userId: string, input: BulkUpdate): Promise<number> {
+export async function bulkUpdateRecords(
+  db: Database,
+  userId: string,
+  input: BulkUpdate,
+): Promise<number> {
   return db.transaction(async (tx) => {
     const rows = await tx
-      .select({ id: records.id, type: records.type, currency: records.currency, groupId: records.transferGroupId })
+      .select({
+        id: records.id,
+        type: records.type,
+        currency: records.currency,
+        groupId: records.transferGroupId,
+      })
       .from(records)
       .where(and(eq(records.userId, userId), inArray(records.id, input.ids)));
     if (!rows.length) return 0;
@@ -473,7 +482,10 @@ export async function bulkUpdateRecords(db: Database, userId: string, input: Bul
 
     if (input.categoryId !== undefined && plain.length) {
       await assertCategory(tx, userId, input.categoryId);
-      await tx.update(records).set({ categoryId: input.categoryId }).where(inArray(records.id, plain));
+      await tx
+        .update(records)
+        .set({ categoryId: input.categoryId })
+        .where(inArray(records.id, plain));
     }
     if (input.accountId !== undefined && plain.length) {
       const account = await getOwnedAccount(tx, userId, input.accountId);
@@ -503,7 +515,12 @@ export async function bulkUpdateRecords(db: Database, userId: string, input: Bul
     if (input.removeLabelIds?.length) {
       await tx
         .delete(recordLabels)
-        .where(and(inArray(recordLabels.recordId, targetIds), inArray(recordLabels.labelId, input.removeLabelIds)));
+        .where(
+          and(
+            inArray(recordLabels.recordId, targetIds),
+            inArray(recordLabels.labelId, input.removeLabelIds),
+          ),
+        );
     }
     return rows.length;
   });
