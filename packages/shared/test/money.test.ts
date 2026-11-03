@@ -66,3 +66,28 @@ describe('formatMoney', () => {
     expect(formatMoney(-500, 'USD', { locale: 'en-US' })).toBe('-$5.00');
   });
 });
+
+describe('category template', () => {
+  it('only uses icons that the web app bundles', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { CATEGORY_TEMPLATE } = await import('../src/categories');
+    const registry = readFileSync(
+      new URL('../../../apps/web/src/lib/icon-registry.ts', import.meta.url),
+      'utf8',
+    );
+    const icons = new Set(
+      CATEGORY_TEMPLATE.flatMap((g) => [g.icon, ...g.children.map((c) => c.icon)]),
+    );
+    const missing = [...icons].filter((i) => !new RegExp(`^\\s+'?${i}'?: `, 'm').test(registry));
+    expect(missing).toEqual([]);
+  });
+
+  it('has unique keys', async () => {
+    const { CATEGORY_TEMPLATE } = await import('../src/categories');
+    const keys = CATEGORY_TEMPLATE.flatMap((g) => [
+      g.key,
+      ...g.children.map((c) => `${g.key}.${c.key}`),
+    ]);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});

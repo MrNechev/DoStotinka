@@ -35,7 +35,7 @@ leaves it.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
 - **Transfers** between accounts, including between different currencies.
-- **A really detailed category tree** – 30 groups with ~230 subcategories for expenses *and* income
+- **A really detailed category tree** – 30 groups with ~240 subcategories for expenses *and* income
   (salary, freelance, dividends, refunds, benefits, gifts …). Fully customisable: add, rename,
   recolour, change icons, archive or delete.
 - **Statistics**

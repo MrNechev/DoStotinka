@@ -71,6 +71,7 @@ export const CATEGORY_TEMPLATE: readonly CategoryTemplateGroup[] = [
       c('toys', 'Toys & games', 'puzzle'),
       c('hobby', 'Hobby & craft supplies', 'palette'),
       c('online', 'Online marketplaces', 'package'),
+      c('repairs', 'Repairs & tailoring', 'wrench'),
     ],
   },
   {
@@ -152,6 +153,7 @@ export const CATEGORY_TEMPLATE: readonly CategoryTemplateGroup[] = [
       c('ferry', 'Ferry & boat', 'ship'),
       c('sharing', 'Bike & scooter sharing', 'scooter'),
       c('business_trips', 'Business trips', 'briefcase'),
+      c('bicycle', 'Own bicycle & repairs', 'bike'),
     ],
   },
   {
@@ -208,6 +210,7 @@ export const CATEGORY_TEMPLATE: readonly CategoryTemplateGroup[] = [
       c('nails', 'Manicure & pedicure', 'hand'),
       c('spa', 'Spa & massage', 'bath'),
       c('tattoo', 'Tattoos & piercing', 'pen-tool'),
+      c('laundry', 'Laundry & dry cleaning', 'washing-machine'),
     ],
   },
   {
@@ -280,6 +283,7 @@ export const CATEGORY_TEMPLATE: readonly CategoryTemplateGroup[] = [
       c('exams', 'Exams & certifications', 'award'),
       c('tutoring', 'Tutoring', 'user-check'),
       c('online', 'Online learning', 'monitor-play'),
+      c('driving', 'Driving lessons', 'car-front'),
     ],
   },
   {
@@ -328,6 +332,7 @@ export const CATEGORY_TEMPLATE: readonly CategoryTemplateGroup[] = [
       c('celebrations', 'Weddings & celebrations', 'cake'),
       c('religious', 'Church & religious', 'church'),
       c('family_support', 'Supporting family', 'hand-heart'),
+      c('funerals', 'Funerals & memorials', 'flower'),
     ],
   },
   {
