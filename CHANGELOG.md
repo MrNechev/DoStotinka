@@ -15,6 +15,9 @@ All notable changes to this project are documented in this file. The format is b
 - “Duplicate” action in the record editor.
 - Quick-add suggestions in the record editor based on your most frequent records.
 - Automatic planned payments that are recorded on their due date.
+- Savings goals with target date, monthly saving suggestion and progress from manual contributions or
+  from the balance of a linked account.
+- Searching records by amount.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 

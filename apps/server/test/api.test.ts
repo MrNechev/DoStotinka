@@ -748,3 +748,49 @@ describe('search', () => {
     expect((await call('GET', '/api/records?search=45')).body.items).toHaveLength(1);
   });
 });
+
+describe('goals', () => {
+  it('tracks manual and account-based goals', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Savings',
+        type: 'savings',
+        currency: 'EUR',
+        initialBalance: 50000,
+        color: '#10B981',
+      })
+    ).body;
+    const manual = (
+      await call('POST', '/api/goals', {
+        name: 'Bike',
+        targetAmount: 100000,
+        targetDate: '2099-01-01',
+      })
+    ).body;
+    expect(manual.currentAmount).toBe(0);
+    expect(manual.monthlyNeeded).toBeGreaterThan(0);
+    const after = (await call('POST', `/api/goals/${manual.id}/contribute`, { amount: 100000 }))
+      .body;
+    expect(after.progress).toBe(1);
+    expect(after.achievedAt).not.toBeNull();
+    expect(after.monthlyNeeded).toBe(0);
+
+    await call('POST', '/api/records', {
+      type: 'income',
+      accountId: acc.id,
+      amount: 10000,
+      occurredAt: iso('2026-01-02T10:00:00Z'),
+    });
+    const linked = (
+      await call('POST', '/api/goals', { name: 'Fund', targetAmount: 200000, accountId: acc.id })
+    ).body;
+    expect(linked.currentAmount).toBe(60000);
+    expect(linked.progress).toBe(0.3);
+    expect((await call('POST', `/api/goals/${linked.id}/contribute`, { amount: 100 })).status).toBe(
+      400,
+    );
+    expect((await call('DELETE', `/api/goals/${linked.id}`)).status).toBe(204);
+    expect((await call<any[]>('GET', '/api/goals')).body).toHaveLength(1);
+  });
+});

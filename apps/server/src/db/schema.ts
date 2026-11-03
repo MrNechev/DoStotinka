@@ -250,6 +250,30 @@ export const budgets = pgTable(
   (t) => [index('budgets_user_idx').on(t.userId)],
 );
 
+export const goals = pgTable(
+  'goals',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    targetAmount: money('target_amount').notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    /** Manually saved amount (used when no account is linked). */
+    savedAmount: money('saved_amount').notNull().default(0),
+    /** When set, the goal's progress is the balance of this account. */
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    targetDate: date('target_date', { mode: 'string' }),
+    color: varchar('color', { length: 7 }).notNull().default('#10B981'),
+    icon: text('icon').notNull().default('piggy-bank'),
+    note: text('note'),
+    achievedAt: timestamp('achieved_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index('goals_user_idx').on(t.userId)],
+);
+
 export const exchangeRates = pgTable(
   'exchange_rates',
   {
@@ -281,3 +305,4 @@ export type RecordRow = typeof records.$inferSelect;
 export type PlannedPaymentRow = typeof plannedPayments.$inferSelect;
 export type BudgetRow = typeof budgets.$inferSelect;
 export type LabelRow = typeof labels.$inferSelect;
+export type GoalRow = typeof goals.$inferSelect;

@@ -14,6 +14,8 @@ import type {
   CategoryStatsResponse,
   CategoryUpdateInput,
   CurrenciesResponse,
+  Goal,
+  GoalInput,
   Interval,
   Label,
   LabelInput,
@@ -67,6 +69,7 @@ export function invalidateFinancialData(qc: QueryClient) {
     qc.invalidateQueries({ queryKey: qk.budgets }),
     qc.invalidateQueries({ queryKey: qk.planned }),
     qc.invalidateQueries({ queryKey: qk.categoryUsage }),
+    qc.invalidateQueries({ queryKey: ['goals'] }),
   ]);
 }
 
@@ -687,5 +690,39 @@ export function useRefreshRates() {
       void qc.invalidateQueries({ queryKey: qk.stats });
       void qc.invalidateQueries({ queryKey: qk.budgets });
     },
+  });
+}
+
+// ───────────────────────────── Goals ─────────────────────────────
+
+export function useGoals() {
+  return useQuery({ queryKey: ['goals'], queryFn: () => api<Goal[]>('/goals') });
+}
+
+export function useSaveGoal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: GoalInput }) =>
+      id
+        ? api<Goal>(`/goals/${id}`, { method: 'PUT', body: input })
+        : api<Goal>('/goals', { method: 'POST', body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
+  });
+}
+
+export function useContributeGoal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, amount }: { id: string; amount: number }) =>
+      api<Goal>(`/goals/${id}/contribute`, { method: 'POST', body: { amount } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
+  });
+}
+
+export function useDeleteGoal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/goals/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
   });
 }

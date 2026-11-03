@@ -371,3 +371,23 @@ export const bulkUpdateInput = z
     { message: 'Nothing to change' },
   );
 export type BulkUpdateInput = z.input<typeof bulkUpdateInput>;
+
+// ───────────────────────────── Goals ─────────────────────────────
+
+export const goalInput = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(60),
+  targetAmount: positiveMinorAmount,
+  currency: currencyCode.optional(),
+  accountId: uuid.nullable().optional(),
+  targetDate: isoDate.nullable().optional(),
+  savedAmount: minorAmount.optional(),
+  color: hexColor.optional(),
+  icon: iconName.optional(),
+  note: optionalText(500),
+});
+export type GoalInput = z.input<typeof goalInput>;
+
+export const goalContributionInput = z.object({
+  /** Positive to add savings, negative to take money out. */
+  amount: minorAmount.refine((v) => v !== 0, 'Amount cannot be zero'),
+});

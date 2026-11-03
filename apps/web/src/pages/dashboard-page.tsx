@@ -3,7 +3,14 @@ import { addMonths, format, startOfMonth, subDays } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { useAccounts, useBudgets, useCurrencies, useRecords, useUser } from '@/api/queries';
+import {
+  useAccounts,
+  useBudgets,
+  useCurrencies,
+  useGoals,
+  useRecords,
+  useUser,
+} from '@/api/queries';
 import { AccountCard } from '@/components/accounts/account-card';
 import { UpcomingList } from '@/components/planned/upcoming-list';
 import { useRecordEditor } from '@/components/records/record-editor';
@@ -15,6 +22,7 @@ import {
   KpiTiles,
 } from '@/components/stats/charts';
 import { Button } from '@/components/ui/button';
+import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, ProgressBar, Skeleton } from '@/components/ui/misc';
 import { money, percent } from '@/lib/format';
 
@@ -32,6 +40,7 @@ export default function DashboardPage() {
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: currencies } = useCurrencies();
   const { data: budgets } = useBudgets();
+  const { data: goals } = useGoals();
   const lookups = useRecordLookups();
   const recent = useRecords({}, 8);
 
@@ -208,6 +217,35 @@ export default function DashboardPage() {
                         ? `Over by ${money(-b.remaining, b.currency)}`
                         : `${money(b.remaining, b.currency)} left · ${percent(b.ratio)} used`}
                     </p>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {goals && goals.length > 0 && (
+            <Card>
+              <CardHeader
+                title="Savings goals"
+                action={
+                  <Link to="/goals" className="text-sm font-medium text-primary hover:underline">
+                    All
+                  </Link>
+                }
+              />
+              <ul className="grid gap-4 px-5 pb-5">
+                {goals.slice(0, 3).map((g) => (
+                  <li key={g.id} className="flex items-center gap-3">
+                    <IconBadge icon={g.icon} color={g.color} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm">
+                        <span className="truncate font-medium">{g.name}</span>
+                        <span className="tabular shrink-0 text-xs text-muted-foreground">
+                          {percent(Math.min(1, g.progress))}
+                        </span>
+                      </div>
+                      <ProgressBar value={g.progress} color={g.color} />
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -154,6 +154,27 @@ export interface BudgetStatus extends Budget {
   elapsed: number;
 }
 
+export interface Goal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currency: string;
+  accountId: string | null;
+  /** Saved so far: the linked account's balance (converted) or the manual amount. */
+  currentAmount: number;
+  savedAmount: number;
+  targetDate: string | null;
+  color: string;
+  icon: string;
+  note: string | null;
+  /** 0..1+ */
+  progress: number;
+  /** Amount to save per month to reach the target on time (null without a date). */
+  monthlyNeeded: number | null;
+  achievedAt: string | null;
+  createdAt: string;
+}
+
 export interface ExchangeRate {
   currency: string;
   /** Value of 1 unit of `currency` in the base currency. */

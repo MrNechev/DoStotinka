@@ -7,6 +7,7 @@ import {
   budgets,
   categories,
   exchangeRates,
+  goals,
   labels,
   plannedPayments,
   recordLabels,
@@ -55,6 +56,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
   await tx.delete(records).where(eq(records.userId, userId));
   await tx.delete(plannedPayments).where(eq(plannedPayments.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
+  await tx.delete(goals).where(eq(goals.userId, userId));
   await tx.delete(labels).where(eq(labels.userId, userId));
   await tx.delete(accounts).where(eq(accounts.userId, userId));
   await tx.delete(categories).where(eq(categories.userId, userId));
@@ -896,6 +898,40 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
     const links = chunk.flatMap((r) => r.labels.map((labelId) => ({ recordId: r.id, labelId })));
     if (links.length) await tx.insert(recordLabels).values(links);
   }
+
+  const nextSummer = `${Number(today.slice(0, 4)) + (today.slice(5, 7) > '06' ? 1 : 0)}-07-01`;
+  await tx.insert(goals).values([
+    {
+      userId,
+      name: 'Emergency fund',
+      targetAmount: 15_000_00,
+      currency: 'EUR',
+      accountId: acc.savings,
+      color: '#10B981',
+      icon: 'shield-check',
+      note: 'Six months of expenses',
+    },
+    {
+      userId,
+      name: 'Summer vacation',
+      targetAmount: 2_500_00,
+      currency: 'EUR',
+      savedAmount: 950_00,
+      targetDate: nextSummer,
+      color: '#14B8A6',
+      icon: 'tree-palm',
+    },
+    {
+      userId,
+      name: 'New laptop',
+      targetAmount: 1_800_00,
+      currency: 'EUR',
+      savedAmount: 1_350_00,
+      targetDate: addDays(today, 75),
+      color: '#6366F1',
+      icon: 'laptop',
+    },
+  ]);
 
   await tx.insert(budgets).values([
     {

@@ -3,6 +3,7 @@ import {
   CalendarClock,
   CalendarDays,
   ChartPie,
+  Flag,
   FolderTree,
   LayoutDashboard,
   LogOut,
@@ -41,6 +42,7 @@ const NAV = [
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/planned', label: 'Planned payments', icon: CalendarClock },
   { to: '/budgets', label: 'Budgets', icon: Target },
+  { to: '/goals', label: 'Goals', icon: Flag },
   { to: '/categories', label: 'Categories', icon: FolderTree },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

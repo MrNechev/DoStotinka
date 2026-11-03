@@ -48,11 +48,13 @@ leaves it.
   - for all accounts, a single account or any combination of accounts
 - **Account details** – the same statistics for every individual account.
 - **Planned payments** – rent, taxes, subscriptions, salary … one-time or recurring (daily, weekly,
-  monthly, yearly, every N periods). Mark them as paid (creates the record) or skip them. Overdue
-  payments are highlighted.
+  monthly, yearly, every N periods). Mark them as paid (creates the record), skip them, or let them be
+  recorded automatically on the due date. Overdue payments are highlighted.
 - **Calendar** – see your spending day by day and what is due next.
 - **Budgets** – weekly, monthly or yearly limits for any set of categories and accounts, with
   history.
+- **Savings goals** – save towards a target (optionally by a date); progress comes from manual
+  contributions or the balance of a linked account, with the monthly amount you need to put aside.
 - **Multi-currency** – Euro by default; 55 currencies supported. Exchange rates are updated daily
   from the European Central Bank (or set manually). The fixed BGN/EUR rate is built in.
 - **Labels** to tag records across categories (e.g. “Vacation”).
