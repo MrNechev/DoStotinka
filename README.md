@@ -62,7 +62,8 @@ leaves it.
 - **Bulk editing** – select many records to recategorise, move, label or delete them at once.
 - **Import from CSV** – step-by-step import with column, account and category mapping. Exports of
   *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
-  bank statements work too. Duplicates are skipped.
+  bank statements work too. Duplicates are skipped. See
+  [Moving from Wallet](docs/MIGRATING_FROM_WALLET.md).
 - **Export** – CSV export of records and a full JSON backup.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
