@@ -10,7 +10,7 @@ import {
 } from '@slavotax/shared';
 import { format } from 'date-fns';
 import { Minus, Plus, Repeat } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import { useAccounts, useSavePlanned } from '@/api/queries';
@@ -63,6 +63,10 @@ export function PlannedFormDialog({
     autoConfirm: plan?.autoConfirm ?? false,
   });
   const [picking, setPicking] = useState(false);
+  // Accounts may still be loading when the dialog opens.
+  useEffect(() => {
+    if (!form.accountId && active[0]) setForm((f) => ({ ...f, accountId: active[0]!.id }));
+  }, [form.accountId, active]);
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));

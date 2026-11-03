@@ -7,7 +7,7 @@ import {
 } from '@slavotax/shared';
 import { format, parseISO } from 'date-fns';
 import { Flag, Minus, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import {
@@ -47,6 +47,11 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
   const [accountId, setAccountId] = useState(
     goal?.accountId ?? accounts.find((a) => a.type === 'savings')?.id ?? accounts[0]?.id ?? '',
   );
+  useEffect(() => {
+    if (!accountId && accounts.length) {
+      setAccountId(accounts.find((a) => a.type === 'savings')?.id ?? accounts[0]!.id);
+    }
+  }, [accountId, accounts]);
   const [color, setColor] = useState(goal?.color ?? '#10B981');
   const [icon, setIcon] = useState(goal?.icon ?? 'piggy-bank');
   const [note, setNote] = useState(goal?.note ?? '');

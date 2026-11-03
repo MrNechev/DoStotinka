@@ -22,3 +22,7 @@ data/
 !.vscode/extensions.json
 !.vscode/settings.json
 postgres/
+
+# e2e
+tests/e2e/test-results/
+tests/e2e/playwright-report/

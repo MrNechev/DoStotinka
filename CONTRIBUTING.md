@@ -29,7 +29,10 @@ pnpm dev
    commit the generated migration in `apps/server/drizzle/`. Never edit a migration that has already
    been released.
 5. Add or update tests for behaviour changes (API tests live in `apps/server/test`, unit tests next
-   to the shared code in `packages/shared/test`).
+   to the shared code in `packages/shared/test`, browser end-to-end tests in `tests/e2e`).
+   Run the end-to-end tests against a running instance with
+   `E2E_BASE_URL=http://localhost:5173 pnpm --filter @slavotax/e2e test:e2e`
+   (first time: `pnpm --filter @slavotax/e2e exec playwright install chromium`).
 6. For UI changes, check light and dark mode and a phone-sized screen, and add a screenshot to the PR.
 
 ## Code style

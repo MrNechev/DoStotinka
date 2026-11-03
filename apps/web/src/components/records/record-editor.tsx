@@ -215,6 +215,20 @@ function RecordEditorDialog({
   const amountRef = useRef<HTMLInputElement>(null);
 
   const isEdit = state.mode === 'edit';
+
+  // Accounts may still be loading when the dialog opens – pick defaults once they arrive.
+  useEffect(() => {
+    if (!accounts.length) return;
+    setForm((f) => {
+      if (f.accountId && accounts.some((a) => a.id === f.accountId)) return f;
+      const defaults = initialState(state, accounts);
+      return {
+        ...f,
+        accountId: defaults.accountId,
+        toAccountId: f.toAccountId || defaults.toAccountId,
+      };
+    });
+  }, [accounts, state]);
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
