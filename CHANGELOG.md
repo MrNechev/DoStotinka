@@ -11,6 +11,8 @@ All notable changes to this project are documented in this file. The format is b
 - Badge with the number of overdue planned payments in the navigation.
 - End-to-end browser tests (Playwright) in CI.
 - Guide for moving from Wallet by BudgetBakers.
+- Click a bar segment in “Spending over time” to see the records behind it.
+- The records list loads more records automatically while scrolling.
 - Service worker for the installable web app (faster start, offline shell; data is never cached).
 
 ### Fixed

@@ -521,12 +521,15 @@ export function CategoryTimeChart({
   type,
   categoryId,
   height = 300,
+  onSegmentClick,
 }: {
   scope: StatsScope;
   interval: Interval;
   type: 'expense' | 'income';
   categoryId?: string | null;
   height?: number;
+  /** Called with the bucket start date and the category (null for "Other"/uncategorized). */
+  onSegmentClick?: (date: string, categoryId: string | null) => void;
 }) {
   const { data, isLoading, isFetching } = useTimeseries(scope, interval, type, categoryId);
   const { data: categories } = useCategories();
@@ -661,6 +664,17 @@ export function CategoryTimeChart({
                 maxBarSize={24}
                 isAnimationActive={false}
                 shape={makeShape(s.key)}
+                className={onSegmentClick ? 'cursor-pointer' : undefined}
+                onClick={
+                  onSegmentClick
+                    ? (entry: unknown) => {
+                        const row = (entry as { payload?: { date?: string } }).payload;
+                        if (!row?.date) return;
+                        const cat = s.key === '__other' || s.key === 'uncategorized' ? null : s.key;
+                        onSegmentClick(row.date, cat ?? categoryId ?? null);
+                      }
+                    : undefined
+                }
               />
             ))}
           </BarChart>

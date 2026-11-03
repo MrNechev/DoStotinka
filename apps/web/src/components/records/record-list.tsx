@@ -1,7 +1,7 @@
 import type { Account, Label, RecordItem } from '@slavotax/shared';
 import { format, parseISO } from 'date-fns';
 import { CalendarClock, Check, Inbox } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useAccounts, useCategories, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
@@ -258,13 +258,31 @@ export function RecordList({
           </section>
         );
       })}
-      {hasMore && (
-        <div className="flex justify-center p-3">
-          <Button variant="outline" onClick={onLoadMore} loading={loadingMore}>
-            Load more
-          </Button>
-        </div>
-      )}
+      {hasMore && <LoadMore onLoadMore={onLoadMore} loading={loadingMore} />}
+    </div>
+  );
+}
+
+/** Loads the next page automatically when it scrolls into view (button as fallback). */
+function LoadMore({ onLoadMore, loading }: { onLoadMore?: () => void; loading?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !onLoadMore || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !loading) onLoadMore();
+      },
+      { rootMargin: '400px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onLoadMore, loading]);
+  return (
+    <div ref={ref} className="flex justify-center p-3">
+      <Button variant="outline" onClick={onLoadMore} loading={loading}>
+        Load more
+      </Button>
     </div>
   );
 }

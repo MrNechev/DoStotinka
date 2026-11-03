@@ -1,4 +1,6 @@
+import { addDays, addMonths, format, parseISO } from 'date-fns';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useCategories } from '@/api/queries';
 import {
   BalanceChart,
@@ -23,6 +25,7 @@ export default function StatisticsPage() {
   const { data: categories } = useCategories();
   const index = useMemo(() => buildCategoryIndex(categories), [categories]);
   const [type, setType] = useState<'expense' | 'income'>('expense');
+  const navigate = useNavigate();
   const [categoryId, setCategoryId] = useState<string>('');
 
   const recordsLink = (id: string | null) => {
@@ -63,7 +66,7 @@ export default function StatisticsPage() {
         <Card>
           <CardHeader
             title={type === 'expense' ? 'Spending over time' : 'Income over time'}
-            description={`${filters.resolved.label} · per ${filters.interval}${categoryId ? ` · ${index.nameOf(categoryId)}` : ' · by category'}`}
+            description={`${filters.resolved.label} · per ${filters.interval}${categoryId ? ` · ${index.nameOf(categoryId)}` : ' · by category'} · click a bar to see its records`}
             action={
               <Segmented<'expense' | 'income'>
                 size="sm"
@@ -109,6 +112,25 @@ export default function StatisticsPage() {
               interval={filters.interval}
               type={type}
               categoryId={categoryId || null}
+              onSegmentClick={(date, cat) => {
+                // Open the records behind a bar segment: that bucket and category.
+                const start = parseISO(date);
+                const end =
+                  filters.interval === 'day'
+                    ? start
+                    : filters.interval === 'week'
+                      ? addDays(start, 6)
+                      : addDays(addMonths(start, 1), -1);
+                const p = new URLSearchParams({
+                  period: 'custom',
+                  from: format(start, 'yyyy-MM-dd'),
+                  to: format(end, 'yyyy-MM-dd'),
+                  types: type,
+                });
+                if (filters.accountIds.length) p.set('accounts', filters.accountIds.join(','));
+                if (cat) p.set('categories', cat);
+                navigate(`/records?${p.toString()}`);
+              }}
             />
           </div>
         </Card>
