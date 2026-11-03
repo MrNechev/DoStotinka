@@ -96,17 +96,19 @@ export default function RecordsPage() {
               variant={selecting ? 'secondary' : 'outline'}
               onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
             >
-              <CheckSquare /> {selecting ? 'Done' : 'Select'}
+              <CheckSquare />{' '}
+              <span className="hidden sm:inline">{selecting ? 'Done' : 'Select'}</span>
+              <span className="sm:hidden">{selecting ? 'Done' : ''}</span>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/import">
-                <FileUp /> Import
+                <FileUp /> <span className="hidden sm:inline">Import</span>
               </Link>
             </Button>
             <Button variant="outline" onClick={exportCsv}>
-              <Download /> Export CSV
+              <Download /> <span className="hidden sm:inline">Export CSV</span>
             </Button>
-            <Button onClick={() => openNew()}>
+            <Button onClick={() => openNew()} className="hidden sm:inline-flex">
               <Plus /> Add record
             </Button>
           </>
