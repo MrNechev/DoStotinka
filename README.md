@@ -78,6 +78,8 @@ leaves it.
 | <img src="docs/screenshots/records.webp" alt="Records" /> | <img src="docs/screenshots/add-record.webp" alt="Add record dialog" /> |
 | **Planned payments** | **Budgets** |
 | <img src="docs/screenshots/planned.webp" alt="Planned payments" /> | <img src="docs/screenshots/budgets.webp" alt="Budgets" /> |
+| **Report** | **Savings goals** |
+| <img src="docs/screenshots/report.webp" alt="Monthly report" /> | <img src="docs/screenshots/goals.webp" alt="Savings goals" /> |
 | **Calendar** | **Dark mode** |
 | <img src="docs/screenshots/calendar.webp" alt="Calendar" /> | <img src="docs/screenshots/dashboard-dark.webp" alt="Dark mode" /> |
 

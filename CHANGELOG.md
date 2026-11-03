@@ -6,27 +6,6 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
-### Added
-- CSV import with automatic detection of Wallet by BudgetBakers exports, category matching,
-  transfer pairing, account mapping and duplicate detection.
-- Totals (income, expenses, cash flow, count) for any record filter on the Records page.
-- Report table on the Statistics page: income and expenses per category and month/week with
-  totals, averages, cash flow and expandable subcategories.
-- “Duplicate” action in the record editor.
-- Quick-add suggestions in the record editor based on your most frequent records.
-- Automatic planned payments that are recorded on their due date.
-- Savings goals with target date, monthly saving suggestion and progress from manual contributions or
-  from the balance of a linked account.
-- Searching records by amount.
-- Administration page: the first user becomes administrator and can create users, reset passwords,
-  grant admin rights, delete users and open/close sign-ups without editing `.env`.
-- “Getting started” checklist on the dashboard for new users.
-- Bulk editing on the Records page: select records to change their category, move them to another
-  account, add/remove labels or delete them.
-
-### Changed
-- Smaller web bundle: validation schemas are no longer shipped to the browser.
-
 ## [0.1.0] – 2026-11-04
 
 First alpha release.
@@ -49,6 +28,22 @@ First alpha release.
 - CSV export and full JSON backup.
 - Demo account with a year of generated example data.
 - Docker image (amd64/arm64), Docker Compose setup and OpenAPI documentation.
+- CSV import with automatic detection of Wallet by BudgetBakers exports, category matching,
+  transfer pairing, account mapping and duplicate detection.
+- Totals (income, expenses, cash flow, count) for any record filter on the Records page.
+- Report table on the Statistics page: income and expenses per category and month/week with
+  totals, averages, cash flow and expandable subcategories.
+- “Duplicate” action in the record editor.
+- Quick-add suggestions in the record editor based on your most frequent records.
+- Automatic planned payments that are recorded on their due date.
+- Savings goals with target date, monthly saving suggestion and progress from manual contributions or
+  from the balance of a linked account.
+- Searching records by amount.
+- Administration page: the first user becomes administrator and can create users, reset passwords,
+  grant admin rights, delete users and open/close sign-ups without editing `.env`.
+- “Getting started” checklist on the dashboard for new users.
+- Bulk editing on the Records page: select records to change their category, move them to another
+  account, add/remove labels or delete them.
 
 [Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/MrNechev/slavotax/releases/tag/v0.1.0

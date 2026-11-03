@@ -28,7 +28,7 @@ import {
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, Skeleton } from '@/components/ui/misc';
 import { buildCategoryIndex, shades, UNCATEGORIZED_COLOR } from '@/lib/categories';
-import { changeRatio, money, moneyAxis, percent } from '@/lib/format';
+import { changeRatio, money, moneyAxis, percent, plural } from '@/lib/format';
 import { bucketLabel } from '@/lib/period';
 import { cn } from '@/lib/utils';
 
@@ -207,7 +207,8 @@ export function KpiTiles({ scope, className }: { scope: StatsScope; className?: 
           tone: 'text-foreground',
           delta: (
             <span className="text-xs text-muted-foreground">
-              {data.expenseCount} expenses · {data.incomeCount} incomes
+              {plural(data.expenseCount, 'expense')} ·{' '}
+              {plural(data.incomeCount, 'income', 'incomes')}
             </span>
           ),
         },
