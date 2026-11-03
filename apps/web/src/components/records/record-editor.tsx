@@ -24,10 +24,12 @@ import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import {
   useAccounts,
+  useCategories,
   useCurrencies,
   useDeleteRecord,
   useLabels,
   usePayees,
+  useRecordSuggestions,
   useSaveRecord,
   useUser,
 } from '@/api/queries';
@@ -37,10 +39,12 @@ import {
   rememberCategory,
 } from '@/components/categories/category-picker';
 import { Button } from '@/components/ui/button';
+import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Field, Input, Select, Textarea } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/misc';
+import { buildCategoryIndex } from '@/lib/categories';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 
@@ -198,6 +202,9 @@ function RecordEditorDialog({
   const { data: accounts = [] } = useAccounts();
   const { data: labels = [] } = useLabels();
   const { data: payees = [] } = usePayees();
+  const { data: suggestions = [] } = useRecordSuggestions();
+  const { data: categories } = useCategories();
+  const categoryIndex = useMemo(() => buildCategoryIndex(categories), [categories]);
   const { data: currencies } = useCurrencies();
   const save = useSaveRecord();
   const remove = useDeleteRecord();
@@ -415,6 +422,54 @@ function RecordEditorDialog({
           }}
           className="grid gap-4"
         >
+          {!isEdit && !form.amount && suggestions.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Quick add</p>
+              <div className="scrollbar-thin -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+                {suggestions
+                  .filter((sg) => accounts.some((a) => a.id === sg.accountId))
+                  .map((sg) => {
+                    const acc = accounts.find((a) => a.id === sg.accountId)!;
+                    const label = sg.payee || categoryIndex.nameOf(sg.categoryId);
+                    return (
+                      <button
+                        key={`${sg.type}-${sg.accountId}-${sg.categoryId}-${sg.payee}`}
+                        type="button"
+                        title={`${categoryIndex.pathOf(sg.categoryId)} · ${acc.name}`}
+                        onClick={() => {
+                          setForm((f) => ({
+                            ...f,
+                            type: sg.type,
+                            accountId: sg.accountId,
+                            categoryId: sg.categoryId,
+                            payee: sg.payee ?? '',
+                            amount: minorToInputString(sg.lastAmount, acc.currency),
+                          }));
+                          requestAnimationFrame(() => amountRef.current?.select());
+                        }}
+                        className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border py-1 pl-1 pr-3 text-xs hover:bg-muted"
+                      >
+                        <IconBadge
+                          icon={categoryIndex.iconOf(sg.categoryId)}
+                          color={categoryIndex.colorOf(sg.categoryId)}
+                          size="xs"
+                        />
+                        <span className="max-w-32 truncate font-medium">{label}</span>
+                        <span
+                          className={cn(
+                            'tabular',
+                            sg.type === 'expense' ? 'text-expense' : 'text-income',
+                          )}
+                        >
+                          {money(sg.lastAmount, acc.currency)}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           <Segmented<RecordType>
             value={form.type}
             onChange={(t) => setForm((f) => ({ ...f, type: t }))}

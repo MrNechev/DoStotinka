@@ -10,6 +10,7 @@ import {
   getRecord,
   listPayees,
   listRecords,
+  recordSuggestions,
   summarizeRecords,
   updateRecord,
 } from '../services/records';
@@ -41,6 +42,12 @@ export const recordRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => summarizeRecords(db, currentUser(req), req.query),
+  );
+
+  app.get(
+    '/suggestions',
+    { schema: { tags: ['records'], summary: 'Frequent record combinations for quick entry' } },
+    async (req) => recordSuggestions(db, currentUser(req).id),
   );
 
   app.get(

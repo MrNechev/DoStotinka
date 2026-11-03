@@ -525,3 +525,50 @@ export async function bulkUpdateRecords(
     return rows.length;
   });
 }
+
+export interface RecordSuggestion {
+  type: 'expense' | 'income';
+  accountId: string;
+  categoryId: string | null;
+  payee: string | null;
+  lastAmount: number;
+  count: number;
+}
+
+/** Most frequent recent combinations of type/account/category/payee (for quick entry). */
+export async function recordSuggestions(
+  db: Database,
+  userId: string,
+  limit = 8,
+): Promise<RecordSuggestion[]> {
+  const rows = (await db.execute(sql`
+    select r.type, r.account_id, r.category_id, r.payee,
+      count(*)::int as n,
+      (array_agg(abs(r.amount) order by r.occurred_at desc))[1] as last_amount
+    from records r
+    join accounts a on a.id = r.account_id and not a.archived
+    where r.user_id = ${userId}::uuid
+      and r.type in ('expense', 'income')
+      and r.planned_payment_id is null
+      and r.occurred_at > now() - interval '90 days'
+    group by r.type, r.account_id, r.category_id, r.payee
+    having count(*) >= 2
+    order by n desc, max(r.occurred_at) desc
+    limit ${limit}
+  `)) as unknown as {
+    type: 'expense' | 'income';
+    account_id: string;
+    category_id: string | null;
+    payee: string | null;
+    n: number;
+    last_amount: string;
+  }[];
+  return rows.map((r) => ({
+    type: r.type,
+    accountId: r.account_id,
+    categoryId: r.category_id,
+    payee: r.payee,
+    lastAmount: Number(r.last_amount),
+    count: r.n,
+  }));
+}

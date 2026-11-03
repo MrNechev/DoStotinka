@@ -380,6 +380,23 @@ export function useRecordSummary(filters: RecordFilters) {
   });
 }
 
+export interface RecordSuggestion {
+  type: 'expense' | 'income';
+  accountId: string;
+  categoryId: string | null;
+  payee: string | null;
+  lastAmount: number;
+  count: number;
+}
+
+export function useRecordSuggestions() {
+  return useQuery({
+    queryKey: [...qk.records, 'suggestions'],
+    queryFn: () => api<RecordSuggestion[]>('/records/suggestions'),
+    staleTime: 5 * 60_000,
+  });
+}
+
 export function usePayees() {
   return useQuery({
     queryKey: [...qk.records, 'payees'],
