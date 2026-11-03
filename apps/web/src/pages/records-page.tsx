@@ -80,10 +80,9 @@ export default function RecordsPage() {
   const category = categoryId ? index.byId.get(categoryId) : undefined;
   const label = labelId ? labels.find((l) => l.id === labelId) : undefined;
 
+  // Exports exactly what is shown: the same filters as the list.
   const exportCsv = () =>
-    downloadUrl(
-      `/api/export/records.csv${buildQuery({ from: filters.scope.from, to: filters.scope.to, tz: browserTimeZone() })}`,
-    );
+    downloadUrl(`/api/export/records.csv${buildQuery({ ...query, tz: browserTimeZone() })}`);
 
   return (
     <div>

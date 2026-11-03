@@ -1,5 +1,5 @@
-import { currencyDecimals } from '@slavotax/shared';
-import { and, asc, eq, gte, lt, type SQL } from 'drizzle-orm';
+import { currencyDecimals, recordListQuery } from '@slavotax/shared';
+import { and, asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
@@ -16,6 +16,7 @@ import {
 import { safeTimeZone } from '../lib/dates';
 import { currentUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
+import { filterConditions } from '../services/records';
 
 function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return '';
@@ -48,9 +49,8 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         tags: ['export'],
         summary: 'Export records as CSV',
-        querystring: z.object({
-          from: z.iso.datetime({ offset: true }).optional(),
-          to: z.iso.datetime({ offset: true }).optional(),
+        description: 'Accepts the same filters as `GET /api/records` (without pagination).',
+        querystring: recordListQuery.omit({ limit: true, cursor: true }).extend({
           tz: z.string().max(64).optional(),
         }),
       },
@@ -58,9 +58,8 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req, reply) => {
       const user = currentUser(req);
       const tz = safeTimeZone(req.query.tz, user.timezone);
-      const conditions: SQL[] = [eq(records.userId, user.id)];
-      if (req.query.from) conditions.push(gte(records.occurredAt, new Date(req.query.from)));
-      if (req.query.to) conditions.push(lt(records.occurredAt, new Date(req.query.to)));
+      const { tz: _tz, ...filters } = req.query;
+      const conditions = await filterConditions(db, user.id, filters);
 
       const [rows, accountRows, categoryRows, labelRows, recordLabelRows] = await Promise.all([
         db

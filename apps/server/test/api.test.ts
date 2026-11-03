@@ -1023,3 +1023,35 @@ describe('review regressions', () => {
     expect(backup.goals).toHaveLength(1);
   });
 });
+
+describe('filtered export', () => {
+  it('exports only the records matching the filters', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 100,
+      occurredAt: iso('2026-01-02T10:00:00Z'),
+      note: 'coffee',
+    });
+    await call('POST', '/api/records', {
+      type: 'income',
+      accountId: acc.id,
+      amount: 5000,
+      occurredAt: iso('2026-01-03T10:00:00Z'),
+      note: 'salary',
+    });
+    const res = await call('GET', '/api/export/records.csv?types=expense&tz=UTC');
+    const lines = res.raw.body.trim().split('\r\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain('coffee');
+  });
+});

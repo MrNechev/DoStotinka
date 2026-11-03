@@ -317,7 +317,7 @@ export async function expandCategoryIds(db: Tx, userId: string, ids: string[]): 
 }
 
 /** WHERE conditions shared by the record list and its summary. */
-async function filterConditions(
+export async function filterConditions(
   db: Database,
   userId: string,
   q: Omit<RecordListParsed, 'limit' | 'cursor'>,
