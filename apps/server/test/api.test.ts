@@ -719,3 +719,32 @@ describe('automatic planned payments', () => {
     expect(await processAutoConfirm(ctx.db, new Date('2026-04-15T12:00:00Z'))).toBe(0);
   });
 });
+
+describe('search', () => {
+  it('finds records by amount', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 1399,
+      occurredAt: iso('2026-01-02T10:00:00Z'),
+    });
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 4500,
+      occurredAt: iso('2026-01-03T10:00:00Z'),
+    });
+    expect((await call('GET', '/api/records?search=13.99')).body.items).toHaveLength(1);
+    expect((await call('GET', '/api/records?search=13,99')).body.items).toHaveLength(1);
+    expect((await call('GET', '/api/records?search=45')).body.items).toHaveLength(1);
+  });
+});

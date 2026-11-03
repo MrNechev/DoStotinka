@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  CURRENCIES,
   convertMinor,
   type RecordItem,
   type RecordPage,
@@ -355,6 +356,27 @@ async function filterConditions(
           .where(and(eq(categories.userId, userId), ilike(categories.name, pattern))),
       ),
     ];
+    // Searching for a number also matches amounts (e.g. "13.99" or "45").
+    const numeric = /^\d+(?:[.,]\d{1,2})?$/.test(q.search)
+      ? Number(q.search.replace(',', '.'))
+      : null;
+    if (numeric !== null) {
+      const zeroDecimal = CURRENCIES.filter((c) => c.decimals === 0).map((c) => c.code);
+      searchConditions.push(
+        sql`(abs(${records.amount}) = ${Math.round(numeric * 100)} and ${records.currency} not in (${sql.join(
+          zeroDecimal.map((c) => sql`${c}`),
+          sql`, `,
+        )}))`,
+      );
+      if (Number.isInteger(numeric)) {
+        searchConditions.push(
+          sql`(abs(${records.amount}) = ${numeric} and ${records.currency} in (${sql.join(
+            zeroDecimal.map((c) => sql`${c}`),
+            sql`, `,
+          )}))`,
+        );
+      }
+    }
     conditions.push(or(...searchConditions)!);
   }
   return conditions;
