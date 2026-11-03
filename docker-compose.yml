@@ -43,3 +43,36 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  # Optional nightly database backups (compressed SQL dumps, kept for BACKUP_KEEP_DAYS days).
+  # Enable with:  docker compose --profile backup up -d
+  backup:
+    image: postgres:18-alpine
+    container_name: slavotax_backup
+    restart: unless-stopped
+    profiles: ["backup"]
+    environment:
+      PGHOST: database
+      PGUSER: ${DB_USERNAME:-slavotax}
+      PGPASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
+      PGDATABASE: ${DB_DATABASE_NAME:-slavotax}
+      KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ${BACKUP_LOCATION:-./backups}:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        sleep 300  # first backup a few minutes after start-up (after migrations)
+        while true; do
+          name="slavotax-$$(date +%Y-%m-%d_%H%M).sql.gz"
+          if pg_dump --clean --if-exists | gzip > /backups/.partial; then
+            mv /backups/.partial "/backups/$$name" && echo "Backup written: $$name"
+          else
+            echo "Backup failed" >&2
+          fi
+          find /backups -name 'slavotax-*.sql.gz' -mtime +$$KEEP_DAYS -delete
+          sleep 86400
+        done
+    depends_on:
+      database:
+        condition: service_healthy

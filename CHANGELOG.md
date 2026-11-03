@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Optional nightly database backup service in Docker Compose (`--profile backup`).
 - More everyday categories: laundry & dry cleaning, repairs & tailoring, driving lessons, own
   bicycle, funerals & memorials (for new users).
 - Personal API tokens (Settings → API tokens) and an API guide with an iOS Shortcuts recipe.

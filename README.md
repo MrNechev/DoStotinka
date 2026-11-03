@@ -202,7 +202,15 @@ Set `TRUST_PROXY=true` so that HTTPS and client IPs are detected correctly.
 
 ### Backups
 
-Your data lives in PostgreSQL. A simple nightly backup:
+Your data lives in PostgreSQL. The compose file contains an optional backup service that writes a
+compressed SQL dump every day to `./backups` and keeps the last 14 days (`BACKUP_LOCATION`,
+`BACKUP_KEEP_DAYS`):
+
+```bash
+docker compose --profile backup up -d
+```
+
+Or make a backup by hand:
 
 ```bash
 docker exec slavotax_postgres pg_dump -U slavotax slavotax | gzip > slavotax-$(date +%F).sql.gz

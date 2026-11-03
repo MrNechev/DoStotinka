@@ -22,6 +22,7 @@ data/
 !.vscode/extensions.json
 !.vscode/settings.json
 postgres/
+backups/
 
 # e2e
 tests/e2e/test-results/
