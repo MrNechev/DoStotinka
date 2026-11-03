@@ -18,7 +18,7 @@ import { CategoryButton, CategoryPickerPanel } from '@/components/categories/cat
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select, Textarea } from '@/components/ui/input';
-import { Segmented } from '@/components/ui/misc';
+import { Segmented, Switch } from '@/components/ui/misc';
 
 const FREQ_LABELS: Record<Frequency, string> = {
   once: 'Once',
@@ -60,6 +60,7 @@ export function PlannedFormDialog({
     endDate: plan?.endDate ?? '',
     payee: plan?.payee ?? '',
     note: plan?.note ?? '',
+    autoConfirm: plan?.autoConfirm ?? false,
   });
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +93,7 @@ export function PlannedFormDialog({
           endDate: form.frequency === 'once' ? null : form.endDate || null,
           payee: form.payee || null,
           note: form.note || null,
+          autoConfirm: form.autoConfirm,
         },
       });
       toast.success(plan ? 'Planned payment updated' : 'Planned payment created');
@@ -296,6 +298,16 @@ export function PlannedFormDialog({
                 maxLength={500}
               />
             </Field>
+            <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border p-3">
+              <span>
+                <span className="block text-sm font-medium">Record automatically</span>
+                <span className="block text-xs text-muted-foreground">
+                  Creates the record on the due date without asking – ideal for subscriptions and
+                  salary.
+                </span>
+              </span>
+              <Switch checked={form.autoConfirm} onCheckedChange={(v) => set('autoConfirm', v)} />
+            </label>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter className="mt-1">
               <Button variant="outline" onClick={onClose}>

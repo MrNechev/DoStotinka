@@ -178,6 +178,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
     rule: RecurrenceRule;
     /** Leave the most recent past occurrence unpaid (to demo overdue payments). */
     leaveOverdue?: boolean;
+    auto?: boolean;
     variable?: () => number;
   };
   const monthDay = (day: number) => `${start.slice(0, 7)}-${String(day).padStart(2, '0')}`;
@@ -194,6 +195,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       category: 'salary.salary',
       amount: 3_450_00,
       payee: 'Northwind Software Ltd.',
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(25) },
     },
     {
@@ -267,6 +269,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       category: 'digital.video_streaming',
       amount: 13_99,
       payee: 'Netflix',
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(14) },
     },
     {
@@ -277,6 +280,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       category: 'digital.music_streaming',
       amount: 10_99,
       payee: 'Spotify',
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(18) },
     },
     {
@@ -287,6 +291,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       category: 'digital.cloud',
       amount: 2_99,
       payee: 'CloudDrive Inc.',
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(9) },
     },
     {
@@ -296,6 +301,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       accountId: acc.bank,
       toAccountId: acc.savings,
       amount: 400_00,
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(26) },
     },
     {
@@ -360,6 +366,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       category: 'financial.bank_fees',
       amount: 2_50,
       payee: 'Bank',
+      auto: true,
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(28) },
     },
   ];
@@ -871,6 +878,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       startDate: p.rule.startDate,
       endDate: null,
       nextDueDate: nextDue.get(p.id) ?? null,
+      autoConfirm: p.auto ?? false,
     })),
   );
 

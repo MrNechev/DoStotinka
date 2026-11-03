@@ -118,6 +118,8 @@ export interface PlannedPayment {
   endDate: string | null;
   /** Next unpaid due date or null if the schedule has finished. */
   nextDueDate: string | null;
+  /** Recorded automatically on the due date. */
+  autoConfirm: boolean;
   paidCount: number;
   lastPaidAt: string | null;
   createdAt: string;

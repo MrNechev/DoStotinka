@@ -224,6 +224,8 @@ export const plannedPaymentInput = z
     interval: z.number().int().min(1).max(366).default(1),
     startDate: isoDate,
     endDate: isoDate.optional().nullable(),
+    /** Record automatically on the due date. */
+    autoConfirm: z.boolean().default(false),
   })
   .refine((v) => !v.endDate || v.endDate >= v.startDate, {
     message: 'End date must be after the start date',

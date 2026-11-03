@@ -7,7 +7,7 @@ import {
   type RecurrenceRule,
   type UpcomingOccurrence,
 } from '@slavotax/shared';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';
 import {
@@ -17,8 +17,9 @@ import {
   plannedPayments,
   records,
   type UserRow,
+  users,
 } from '../db/schema';
-import { toLocalDate } from '../lib/dates';
+import { toLocalDate, zonedTimeToUtc } from '../lib/dates';
 import { badRequest, notFound } from '../lib/errors';
 import { toPlannedPayment } from './dto';
 import { createRecord } from './records';
@@ -139,6 +140,7 @@ export async function createPlanned(db: Database, userId: string, input: Planned
       startDate: input.startDate,
       endDate: input.endDate ?? null,
       nextDueDate,
+      autoConfirm: input.autoConfirm,
     })
     .returning();
   return (await present(db, userId, [row!]))[0]!;
@@ -176,6 +178,7 @@ export async function updatePlanned(db: Database, userId: string, id: string, in
       startDate: input.startDate,
       endDate: input.endDate ?? null,
       nextDueDate,
+      autoConfirm: input.autoConfirm,
     })
     .where(eq(plannedPayments.id, existing.id))
     .returning();
@@ -253,4 +256,45 @@ export async function upcoming(
     }
   }
   return result.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+}
+
+/**
+ * Records all due occurrences of planned payments marked as automatic.
+ * Runs periodically; each occurrence is recorded at 08:00 on its due date (user's time zone).
+ */
+export async function processAutoConfirm(db: Database, now = new Date()): Promise<number> {
+  const rows = await db
+    .select({ plan: plannedPayments, user: users })
+    .from(plannedPayments)
+    .innerJoin(users, eq(users.id, plannedPayments.userId))
+    .where(
+      and(
+        eq(plannedPayments.autoConfirm, true),
+        isNotNull(plannedPayments.nextDueDate),
+        lte(plannedPayments.nextDueDate, toLocalDate(new Date(now.getTime() + 86_400_000), 'UTC')),
+      ),
+    );
+  let created = 0;
+  for (const { plan, user } of rows) {
+    const today = toLocalDate(now, user.timezone);
+    let due = plan.nextDueDate;
+    for (let guard = 0; due && due <= today && guard < 400; guard++) {
+      const occurredAt = zonedTimeToUtc(
+        Number(due.slice(0, 4)),
+        Number(due.slice(5, 7)),
+        Number(due.slice(8, 10)),
+        8,
+        0,
+        user.timezone,
+      );
+      const res = await payPlanned(db, user, plan.id, {
+        dueDate: due,
+        occurredAt: occurredAt.toISOString(),
+        note: null,
+      });
+      created++;
+      due = res.plannedPayment.nextDueDate;
+    }
+  }
+  return created;
 }

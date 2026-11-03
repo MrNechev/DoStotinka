@@ -4,6 +4,7 @@ import type { Config } from './config';
 import type { Database } from './db';
 import { exchangeRates, sessions, users } from './db/schema';
 import { ensureDemo } from './demo/seed';
+import { processAutoConfirm } from './services/planned';
 import { applyReferenceRates, refreshReferenceRates } from './services/rates';
 
 const HOUR = 3_600_000;
@@ -36,6 +37,17 @@ export function startJobs(db: Database, config: Config, log: FastifyBaseLogger):
   };
   timers.push(setInterval(cleanupSessions, 12 * HOUR));
   void cleanupSessions();
+
+  const autoConfirm = async () => {
+    try {
+      const created = await processAutoConfirm(db);
+      if (created) log.info({ created }, 'Recorded automatic planned payments');
+    } catch (err) {
+      log.warn({ err }, 'Automatic planned payments failed');
+    }
+  };
+  timers.push(setInterval(autoConfirm, 0.25 * HOUR));
+  timers.push(setTimeout(autoConfirm, 10_000));
 
   if (config.EXCHANGE_RATES_AUTO_UPDATE) {
     timers.push(setInterval(() => void updateAllRates(db, config, log), 6 * HOUR));

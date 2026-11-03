@@ -1,0 +1,1 @@
+ALTER TABLE "planned_payments" ADD COLUMN "auto_confirm" boolean DEFAULT false NOT NULL;

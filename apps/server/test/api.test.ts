@@ -682,3 +682,40 @@ describe('bulk editing', () => {
     expect(after.every((r: any) => r.labelIds.length === 0)).toBe(true);
   });
 });
+
+describe('automatic planned payments', () => {
+  it('records due occurrences automatically', async () => {
+    const { processAutoConfirm } = await import('../src/services/planned');
+    const { call } = await registerUser(ctx.app, { timezone: 'Europe/Sofia' });
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const plan = (
+      await call('POST', '/api/planned-payments', {
+        name: 'Streaming',
+        type: 'expense',
+        accountId: acc.id,
+        amount: 1299,
+        frequency: 'monthly',
+        startDate: '2026-01-10',
+        autoConfirm: true,
+      })
+    ).body;
+    expect(plan.autoConfirm).toBe(true);
+    const created = await processAutoConfirm(ctx.db, new Date('2026-04-15T12:00:00Z'));
+    expect(created).toBeGreaterThanOrEqual(4);
+    const after = (await call('GET', `/api/planned-payments/${plan.id}`)).body;
+    expect(after.nextDueDate).toBe('2026-05-10');
+    expect(after.paidCount).toBe(4);
+    const records = (await call('GET', `/api/records?accountIds=${acc.id}`)).body.items;
+    expect(records).toHaveLength(4);
+    expect(new Date(records[0].occurredAt).toISOString()).toBe('2026-04-10T05:00:00.000Z');
+    // Running again does nothing.
+    expect(await processAutoConfirm(ctx.db, new Date('2026-04-15T12:00:00Z'))).toBe(0);
+  });
+});

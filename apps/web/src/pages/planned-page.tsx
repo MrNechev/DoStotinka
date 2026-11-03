@@ -92,6 +92,7 @@ export default function PlannedPage() {
           <p className="flex items-center gap-2">
             <span className="truncate font-medium">{p.name}</span>
             {isOverdue && <Badge tone="danger">overdue</Badge>}
+            {p.autoConfirm && <Badge tone="info">auto</Badge>}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {describeRecurrence(p)} · {account?.name ?? '—'}

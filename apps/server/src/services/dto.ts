@@ -114,6 +114,7 @@ export function toPlannedPayment(
     startDate: p.startDate,
     endDate: p.endDate,
     nextDueDate: p.nextDueDate,
+    autoConfirm: p.autoConfirm,
     paidCount: stats.paidCount,
     lastPaidAt: stats.lastPaidAt ? stats.lastPaidAt.toISOString() : null,
     createdAt: p.createdAt.toISOString(),

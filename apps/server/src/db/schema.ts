@@ -169,6 +169,8 @@ export const plannedPayments = pgTable(
     startDate: date('start_date', { mode: 'string' }).notNull(),
     endDate: date('end_date', { mode: 'string' }),
     nextDueDate: date('next_due_date', { mode: 'string' }),
+    /** Create the record automatically on the due date instead of waiting for confirmation. */
+    autoConfirm: boolean('auto_confirm').notNull().default(false),
     ...timestamps,
   },
   (t) => [index('planned_payments_user_idx').on(t.userId)],
