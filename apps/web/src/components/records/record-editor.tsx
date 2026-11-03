@@ -1,5 +1,6 @@
 import {
   type Account,
+  CURRENCIES,
   convertMinor,
   getCurrency,
   minorToInputString,
@@ -240,7 +241,24 @@ function RecordEditorDialog({
   const currency = account?.currency ?? user.baseCurrency;
   const toCurrency = toAccount?.currency ?? currency;
   const crossCurrency = form.type === 'transfer' && !!toAccount && toCurrency !== currency;
-  const parsedAmount = parseAmountToMinor(form.amount || '0', currency);
+  // Optional: the record was paid in another currency (e.g. abroad) and is converted.
+  const [payCurrency, setPayCurrency] = useState<string | null>(null);
+  const foreign = form.type !== 'transfer' && !!payCurrency && payCurrency !== currency;
+  const rateMap = useMemo(() => {
+    const r: Record<string, number> = {};
+    if (currencies) {
+      r[currencies.baseCurrency] = 1;
+      for (const x of currencies.rates) r[x.currency] = x.rate;
+    }
+    return r;
+  }, [currencies]);
+  const foreignMinor = foreign ? parseAmountToMinor(form.amount || '0', payCurrency!) : null;
+  const foreignRateKnown = !foreign || (payCurrency! in rateMap && currency in rateMap);
+  const parsedAmount = foreign
+    ? foreignMinor !== null && foreignRateKnown
+      ? convertMinor(foreignMinor, payCurrency!, currency, rateMap)
+      : null
+    : parseAmountToMinor(form.amount || '0', currency);
 
   // Suggest the received amount for cross-currency transfers using the stored rates.
   useEffect(() => {
@@ -262,7 +280,15 @@ function RecordEditorDialog({
 
   const submit = async (addAnother: boolean) => {
     setError(null);
-    const amount = parseAmountToMinor(form.amount, currency);
+    if (foreign && !foreignRateKnown) {
+      setError(
+        `There is no exchange rate for ${payCurrency} yet – add it under Settings → Currencies.`,
+      );
+      return;
+    }
+    const amount = foreign ? parsedAmount : parseAmountToMinor(form.amount, currency);
+    const foreignNote =
+      foreign && foreignMinor ? `Paid ${money(foreignMinor, payCurrency!)}` : null;
     if (amount === null || amount <= 0) {
       setError('Enter an amount greater than zero');
       amountRef.current?.focus();
@@ -306,7 +332,7 @@ function RecordEditorDialog({
         amount,
         categoryId: form.categoryId,
         occurredAt: occurredAt.toISOString(),
-        note: form.note || null,
+        note: [form.note, foreignNote].filter(Boolean).join(' · ') || null,
         payee: form.payee || null,
         labelIds: form.labelIds,
       };
@@ -342,8 +368,7 @@ function RecordEditorDialog({
 
   /** Opens a new record pre-filled with the current values (dated now). */
   const duplicate = () => {
-    const currencyOfForm = accounts.find((a) => a.id === form.accountId)?.currency ?? 'EUR';
-    const amount = parseAmountToMinor(form.amount, currencyOfForm) ?? undefined;
+    const amount = parsedAmount ?? undefined;
     const toAmount = form.toAmount
       ? (parseAmountToMinor(form.toAmount, toCurrency) ?? undefined)
       : undefined;
@@ -539,11 +564,36 @@ function RecordEditorDialog({
                   typeColor,
                 )}
               />
-              <span className="text-lg font-medium text-muted-foreground">
-                {getCurrency(currency).symbol}
-              </span>
+              {form.type === 'transfer' ? (
+                <span className="text-lg font-medium text-muted-foreground">
+                  {getCurrency(currency).symbol}
+                </span>
+              ) : (
+                <select
+                  aria-label="Currency paid in"
+                  value={payCurrency ?? currency}
+                  onChange={(e) =>
+                    setPayCurrency(e.target.value === currency ? null : e.target.value)
+                  }
+                  className="cursor-pointer rounded-md bg-transparent py-1 text-right text-lg font-medium text-muted-foreground outline-none hover:text-foreground"
+                >
+                  <option value={currency}>{getCurrency(currency).symbol}</option>
+                  {CURRENCIES.filter((c) => c.code !== currency).map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.code}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
-            {expressionPreview && (
+            {foreign && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {foreignRateKnown
+                  ? `Paid in ${payCurrency} · ≈ ${money(parsedAmount ?? 0, currency)} on ${account?.name ?? 'the account'}`
+                  : `No exchange rate for ${payCurrency} yet – add it in Settings.`}
+              </p>
+            )}
+            {!foreign && expressionPreview && (
               <p className="mt-1 text-xs text-muted-foreground">= {expressionPreview}</p>
             )}
           </div>
