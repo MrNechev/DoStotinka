@@ -126,7 +126,12 @@ export function resolvePeriod(
       from = state.from ? startOfDay(parseISO(state.from)) : subDays(today, 29);
       to = state.to ? addDays(startOfDay(parseISO(state.to)), 1) : tomorrow;
       if (to <= from) to = addDays(from, 1);
-      label = `${format(from, 'd MMM yyyy')} – ${format(subDays(to, 1), 'd MMM yyyy')}`;
+      const last = subDays(to, 1);
+      const sameYear = from.getFullYear() === last.getFullYear();
+      label =
+        differenceInCalendarDays(last, from) === 0
+          ? format(from, 'EEE, d MMM yyyy')
+          : `${format(from, sameYear ? 'd MMM' : 'd MMM yyyy')} – ${format(last, 'd MMM yyyy')}`;
       break;
     }
   }
