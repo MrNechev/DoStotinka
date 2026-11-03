@@ -1078,3 +1078,110 @@ describe('API tokens', () => {
     expect(after.statusCode).toBe(401);
   });
 });
+
+describe('backup & restore', () => {
+  it('restores a backup into another user with all relations', async () => {
+    const source = await registerUser(ctx.app);
+    const a = (
+      await source.call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        initialBalance: 10000,
+        color: '#3B82F6',
+      })
+    ).body;
+    const b = (
+      await source.call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const cats = (await source.call<any[]>('GET', '/api/categories')).body;
+    const food = cats.find((c) => c.systemKey === 'food')!;
+    const custom = (
+      await source.call('POST', '/api/categories', {
+        name: 'Ice cream',
+        icon: 'cake',
+        parentId: food.id,
+      })
+    ).body;
+    const label = (await source.call('POST', '/api/labels', { name: 'Summer', color: '#F97316' }))
+      .body;
+    await source.call('POST', '/api/records', {
+      type: 'expense',
+      accountId: a.id,
+      amount: 450,
+      categoryId: custom.id,
+      labelIds: [label.id],
+      occurredAt: iso('2026-07-01T10:00:00Z'),
+    });
+    await source.call('POST', '/api/records', {
+      type: 'transfer',
+      accountId: a.id,
+      toAccountId: b.id,
+      amount: 2000,
+      occurredAt: iso('2026-07-02T10:00:00Z'),
+    });
+    await source.call('POST', '/api/planned-payments', {
+      name: 'Rent',
+      type: 'expense',
+      accountId: a.id,
+      amount: 5000,
+      frequency: 'monthly',
+      startDate: '2026-08-01',
+    });
+    await source.call('POST', '/api/budgets', {
+      name: 'Food',
+      amount: 30000,
+      period: 'month',
+      categoryIds: [food.id],
+    });
+    await source.call('POST', '/api/goals', { name: 'Bike', targetAmount: 50000, accountId: b.id });
+    const backup = (await source.call('GET', '/api/export/backup.json')).body;
+
+    const target = await registerUser(ctx.app);
+    await target.call('POST', '/api/accounts', {
+      name: 'Will be replaced',
+      type: 'cash',
+      currency: 'EUR',
+      color: '#22C55E',
+    });
+    const res = await target.call('POST', '/api/me/restore', backup);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      accounts: 2,
+      records: 3,
+      plannedPayments: 1,
+      budgets: 1,
+      goals: 1,
+    });
+
+    const accounts = (await target.call<any[]>('GET', '/api/accounts')).body;
+    expect(accounts.map((x) => x.name).sort()).toEqual(['Bank', 'Cash']);
+    expect(accounts.find((x) => x.name === 'Bank')!.balance).toBe(10000 - 450 - 2000);
+    expect(accounts.find((x) => x.name === 'Cash')!.balance).toBe(2000);
+    const records = (await target.call('GET', '/api/records')).body.items;
+    const iceCream = records.find((r: any) => r.amount === -450);
+    const targetCats = (await target.call<any[]>('GET', '/api/categories')).body;
+    expect(targetCats.find((c) => c.id === iceCream.categoryId)!.name).toBe('Ice cream');
+    expect(iceCream.labelIds).toHaveLength(1);
+    const transfer = records.filter((r: any) => r.type === 'transfer');
+    expect(transfer).toHaveLength(2);
+    expect(transfer[0].transferGroupId).toBe(transfer[1].transferGroupId);
+    expect(transfer[0].transferGroupId).not.toBe(
+      records.find((r: any) => r.type === 'transfer' && r.id)?.id,
+    );
+    const goals = (await target.call<any[]>('GET', '/api/goals')).body;
+    expect(goals[0].currentAmount).toBe(2000);
+    // The source user's data is untouched.
+    expect((await source.call<any[]>('GET', '/api/accounts')).body).toHaveLength(2);
+  });
+
+  it('rejects files that are not Slavotax backups', async () => {
+    const { call } = await registerUser(ctx.app);
+    expect((await call('POST', '/api/me/restore', { hello: 'world' })).status).toBe(400);
+  });
+});

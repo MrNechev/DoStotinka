@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Restore a JSON backup from Settings (replaces your data; also works on another server).
 - Optional nightly database backup service in Docker Compose (`--profile backup`).
 - More everyday categories: laundry & dry cleaning, repairs & tailoring, driving lessons, own
   bicycle, funerals & memorials (for new users).

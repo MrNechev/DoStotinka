@@ -64,7 +64,7 @@ leaves it.
   *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
   bank statements work too. Duplicates are skipped. See
   [Moving from Wallet](docs/MIGRATING_FROM_WALLET.md).
-- **Export** – CSV export of records and a full JSON backup.
+- **Export & restore** – CSV export of records, a full JSON backup and restoring it.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
 - **Demo account** with a full year of realistic example data.
@@ -218,7 +218,8 @@ docker exec slavotax_postgres pg_dump -U slavotax slavotax | gzip > slavotax-$(d
 
 Restore into a fresh installation with
 `gunzip -c backup.sql.gz | docker exec -i slavotax_postgres psql -U slavotax slavotax`.
-Every user can additionally download their own data (CSV / JSON) in **Settings → Your data**.
+Every user can additionally download their own data (CSV / JSON) in **Settings → Your data** and
+restore such a JSON backup there – also on a different Slavotax server.
 
 ## Development
 

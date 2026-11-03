@@ -15,6 +15,7 @@ import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { clearSessionCookie, currentUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
 import { rebaseRates } from '../services/rates';
+import { backupSchema, restoreBackup } from '../services/restore';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/', { schema: { tags: ['user'], summary: 'Current user' } }, async (req) => ({
@@ -95,6 +96,23 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       }),
     );
   });
+
+  app.post(
+    '/restore',
+    {
+      bodyLimit: 100 * 1024 * 1024,
+      schema: {
+        tags: ['user'],
+        summary: 'Replace all your data with a JSON backup (from GET /api/export/backup.json)',
+        body: backupSchema,
+      },
+    },
+    async (req) => {
+      const user = currentUser(req);
+      if (user.isDemo) throw forbidden('Restoring a backup is not available for the demo account');
+      return restoreBackup(app.db, user, req.body);
+    },
+  );
 
   app.post(
     '/tokens',

@@ -1,6 +1,8 @@
 import { type CreatedToken, CURRENCIES, getCurrency } from '@slavotax/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
+  ArchiveRestore,
   BookOpen,
   Code,
   Copy,
@@ -12,10 +14,10 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { errorMessage } from '@/api/client';
+import { api, errorMessage } from '@/api/client';
 import {
   useAccounts,
   useAddCurrency,
@@ -33,11 +35,12 @@ import {
   useUser,
 } from '@/api/queries';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Badge, Card, CardHeader, PageHeader } from '@/components/ui/misc';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
-import { numberFmt } from '@/lib/format';
+import { numberFmt, plural } from '@/lib/format';
 import { browserTimeZone, downloadUrl } from '@/lib/utils';
 
 function Section({
@@ -616,10 +619,49 @@ function ApiTokensSection() {
 }
 
 function DataSection() {
+  const user = useUser();
+  const confirm = useConfirm();
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [restoring, setRestoring] = useState(false);
+
+  const restore = async (file: File) => {
+    let backup: unknown;
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      toast.error('This file is not a valid JSON backup');
+      return;
+    }
+    const ok = await confirm({
+      title: 'Restore this backup?',
+      description:
+        'All your current accounts, records, categories, planned payments, budgets and goals will be replaced by the contents of the backup. This cannot be undone.',
+      confirmLabel: 'Replace my data',
+      destructive: true,
+    });
+    if (!ok) return;
+    setRestoring(true);
+    try {
+      const res = await api<{ accounts: number; records: number }>('/me/restore', {
+        method: 'POST',
+        body: backup,
+      });
+      await qc.invalidateQueries();
+      toast.success(
+        `Backup restored: ${plural(res.accounts, 'account')}, ${plural(res.records, 'record')}`,
+      );
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   return (
     <Section
       title="Your data"
-      description="Download everything you have entered. Your data never leaves your server."
+      description="Download everything you have entered, restore a backup or import records from another app. Your data never leaves your server."
     >
       <div className="flex flex-wrap gap-2">
         <Button
@@ -638,6 +680,24 @@ function DataSection() {
             <FileUp /> Import from CSV
           </Link>
         </Button>
+        {!user.isDemo && (
+          <>
+            <Button variant="outline" loading={restoring} onClick={() => fileRef.current?.click()}>
+              <ArchiveRestore /> Restore backup
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = '';
+                if (f) void restore(f);
+              }}
+            />
+          </>
+        )}
       </div>
     </Section>
   );
