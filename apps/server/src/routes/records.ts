@@ -1,8 +1,9 @@
-import { recordInput, recordListQuery } from '@slavotax/shared';
+import { bulkUpdateInput, recordInput, recordListQuery } from '@slavotax/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { currentUser } from '../plugins/auth';
 import {
+  bulkUpdateRecords,
   createRecord,
   deleteRecord,
   deleteRecords,
@@ -101,6 +102,18 @@ export const recordRoutes: FastifyPluginAsyncZod = async (app) => {
       await deleteRecord(db, currentUser(req).id, req.params.id);
       return reply.status(204).send();
     },
+  );
+
+  app.post(
+    '/bulk-update',
+    {
+      schema: {
+        tags: ['records'],
+        summary: 'Change category, account or labels of several records',
+        body: bulkUpdateInput,
+      },
+    },
+    async (req) => ({ updated: await bulkUpdateRecords(db, currentUser(req).id, req.body) }),
   );
 
   app.post(

@@ -349,3 +349,23 @@ export interface ImportResult {
   accountsCreated: number;
   labelsCreated: number;
 }
+
+export const bulkUpdateInput = z
+  .object({
+    ids: z.array(uuid).min(1).max(2000),
+    /** New category for expenses/incomes (null = uncategorized). Transfers are left untouched. */
+    categoryId: uuid.nullable().optional(),
+    /** Move expenses/incomes to another account with the same currency. */
+    accountId: uuid.optional(),
+    addLabelIds: z.array(uuid).max(20).optional(),
+    removeLabelIds: z.array(uuid).max(20).optional(),
+  })
+  .refine(
+    (v) =>
+      v.categoryId !== undefined ||
+      v.accountId !== undefined ||
+      !!v.addLabelIds?.length ||
+      !!v.removeLabelIds?.length,
+    { message: 'Nothing to change' },
+  );
+export type BulkUpdateInput = z.input<typeof bulkUpdateInput>;

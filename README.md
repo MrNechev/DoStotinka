@@ -42,6 +42,7 @@ leaves it.
   - spending over time per day / week / month, stacked by category
   - cash flow (income vs. expenses) and balance trend
   - comparison with the previous period
+  - a report table: every category per month (or week) with totals and averages
   - any period: last 7 / 30 days, 12 weeks, 6 months, 12 months, a week, month or year, all time
     or a custom range
   - for all accounts, a single account or any combination of accounts
@@ -55,6 +56,7 @@ leaves it.
 - **Multi-currency** – Euro by default; 55 currencies supported. Exchange rates are updated daily
   from the European Central Bank (or set manually). The fixed BGN/EUR rate is built in.
 - **Labels** to tag records across categories (e.g. “Vacation”).
+- **Bulk editing** – select many records to recategorise, move, label or delete them at once.
 - **Import from CSV** – step-by-step import with column, account and category mapping. Exports of
   *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
   bank statements work too. Duplicates are skipped.

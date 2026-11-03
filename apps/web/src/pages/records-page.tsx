@@ -1,9 +1,10 @@
-import { Download, FileUp, Plus, Search, Tag, X } from 'lucide-react';
+import { CheckSquare, Download, FileUp, Plus, Search, Tag, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { buildQuery } from '@/api/client';
 import { useCategories, useLabels, useRecordSummary, useRecords } from '@/api/queries';
 import { CategoryPickerPanel } from '@/components/categories/category-picker';
+import { BulkBar } from '@/components/records/bulk-bar';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { RecordList } from '@/components/records/record-list';
 import { AccountFilter, PeriodPicker, useStatsFilters } from '@/components/stats/filters';
@@ -26,6 +27,19 @@ export default function RecordsPage() {
   const { data: labels = [] } = useLabels();
   const index = useMemo(() => buildCategoryIndex(categories), [categories]);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
 
   const type = (params.get('types') as TypeFilter | null) ?? 'all';
   const categoryId = params.get('categories');
@@ -78,6 +92,12 @@ export default function RecordsPage() {
         description="Every expense, income and transfer you have logged."
         actions={
           <>
+            <Button
+              variant={selecting ? 'secondary' : 'outline'}
+              onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
+            >
+              <CheckSquare /> {selecting ? 'Done' : 'Select'}
+            </Button>
             <Button variant="outline" asChild>
               <Link to="/import">
                 <FileUp /> Import
@@ -227,8 +247,17 @@ export default function RecordsPage() {
           onLoadMore={() => void records.fetchNextPage()}
           emptyTitle="No records found"
           emptyDescription="Try a different period or filter – or add a new record."
+          selection={selecting ? { selected, toggle } : undefined}
         />
       </Card>
+      {selecting && (
+        <BulkBar
+          selected={[...selected]}
+          totalLoaded={items.length}
+          onSelectAll={() => setSelected(new Set(items.map((r) => r.id)))}
+          onClear={stopSelecting}
+        />
+      )}
     </div>
   );
 }

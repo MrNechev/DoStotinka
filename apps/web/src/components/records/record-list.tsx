@@ -1,6 +1,6 @@
 import type { Account, Label, RecordItem } from '@slavotax/shared';
 import { format, parseISO } from 'date-fns';
-import { CalendarClock, Inbox } from 'lucide-react';
+import { CalendarClock, Check, Inbox } from 'lucide-react';
 import { useMemo } from 'react';
 import { useAccounts, useCategories, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
@@ -31,16 +31,23 @@ export function useRecordLookups(): Lookups {
   );
 }
 
+export interface Selection {
+  selected: Set<string>;
+  toggle: (id: string) => void;
+}
+
 export function RecordRow({
   record,
   lookups,
   showAccount = true,
   showDate = false,
+  selection,
 }: {
   record: RecordItem;
   lookups: Lookups;
   showAccount?: boolean;
   showDate?: boolean;
+  selection?: Selection;
 }) {
   const { openEdit } = useRecordEditor();
   const account = lookups.accounts.get(record.accountId);
@@ -66,9 +73,26 @@ export function RecordRow({
   return (
     <button
       type="button"
-      onClick={() => openEdit(record)}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/70"
+      onClick={() => (selection ? selection.toggle(record.id) : openEdit(record))}
+      aria-pressed={selection ? selection.selected.has(record.id) : undefined}
+      className={cn(
+        'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/70',
+        selection?.selected.has(record.id) && 'bg-primary-soft hover:bg-primary-soft',
+      )}
     >
+      {selection && (
+        // Visual checkbox only – the whole row is the (button) control.
+        <span
+          aria-hidden
+          className={cn(
+            'flex size-[18px] shrink-0 items-center justify-center rounded-[5px] border border-input bg-card',
+            selection.selected.has(record.id) &&
+              'border-primary bg-primary text-primary-foreground',
+          )}
+        >
+          {selection.selected.has(record.id) && <Check className="size-3.5" strokeWidth={3} />}
+        </span>
+      )}
       {isTransfer ? (
         <IconBadge icon="arrow-left-right" color="#64748B" size="md" />
       ) : (
@@ -140,6 +164,7 @@ export function RecordList({
   emptyTitle = 'No records yet',
   emptyDescription,
   emptyAction,
+  selection,
 }: {
   records: RecordItem[];
   isLoading?: boolean;
@@ -150,6 +175,7 @@ export function RecordList({
   emptyTitle?: string;
   emptyDescription?: string;
   emptyAction?: React.ReactNode;
+  selection?: Selection;
 }) {
   const lookups = useRecordLookups();
   const groups = useMemo(() => {
@@ -220,7 +246,13 @@ export function RecordList({
             </div>
             <div className="px-1">
               {items.map((r) => (
-                <RecordRow key={r.id} record={r} lookups={lookups} showAccount={showAccount} />
+                <RecordRow
+                  key={r.id}
+                  record={r}
+                  lookups={lookups}
+                  showAccount={showAccount}
+                  selection={selection}
+                />
               ))}
             </div>
           </section>

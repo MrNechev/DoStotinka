@@ -7,6 +7,7 @@ import type {
   Budget,
   BudgetInput,
   BudgetStatus,
+  BulkUpdateInput,
   CashflowResponse,
   Category,
   CategoryInput,
@@ -402,6 +403,15 @@ export function useDeleteRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/records/${id}`, { method: 'DELETE' }),
+    onSuccess: () => invalidateFinancialData(qc),
+  });
+}
+
+export function useBulkUpdateRecords() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: BulkUpdateInput) =>
+      api<{ updated: number }>('/records/bulk-update', { method: 'POST', body: input }),
     onSuccess: () => invalidateFinancialData(qc),
   });
 }

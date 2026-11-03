@@ -452,3 +452,59 @@ export async function summarizeRecords(
   result.net = result.income - result.expense;
   return result;
 }
+
+export interface BulkUpdate {
+  ids: string[];
+  categoryId?: string | null;
+  accountId?: string;
+  addLabelIds?: string[];
+  removeLabelIds?: string[];
+}
+
+/** Applies the same change to many records. Returns the number of records touched. */
+export async function bulkUpdateRecords(db: Database, userId: string, input: BulkUpdate): Promise<number> {
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .select({ id: records.id, type: records.type, currency: records.currency, groupId: records.transferGroupId })
+      .from(records)
+      .where(and(eq(records.userId, userId), inArray(records.id, input.ids)));
+    if (!rows.length) return 0;
+    const plain = rows.filter((r) => r.type !== 'transfer').map((r) => r.id);
+
+    if (input.categoryId !== undefined && plain.length) {
+      await assertCategory(tx, userId, input.categoryId);
+      await tx.update(records).set({ categoryId: input.categoryId }).where(inArray(records.id, plain));
+    }
+    if (input.accountId !== undefined && plain.length) {
+      const account = await getOwnedAccount(tx, userId, input.accountId);
+      const currencies = new Set(rows.filter((r) => r.type !== 'transfer').map((r) => r.currency));
+      if (currencies.size > 1 || !currencies.has(account.currency)) {
+        throw badRequest('Records can only be moved to an account with the same currency');
+      }
+      await tx.update(records).set({ accountId: account.id }).where(inArray(records.id, plain));
+    }
+    // Labels apply to both sides of transfers.
+    const groupIds = rows.map((r) => r.groupId).filter((g): g is string => !!g);
+    let targetIds = rows.map((r) => r.id);
+    if (groupIds.length) {
+      const siblings = await tx
+        .select({ id: records.id })
+        .from(records)
+        .where(and(eq(records.userId, userId), inArray(records.transferGroupId, groupIds)));
+      targetIds = [...new Set([...targetIds, ...siblings.map((s) => s.id)])];
+    }
+    if (input.addLabelIds?.length) {
+      const labelIds = await assertLabels(tx, userId, input.addLabelIds);
+      await tx
+        .insert(recordLabels)
+        .values(targetIds.flatMap((recordId) => labelIds.map((labelId) => ({ recordId, labelId }))))
+        .onConflictDoNothing();
+    }
+    if (input.removeLabelIds?.length) {
+      await tx
+        .delete(recordLabels)
+        .where(and(inArray(recordLabels.recordId, targetIds), inArray(recordLabels.labelId, input.removeLabelIds)));
+    }
+    return rows.length;
+  });
+}
