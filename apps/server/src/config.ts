@@ -68,5 +68,5 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const databaseUrl =
     c.DATABASE_URL ??
     `postgres://${encodeURIComponent(c.DB_USERNAME)}:${encodeURIComponent(c.DB_PASSWORD)}@${c.DB_HOST}:${c.DB_PORT}/${encodeURIComponent(c.DB_DATABASE_NAME)}`;
-  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.1.0' };
+  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.2.0' };
 }

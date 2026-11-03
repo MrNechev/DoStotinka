@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.2.0] – 2026-11-04
+
 ### Added
 - Restore a JSON backup from Settings (replaces your data; also works on another server).
 - Optional nightly database backup service in Docker Compose (`--profile backup`).
@@ -76,5 +78,6 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/MrNechev/slavotax/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MrNechev/slavotax/releases/tag/v0.1.0
