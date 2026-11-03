@@ -55,6 +55,9 @@ leaves it.
 - **Multi-currency** – Euro by default; 55 currencies supported. Exchange rates are updated daily
   from the European Central Bank (or set manually). The fixed BGN/EUR rate is built in.
 - **Labels** to tag records across categories (e.g. “Vacation”).
+- **Import from CSV** – step-by-step import with column, account and category mapping. Exports of
+  *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
+  bank statements work too. Duplicates are skipped.
 - **Export** – CSV export of records and a full JSON backup.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
@@ -260,7 +263,7 @@ All amounts are integers in minor units (cents).
 
 ## Roadmap
 
-- [ ] CSV import (from Wallet and bank statements)
+- [x] CSV import (from Wallet and bank statements)
 - [ ] Translations (Bulgarian first)
 - [ ] Mobile app that connects to your own server
 - [ ] Shared accounts / households

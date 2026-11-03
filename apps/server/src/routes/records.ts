@@ -9,6 +9,7 @@ import {
   getRecord,
   listPayees,
   listRecords,
+  summarizeRecords,
   updateRecord,
 } from '../services/records';
 
@@ -27,6 +28,18 @@ export const recordRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => listRecords(db, currentUser(req).id, req.query),
+  );
+
+  app.get(
+    '/summary',
+    {
+      schema: {
+        tags: ['records'],
+        summary: 'Income/expense totals of the records matching the filter (base currency)',
+        querystring: recordListQuery,
+      },
+    },
+    async (req) => summarizeRecords(db, currentUser(req), req.query),
   );
 
   app.get(

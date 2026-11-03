@@ -24,6 +24,7 @@ import { budgetRoutes } from './routes/budgets';
 import { categoryRoutes } from './routes/categories';
 import { currencyRoutes } from './routes/currencies';
 import { exportRoutes } from './routes/export';
+import { importRoutes } from './routes/import';
 import { labelRoutes } from './routes/labels';
 import { meRoutes } from './routes/me';
 import { metaRoutes } from './routes/meta';
@@ -149,6 +150,7 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(statsRoutes, { prefix: '/stats' });
         await authed.register(currencyRoutes, { prefix: '/currencies' });
         await authed.register(exportRoutes, { prefix: '/export' });
+        await authed.register(importRoutes, { prefix: '/import' });
       });
     },
     { prefix: '/api' },

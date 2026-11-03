@@ -1,8 +1,17 @@
 import { CURRENCIES, getCurrency } from '@slavotax/shared';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { BookOpen, Code, Download, FileJson, Laptop, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  BookOpen,
+  Code,
+  Download,
+  FileJson,
+  FileUp,
+  Laptop,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import {
@@ -484,6 +493,11 @@ function DataSection() {
         </Button>
         <Button variant="outline" onClick={() => downloadUrl('/api/export/backup.json')}>
           <FileJson /> Full backup (JSON)
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/import">
+            <FileUp /> Import from CSV
+          </Link>
         </Button>
       </div>
     </Section>

@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- CSV import with automatic detection of Wallet by BudgetBakers exports, category matching,
+  transfer pairing, account mapping and duplicate detection.
+- Totals (income, expenses, cash flow, count) for any record filter on the Records page.
+
+### Changed
+- Smaller web bundle: validation schemas are no longer shipped to the browser.
+
 ## [0.1.0] – 2026-11-04
 
 First alpha release.

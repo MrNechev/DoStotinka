@@ -515,3 +515,108 @@ describe('export', () => {
     expect(text).toContain(`"'=HYPERLINK(""evil"")"`);
   });
 });
+
+describe('import', () => {
+  it('imports records into new and existing accounts and skips duplicates', async () => {
+    const { call } = await registerUser(ctx.app);
+    const existing = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const cats = (await call<any[]>('GET', '/api/categories')).body;
+    const groceries = cats.find((c) => c.systemKey === 'food.groceries')!;
+    const payload = {
+      accounts: [
+        { key: 'Bank', existingId: existing.id },
+        {
+          key: 'Wallet',
+          create: { name: 'Wallet', type: 'cash', currency: 'BGN', color: '#22C55E' },
+        },
+      ],
+      records: [
+        {
+          accountKey: 'Bank',
+          type: 'expense',
+          amount: 1250,
+          occurredAt: iso('2025-03-01T10:00:00Z'),
+          categoryId: groceries.id,
+          labels: ['Imported'],
+        },
+        {
+          accountKey: 'Bank',
+          type: 'income',
+          amount: 200000,
+          occurredAt: iso('2025-03-02T10:00:00Z'),
+          note: 'Salary',
+        },
+        {
+          accountKey: 'Bank',
+          type: 'transfer',
+          amount: 5000,
+          toAccountKey: 'Wallet',
+          toAmount: 9779,
+          occurredAt: iso('2025-03-03T10:00:00Z'),
+        },
+      ],
+    };
+    const first = await call('POST', '/api/import/records', payload);
+    expect(first.status).toBe(200);
+    expect(first.body).toEqual({ imported: 3, skipped: 0, accountsCreated: 1, labelsCreated: 1 });
+
+    const accounts = (await call<any[]>('GET', '/api/accounts')).body;
+    expect(accounts.find((a) => a.id === existing.id)!.balance).toBe(-1250 + 200000 - 5000);
+    expect(accounts.find((a) => a.name === 'Wallet')!.balance).toBe(9779);
+
+    // Importing the same file again only creates the new account mapping, no duplicate records.
+    const again = await call('POST', '/api/import/records', {
+      ...payload,
+      accounts: [
+        { key: 'Bank', existingId: existing.id },
+        { key: 'Wallet', existingId: accounts.find((a) => a.name === 'Wallet')!.id },
+      ],
+    });
+    expect(again.body.imported).toBe(0);
+    expect(again.body.skipped).toBe(3);
+  });
+
+  it('summarizes filtered records', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const cats = (await call<any[]>('GET', '/api/categories')).body;
+    const fuel = cats.find((c) => c.systemKey === 'vehicle.fuel')!;
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 6000,
+      categoryId: fuel.id,
+      occurredAt: iso('2026-01-02T10:00:00Z'),
+    });
+    await call('POST', '/api/records', {
+      type: 'expense',
+      accountId: acc.id,
+      amount: 4000,
+      occurredAt: iso('2026-01-03T10:00:00Z'),
+    });
+    await call('POST', '/api/records', {
+      type: 'income',
+      accountId: acc.id,
+      amount: 10000,
+      occurredAt: iso('2026-01-04T10:00:00Z'),
+    });
+    const all = (await call('GET', '/api/records/summary')).body;
+    expect(all).toMatchObject({ income: 10000, expense: 10000, net: 0, count: 3 });
+    const vehicle = (await call('GET', `/api/records/summary?categoryIds=${fuel.parentId}`)).body;
+    expect(vehicle).toMatchObject({ income: 0, expense: 6000, count: 1 });
+  });
+});

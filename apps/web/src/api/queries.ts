@@ -361,6 +361,24 @@ export function useRecords(filters: RecordFilters, pageSize = 50) {
   });
 }
 
+export interface RecordSummary {
+  currency: string;
+  income: number;
+  expense: number;
+  net: number;
+  count: number;
+  transferCount: number;
+}
+
+export function useRecordSummary(filters: RecordFilters) {
+  return useQuery({
+    queryKey: [...qk.records, 'summary', filters],
+    queryFn: ({ signal }) =>
+      api<RecordSummary>('/records/summary', { query: { ...filters }, signal }),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function usePayees() {
   return useQuery({
     queryKey: [...qk.records, 'payees'],

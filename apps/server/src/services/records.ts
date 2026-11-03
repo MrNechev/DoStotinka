@@ -314,11 +314,12 @@ export async function expandCategoryIds(db: Tx, userId: string, ids: string[]): 
   return [...new Set([...ids, ...children.map((c) => c.id)])];
 }
 
-export async function listRecords(
+/** WHERE conditions shared by the record list and its summary. */
+async function filterConditions(
   db: Database,
   userId: string,
-  q: RecordListParsed,
-): Promise<RecordPage> {
+  q: Omit<RecordListParsed, 'limit' | 'cursor'>,
+): Promise<SQL[]> {
   const conditions: SQL[] = [eq(records.userId, userId)];
   if (q.from) conditions.push(gte(records.occurredAt, new Date(q.from)));
   if (q.to) conditions.push(lt(records.occurredAt, new Date(q.to)));
@@ -356,6 +357,15 @@ export async function listRecords(
     ];
     conditions.push(or(...searchConditions)!);
   }
+  return conditions;
+}
+
+export async function listRecords(
+  db: Database,
+  userId: string,
+  q: RecordListParsed,
+): Promise<RecordPage> {
+  const conditions = await filterConditions(db, userId, q);
   if (q.cursor) {
     const c = decodeCursor(q.cursor);
     if (!c) throw badRequest('Invalid cursor');
@@ -395,4 +405,50 @@ export async function listPayees(db: Database, userId: string, search?: string):
     .orderBy(desc(sql`count(*)`))
     .limit(20);
   return rows.map((r) => r.payee!).filter(Boolean);
+}
+
+export interface RecordSummary {
+  currency: string;
+  income: number;
+  expense: number;
+  net: number;
+  count: number;
+  transferCount: number;
+}
+
+/** Totals (converted to the base currency) for the records matching a filter. */
+export async function summarizeRecords(
+  db: Database,
+  user: UserRow,
+  q: Omit<RecordListParsed, 'limit' | 'cursor'>,
+): Promise<RecordSummary> {
+  const conditions = await filterConditions(db, user.id, q);
+  const rows = await db
+    .select({
+      type: records.type,
+      currency: records.currency,
+      total: sql<number>`coalesce(sum(${records.amount}), 0)::bigint`.mapWith(Number),
+      count: sql<number>`count(*)::int`,
+    })
+    .from(records)
+    .where(and(...conditions))
+    .groupBy(records.type, records.currency);
+  const rates = await getRateMap(db, user.id, user.baseCurrency);
+  const result: RecordSummary = {
+    currency: user.baseCurrency,
+    income: 0,
+    expense: 0,
+    net: 0,
+    count: 0,
+    transferCount: 0,
+  };
+  for (const r of rows) {
+    const value = convertMinor(r.total, r.currency, user.baseCurrency, rates);
+    if (r.type === 'income') result.income += value;
+    else if (r.type === 'expense') result.expense -= value;
+    else result.transferCount += r.count;
+    result.count += r.count;
+  }
+  result.net = result.income - result.expense;
+  return result;
 }

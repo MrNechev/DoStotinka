@@ -26,6 +26,7 @@ const PlannedPage = lazy(() => import('./pages/planned-page'));
 const BudgetsPage = lazy(() => import('./pages/budgets-page'));
 const CategoriesPage = lazy(() => import('./pages/categories-page'));
 const SettingsPage = lazy(() => import('./pages/settings-page'));
+const ImportPage = lazy(() => import('./pages/import-page'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -128,6 +129,7 @@ const router = createBrowserRouter([
           { path: 'budgets', element: page(<BudgetsPage />) },
           { path: 'categories', element: page(<CategoriesPage />) },
           { path: 'settings', element: page(<SettingsPage />) },
+          { path: 'import', element: page(<ImportPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

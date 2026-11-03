@@ -85,3 +85,8 @@ export function changeRatio(current: number, previous: number): number | null {
   if (!previous) return null;
   return (current - previous) / Math.abs(previous);
 }
+
+/** "1 record", "3 records" */
+export function plural(n: number, singular: string, pluralForm = `${singular}s`) {
+  return `${n} ${n === 1 ? singular : pluralForm}`;
+}

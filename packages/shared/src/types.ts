@@ -1,6 +1,6 @@
 import type { CategoryKind } from './categories';
+import type { AccountType, BudgetPeriod, Interval, RecordType } from './constants';
 import type { Frequency } from './recurrence';
-import type { AccountType, BudgetPeriod, Interval, RecordType } from './schemas';
 
 /** Public server configuration exposed to clients before login. */
 export interface ServerConfig {

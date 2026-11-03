@@ -1,39 +1,17 @@
 import { z } from 'zod';
+import {
+  ACCOUNT_TYPES,
+  BUDGET_PERIODS,
+  CATEGORY_KINDS,
+  INTERVALS,
+  RECORD_TYPES,
+  type RecordType,
+  THEMES,
+} from './constants';
 import { isSupportedCurrency } from './currencies';
 import { FREQUENCIES, isIsoDate } from './recurrence';
 
 // ───────────────────────────── Primitives ─────────────────────────────
-
-export const ACCOUNT_TYPES = [
-  'cash',
-  'checking',
-  'savings',
-  'credit_card',
-  'deposit',
-  'investment',
-  'loan',
-  'other',
-] as const;
-export type AccountType = (typeof ACCOUNT_TYPES)[number];
-
-export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  cash: 'Cash',
-  checking: 'Bank account',
-  savings: 'Savings account',
-  credit_card: 'Credit card',
-  deposit: 'Deposit',
-  investment: 'Investment',
-  loan: 'Loan / mortgage',
-  other: 'Other',
-};
-
-export const RECORD_TYPES = ['expense', 'income', 'transfer'] as const;
-export type RecordType = (typeof RECORD_TYPES)[number];
-
-export const CATEGORY_KINDS = ['expense', 'income'] as const;
-
-export const BUDGET_PERIODS = ['week', 'month', 'year'] as const;
-export type BudgetPeriod = (typeof BUDGET_PERIODS)[number];
 
 export const currencyCode = z
   .string()
@@ -101,8 +79,6 @@ export const loginInput = z.object({
   issueToken: z.boolean().optional(),
 });
 export type LoginInput = z.input<typeof loginInput>;
-
-export const THEMES = ['system', 'light', 'dark'] as const;
 
 export const updateProfileInput = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -283,9 +259,6 @@ export type BudgetInput = z.input<typeof budgetInput>;
 
 // ───────────────────────────── Stats ─────────────────────────────
 
-export const INTERVALS = ['day', 'week', 'month'] as const;
-export type Interval = (typeof INTERVALS)[number];
-
 export const statsQuery = z.object({
   from: isoDateTime,
   to: isoDateTime,
@@ -328,3 +301,51 @@ export const ratesUpdateInput = z.object({
     )
     .max(200),
 });
+
+// ───────────────────────────── Import ─────────────────────────────
+
+export const importAccountInput = z.object({
+  /** Name of the account in the imported file (used by records to reference it). */
+  key: z.string().min(1).max(120),
+  /** Existing account to import into … */
+  existingId: uuid.optional(),
+  /** … or an account that should be created. */
+  create: z
+    .object({
+      name: z.string().trim().min(1).max(60),
+      type: z.enum(ACCOUNT_TYPES).default('checking'),
+      currency: currencyCode,
+      color: hexColor.default('#3B82F6'),
+    })
+    .optional(),
+});
+
+export const importRecordInput = z.object({
+  accountKey: z.string().min(1).max(120),
+  type: z.enum(RECORD_TYPES),
+  amount: positiveMinorAmount,
+  occurredAt: isoDateTime,
+  categoryId: uuid.nullable().optional(),
+  note: optionalText(500),
+  payee: optionalText(120),
+  labels: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  /** For transfers: key of the destination account and the amount it received. */
+  toAccountKey: z.string().min(1).max(120).optional(),
+  toAmount: positiveMinorAmount.optional(),
+});
+
+export const importInput = z.object({
+  accounts: z.array(importAccountInput).min(1).max(200),
+  records: z.array(importRecordInput).min(1).max(50_000),
+  /** Skip rows that already exist (same account, time and amount). */
+  skipDuplicates: z.boolean().default(true),
+});
+export type ImportInput = z.input<typeof importInput>;
+export type ImportRecordInput = z.input<typeof importRecordInput>;
+
+export interface ImportResult {
+  imported: number;
+  skipped: number;
+  accountsCreated: number;
+  labelsCreated: number;
+}

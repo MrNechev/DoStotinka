@@ -1,8 +1,8 @@
-import { Download, Plus, Search, Tag, X } from 'lucide-react';
+import { Download, FileUp, Plus, Search, Tag, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { buildQuery } from '@/api/client';
-import { useCategories, useLabels, useRecords, useStatsSummary } from '@/api/queries';
+import { useCategories, useLabels, useRecordSummary, useRecords } from '@/api/queries';
 import { CategoryPickerPanel } from '@/components/categories/category-picker';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { RecordList } from '@/components/records/record-list';
@@ -61,8 +61,7 @@ export default function RecordsPage() {
   };
   const records = useRecords(query);
   const items = records.data?.pages.flatMap((p) => p.items) ?? [];
-  const simpleFilter = !categoryId && !labelId && !params.get('q') && type === 'all';
-  const summary = useStatsSummary(filters.scope, simpleFilter);
+  const summary = useRecordSummary(query);
 
   const category = categoryId ? index.byId.get(categoryId) : undefined;
   const label = labelId ? labels.find((l) => l.id === labelId) : undefined;
@@ -79,6 +78,11 @@ export default function RecordsPage() {
         description="Every expense, income and transfer you have logged."
         actions={
           <>
+            <Button variant="outline" asChild>
+              <Link to="/import">
+                <FileUp /> Import
+              </Link>
+            </Button>
             <Button variant="outline" onClick={exportCsv}>
               <Download /> Export CSV
             </Button>
@@ -184,26 +188,35 @@ export default function RecordsPage() {
       </div>
 
       <Card className="overflow-hidden">
-        {simpleFilter && summary.data && (
+        {summary.data && (
           <div className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border px-4 py-3 text-sm">
-            <span>
-              <span className="text-muted-foreground">Income </span>
-              <span className="tabular font-semibold text-income">
-                {money(summary.data.income, summary.data.currency)}
-              </span>
+            <span className="text-muted-foreground">
+              {summary.data.count} {summary.data.count === 1 ? 'record' : 'records'}
             </span>
-            <span>
-              <span className="text-muted-foreground">Expenses </span>
-              <span className="tabular font-semibold text-expense">
-                {money(summary.data.expense, summary.data.currency)}
+            {summary.data.income > 0 && (
+              <span>
+                <span className="text-muted-foreground">Income </span>
+                <span className="tabular font-semibold text-income">
+                  {money(summary.data.income, summary.data.currency)}
+                </span>
               </span>
-            </span>
-            <span>
-              <span className="text-muted-foreground">Cash flow </span>
-              <span className="tabular font-semibold">
-                {money(summary.data.net, summary.data.currency, { sign: 'exceptZero' })}
+            )}
+            {summary.data.expense > 0 && (
+              <span>
+                <span className="text-muted-foreground">Expenses </span>
+                <span className="tabular font-semibold text-expense">
+                  {money(summary.data.expense, summary.data.currency)}
+                </span>
               </span>
-            </span>
+            )}
+            {summary.data.income > 0 && summary.data.expense > 0 && (
+              <span>
+                <span className="text-muted-foreground">Cash flow </span>
+                <span className="tabular font-semibold">
+                  {money(summary.data.net, summary.data.currency, { sign: 'exceptZero' })}
+                </span>
+              </span>
+            )}
           </div>
         )}
         <RecordList

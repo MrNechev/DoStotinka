@@ -1,0 +1,180 @@
+import { randomUUID } from 'node:crypto';
+import type { ImportResult, importInput } from '@slavotax/shared';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
+import type { z } from 'zod';
+import type { Database } from '../db';
+import { accounts, categories, labels, recordLabels, records, type UserRow } from '../db/schema';
+import { badRequest, notFound } from '../lib/errors';
+import { ensureRate } from './rates';
+
+type ImportParsed = z.output<typeof importInput>;
+
+const LABEL_COLORS = ['#3B82F6', '#14B8A6', '#F43F5E', '#A855F7', '#F59E0B', '#22C55E', '#64748B'];
+
+/** Imports many records at once (e.g. from a CSV export of another app). */
+export async function importRecords(
+  db: Database,
+  user: UserRow,
+  input: ImportParsed,
+): Promise<ImportResult> {
+  return db.transaction(async (tx) => {
+    // ─── Accounts ───
+    const accountByKey = new Map<string, { id: string; currency: string }>();
+    let accountsCreated = 0;
+    const owned = await tx.select().from(accounts).where(eq(accounts.userId, user.id));
+    let sortOrder = owned.reduce((m, a) => Math.max(m, a.sortOrder), -1) + 1;
+    for (const a of input.accounts) {
+      if (a.existingId) {
+        const existing = owned.find((o) => o.id === a.existingId);
+        if (!existing) throw notFound(`Account for “${a.key}”`);
+        accountByKey.set(a.key, { id: existing.id, currency: existing.currency });
+      } else if (a.create) {
+        const [created] = await tx
+          .insert(accounts)
+          .values({ userId: user.id, ...a.create, sortOrder: sortOrder++ })
+          .returning();
+        await ensureRate(tx, user.id, user.baseCurrency, created!.currency);
+        accountByKey.set(a.key, { id: created!.id, currency: created!.currency });
+        accountsCreated++;
+      } else {
+        throw badRequest(`Choose an account for “${a.key}”`);
+      }
+    }
+
+    // ─── Categories (validate ownership) ───
+    const categoryIds = [
+      ...new Set(input.records.map((r) => r.categoryId).filter((c): c is string => !!c)),
+    ];
+    if (categoryIds.length) {
+      const found = await tx
+        .select({ id: categories.id })
+        .from(categories)
+        .where(and(eq(categories.userId, user.id), inArray(categories.id, categoryIds)));
+      if (found.length !== categoryIds.length) throw notFound('Category');
+    }
+
+    // ─── Labels (by name, created when missing) ───
+    const labelNames = [...new Set(input.records.flatMap((r) => r.labels ?? []))];
+    const labelByName = new Map<string, string>();
+    let labelsCreated = 0;
+    if (labelNames.length) {
+      const existing = await tx.select().from(labels).where(eq(labels.userId, user.id));
+      for (const l of existing) labelByName.set(l.name.toLowerCase(), l.id);
+      for (const name of labelNames) {
+        if (labelByName.has(name.toLowerCase())) continue;
+        const [created] = await tx
+          .insert(labels)
+          .values({
+            userId: user.id,
+            name,
+            color: LABEL_COLORS[labelsCreated % LABEL_COLORS.length]!,
+          })
+          .returning();
+        labelByName.set(name.toLowerCase(), created!.id);
+        labelsCreated++;
+      }
+    }
+
+    // ─── Duplicate detection ───
+    const seen = new Set<string>();
+    if (input.skipDuplicates) {
+      const times = input.records.map((r) => new Date(r.occurredAt).getTime());
+      const accountIds = [...new Set([...accountByKey.values()].map((a) => a.id))];
+      const existing = await tx
+        .select({
+          accountId: records.accountId,
+          occurredAt: records.occurredAt,
+          amount: records.amount,
+        })
+        .from(records)
+        .where(
+          and(
+            eq(records.userId, user.id),
+            inArray(records.accountId, accountIds),
+            gte(records.occurredAt, new Date(Math.min(...times))),
+            lte(records.occurredAt, new Date(Math.max(...times))),
+          ),
+        );
+      for (const e of existing) seen.add(`${e.accountId}|${e.occurredAt.getTime()}|${e.amount}`);
+    }
+
+    // ─── Records ───
+    type Row = typeof records.$inferInsert;
+    const rows: Row[] = [];
+    const links: { recordId: string; labelId: string }[] = [];
+    let skipped = 0;
+    for (const r of input.records) {
+      const account = accountByKey.get(r.accountKey);
+      if (!account) throw badRequest(`Unknown account “${r.accountKey}”`);
+      const occurredAt = new Date(r.occurredAt);
+      const labelIds = (r.labels ?? [])
+        .map((n) => labelByName.get(n.toLowerCase())!)
+        .filter(Boolean);
+      const base = { userId: user.id, occurredAt, note: r.note ?? null, payee: r.payee ?? null };
+      if (r.type === 'transfer') {
+        const target = r.toAccountKey ? accountByKey.get(r.toAccountKey) : undefined;
+        if (!target || target.id === account.id)
+          throw badRequest('A transfer needs two different accounts');
+        const key = `${account.id}|${occurredAt.getTime()}|${-r.amount}`;
+        if (seen.has(key)) {
+          skipped++;
+          continue;
+        }
+        seen.add(key);
+        const group = randomUUID();
+        const outId = randomUUID();
+        const inId = randomUUID();
+        rows.push(
+          {
+            ...base,
+            id: outId,
+            accountId: account.id,
+            type: 'transfer',
+            amount: -r.amount,
+            currency: account.currency,
+            transferGroupId: group,
+            counterpartAccountId: target.id,
+          },
+          {
+            ...base,
+            id: inId,
+            accountId: target.id,
+            type: 'transfer',
+            amount: r.toAmount ?? r.amount,
+            currency: target.currency,
+            transferGroupId: group,
+            counterpartAccountId: account.id,
+          },
+        );
+        for (const labelId of labelIds)
+          links.push({ recordId: outId, labelId }, { recordId: inId, labelId });
+      } else {
+        const amount = r.type === 'expense' ? -r.amount : r.amount;
+        const key = `${account.id}|${occurredAt.getTime()}|${amount}`;
+        if (seen.has(key)) {
+          skipped++;
+          continue;
+        }
+        seen.add(key);
+        const id = randomUUID();
+        rows.push({
+          ...base,
+          id,
+          accountId: account.id,
+          type: r.type,
+          amount,
+          currency: account.currency,
+          categoryId: r.categoryId ?? null,
+        });
+        for (const labelId of labelIds) links.push({ recordId: id, labelId });
+      }
+    }
+    for (let i = 0; i < rows.length; i += 1000)
+      await tx.insert(records).values(rows.slice(i, i + 1000));
+    for (let i = 0; i < links.length; i += 2000)
+      await tx.insert(recordLabels).values(links.slice(i, i + 2000));
+
+    const imported = input.records.length - skipped;
+    return { imported, skipped, accountsCreated, labelsCreated };
+  });
+}
