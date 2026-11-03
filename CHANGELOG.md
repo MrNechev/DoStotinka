@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- More everyday categories: laundry & dry cleaning, repairs & tailoring, driving lessons, own
+  bicycle, funerals & memorials (for new users).
 - Personal API tokens (Settings → API tokens) and an API guide with an iOS Shortcuts recipe.
 - CSV export of the Records page uses the current filters.
 - Month-end forecast on the dashboard based on today's balance and open planned payments.
@@ -42,7 +44,7 @@ First alpha release.
 - Accounts of different types and currencies with starting balance, balance adjustment, archiving,
   exclusion from statistics and ordering.
 - Expense, income and transfer records with categories, payees, notes, labels, date and time.
-- Default category tree with 30 groups and 237 subcategories for expenses and income; custom
+- Default category tree with 30 groups and 232 subcategories for expenses and income; custom
   categories, icons and colours.
 - Statistics: income/expense summary with previous-period comparison, category donut with
   drill-down, stacked spending over time, cash flow and balance trend for any period and any set of
