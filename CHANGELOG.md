@@ -10,6 +10,9 @@ All notable changes to this project are documented in this file. The format is b
 - CSV import with automatic detection of Wallet by BudgetBakers exports, category matching,
   transfer pairing, account mapping and duplicate detection.
 - Totals (income, expenses, cash flow, count) for any record filter on the Records page.
+- Report table on the Statistics page: income and expenses per category and month/week with
+  totals, averages, cash flow and expandable subcategories.
+- “Duplicate” action in the record editor.
 
 ### Changed
 - Smaller web bundle: validation schemas are no longer shipped to the browser.

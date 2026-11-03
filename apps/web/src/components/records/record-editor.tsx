@@ -9,7 +9,7 @@ import {
   type RecordType,
 } from '@slavotax/shared';
 import { format } from 'date-fns';
-import { ArrowDown, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
+import { ArrowDown, Copy, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
 import {
   createContext,
   type ReactNode,
@@ -52,6 +52,9 @@ export interface RecordDefaults {
   amount?: number;
   date?: string;
   note?: string;
+  payee?: string;
+  labelIds?: string[];
+  toAmount?: number;
 }
 
 interface EditorContextValue {
@@ -68,7 +71,7 @@ export function useRecordEditor() {
 const lastAccount = storage<string | null>('last-account', null);
 
 type EditorState =
-  | { mode: 'new'; defaults?: RecordDefaults }
+  | { mode: 'new'; defaults?: RecordDefaults; nonce?: number }
   | { mode: 'edit'; record: RecordItem }
   | null;
 
@@ -86,9 +89,10 @@ export function RecordEditorProvider({ children }: { children: ReactNode }) {
       <Dialog open={!!state} onOpenChange={(o) => !o && setState(null)}>
         {state && (
           <RecordEditorDialog
-            key={state.mode === 'edit' ? state.record.id : 'new'}
+            key={state.mode === 'edit' ? state.record.id : `new-${state.nonce ?? 0}`}
             state={state}
             onClose={() => setState(null)}
+            onDuplicate={(defaults) => setState({ mode: 'new', defaults, nonce: Date.now() })}
           />
         )}
       </Dialog>
@@ -165,23 +169,30 @@ function initialState(state: NonNullable<EditorState>, accounts: Account[]): For
     amount: d.amount ? minorToInputString(d.amount, currency) : '',
     accountId,
     toAccountId: d.toAccountId ?? active.find((a) => a.id !== accountId)?.id ?? '',
-    toAmount: '',
-    toAmountTouched: false,
+    toAmount: d.toAmount
+      ? minorToInputString(
+          d.toAmount,
+          accounts.find((a) => a.id === d.toAccountId)?.currency ?? currency,
+        )
+      : '',
+    toAmountTouched: !!d.toAmount,
     categoryId: d.categoryId ?? null,
     date: d.date ?? format(now, 'yyyy-MM-dd'),
     time: format(now, 'HH:mm'),
     note: d.note ?? '',
-    payee: '',
-    labelIds: [],
+    payee: d.payee ?? '',
+    labelIds: d.labelIds ?? [],
   };
 }
 
 function RecordEditorDialog({
   state,
   onClose,
+  onDuplicate,
 }: {
   state: NonNullable<EditorState>;
   onClose: () => void;
+  onDuplicate: (defaults: RecordDefaults) => void;
 }) {
   const user = useUser();
   const { data: accounts = [] } = useAccounts();
@@ -306,6 +317,26 @@ function RecordEditorDialog({
     } catch (err) {
       setError(errorMessage(err));
     }
+  };
+
+  /** Opens a new record pre-filled with the current values (dated now). */
+  const duplicate = () => {
+    const currencyOfForm = accounts.find((a) => a.id === form.accountId)?.currency ?? 'EUR';
+    const amount = parseAmountToMinor(form.amount, currencyOfForm) ?? undefined;
+    const toAmount = form.toAmount
+      ? (parseAmountToMinor(form.toAmount, toCurrency) ?? undefined)
+      : undefined;
+    onDuplicate({
+      type: form.type,
+      accountId: form.accountId,
+      toAccountId: form.toAccountId || undefined,
+      categoryId: form.categoryId,
+      amount,
+      toAmount: crossCurrency ? toAmount : undefined,
+      note: form.note,
+      payee: form.payee,
+      labelIds: form.labelIds,
+    });
   };
 
   const onDelete = async () => {
@@ -614,14 +645,19 @@ function RecordEditorDialog({
 
           <div className="mt-1 flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
             {isEdit && (
-              <Button
-                variant="destructive-ghost"
-                onClick={onDelete}
-                loading={remove.isPending}
-                className="sm:mr-auto"
-              >
-                <Trash2 /> Delete
-              </Button>
+              <>
+                <Button
+                  variant="destructive-ghost"
+                  onClick={onDelete}
+                  loading={remove.isPending}
+                  className="sm:mr-auto"
+                >
+                  <Trash2 /> Delete
+                </Button>
+                <Button variant="outline" onClick={duplicate}>
+                  <Copy /> Duplicate
+                </Button>
+              </>
             )}
             {!isEdit && (
               <Button

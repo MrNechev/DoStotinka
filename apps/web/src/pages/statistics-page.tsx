@@ -13,6 +13,7 @@ import {
   PeriodPicker,
   useStatsFilters,
 } from '@/components/stats/filters';
+import { CategoryReport } from '@/components/stats/report';
 import { Select } from '@/components/ui/input';
 import { Card, CardHeader, PageHeader, Segmented } from '@/components/ui/misc';
 import { buildCategoryIndex } from '@/lib/categories';
@@ -35,6 +36,13 @@ export default function StatisticsPage() {
   };
 
   const groups = index.topLevel(type);
+  // Keep the report readable: at most ~15 columns.
+  const reportInterval =
+    filters.interval === 'day' && filters.resolved.days > 14
+      ? 'week'
+      : filters.interval === 'week' && filters.resolved.days > 120
+        ? 'month'
+        : filters.interval;
 
   return (
     <div>
@@ -127,6 +135,13 @@ export default function StatisticsPage() {
             </div>
           </Card>
         </div>
+        <Card className="overflow-hidden">
+          <CardHeader
+            title="Report"
+            description={`Income and expenses per category and ${reportInterval} – click a category to see its subcategories`}
+          />
+          <CategoryReport scope={filters.scope} interval={reportInterval} />
+        </Card>
       </div>
     </div>
   );

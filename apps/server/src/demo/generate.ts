@@ -192,7 +192,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       type: 'income',
       accountId: acc.bank,
       category: 'salary.salary',
-      amount: 3_050_00,
+      amount: 3_450_00,
       payee: 'Northwind Software Ltd.',
       rule: { frequency: 'monthly', interval: 1, startDate: monthDay(25) },
     },
@@ -798,7 +798,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
     }
 
     // Extra income
-    if (chance(0.03)) {
+    if (chance(0.045)) {
       add(date, int(10, 17), acc.bank, 'income', 'business_income.freelance', price(180, 950), {
         payee: pick(['Blue Pixel Studio', 'Acme Corp.', 'Nordic Design', 'Local Bakery']),
         note: 'Website project',
