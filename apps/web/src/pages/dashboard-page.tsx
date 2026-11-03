@@ -12,6 +12,7 @@ import {
   useUser,
 } from '@/api/queries';
 import { AccountCard } from '@/components/accounts/account-card';
+import { MonthEndForecast } from '@/components/dashboard/forecast';
 import { GettingStarted } from '@/components/dashboard/getting-started';
 import { UpcomingList } from '@/components/planned/upcoming-list';
 import { useRecordEditor } from '@/components/records/record-editor';
@@ -164,6 +165,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid min-w-0 grid-cols-1 content-start gap-6">
+          <MonthEndForecast />
           <Card>
             <CardHeader
               title="Upcoming payments"

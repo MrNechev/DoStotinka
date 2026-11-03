@@ -417,9 +417,17 @@ export default function ImportPage() {
             <Info className="mt-0.5 size-4 shrink-0" />
             <p>
               <span className="font-medium text-foreground">Coming from Wallet?</span> In the Wallet
-              web app open <em>Settings → Export</em> (or the records list → Export) and download
-              your records as CSV. Slavotax recognises the format automatically, matches Wallet's
-              categories and pairs transfers between accounts.
+              web app open <em>Records → Export</em> and download your records as CSV. Slavotax
+              recognises the format automatically, matches Wallet's categories and pairs transfers
+              between accounts.{' '}
+              <a
+                href="https://github.com/MrNechev/slavotax/blob/main/docs/MIGRATING_FROM_WALLET.md"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-primary hover:underline"
+              >
+                Step-by-step guide
+              </a>
             </p>
           </div>
         </Card>

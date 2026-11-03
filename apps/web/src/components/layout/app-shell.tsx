@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { useLogout, useUpdateProfile, useUser } from '@/api/queries';
+import { useLogout, useUpcoming, useUpdateProfile, useUser } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import {
   Menu,
@@ -58,6 +58,8 @@ const MOBILE_NAV = [
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const user = useUser();
+  const { data: upcoming } = useUpcoming(0);
+  const overdue = upcoming?.filter((o) => o.overdue).length ?? 0;
   const items = user.isAdmin
     ? [...NAV, { to: '/admin', label: 'Administration', icon: Shield, end: false }]
     : NAV;
@@ -78,6 +80,14 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
         >
           <item.icon className="size-[18px]" />
           {item.label}
+          {item.to === '/planned' && overdue > 0 && (
+            <span
+              className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-expense px-1.5 text-[11px] font-semibold text-white"
+              title={`${overdue} overdue`}
+            >
+              {overdue}
+            </span>
+          )}
         </NavLink>
       ))}
     </nav>

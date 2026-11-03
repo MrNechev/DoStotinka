@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- Month-end forecast on the dashboard based on today's balance and open planned payments.
+- Badge with the number of overdue planned payments in the navigation.
+- End-to-end browser tests (Playwright) in CI.
+- Guide for moving from Wallet by BudgetBakers.
+
+### Fixed
+- Forms opened right after a page load could keep an empty account.
+
 ## [0.1.0] – 2026-11-04
 
 First alpha release.
