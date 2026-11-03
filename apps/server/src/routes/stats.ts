@@ -5,7 +5,9 @@ import {
   statsQuery,
   timeseriesQuery,
 } from '@slavotax/shared';
+import { eq, max, min } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { records } from '../db/schema';
 import { safeTimeZone } from '../lib/dates';
 import { badRequest } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
@@ -34,6 +36,19 @@ function scopeOf(
 
 export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
   const { db } = app;
+
+  app.get(
+    '/bounds',
+    { schema: { tags: ['stats'], summary: 'Date of the first and last record' } },
+    async (req) => {
+      const user = currentUser(req);
+      const [row] = await db
+        .select({ first: min(records.occurredAt), last: max(records.occurredAt) })
+        .from(records)
+        .where(eq(records.userId, user.id));
+      return { first: row?.first?.toISOString() ?? null, last: row?.last?.toISOString() ?? null };
+    },
+  );
 
   app.get(
     '/summary',

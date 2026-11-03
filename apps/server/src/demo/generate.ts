@@ -483,7 +483,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
           plannedPaymentId: plan.id,
           plannedDueDate: cursor,
           payee: plan.payee,
-          note: plan.name,
+          note: plan.type === 'transfer' ? plan.name : undefined,
         };
         if (plan.type === 'transfer') {
           transfer(payDate, 10, plan.accountId, plan.toAccountId!, amount, amount, { ...meta });

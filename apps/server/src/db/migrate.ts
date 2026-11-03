@@ -11,6 +11,7 @@ export function migrationsFolder(): string {
     process.env.MIGRATIONS_DIR,
     path.resolve(here, '../drizzle'),
     path.resolve(here, '../../drizzle'),
+    path.resolve(here, '../../../drizzle'),
   ].filter(Boolean) as string[];
   const found = candidates.find((p) => existsSync(path.join(p, 'meta/_journal.json')));
   if (!found)

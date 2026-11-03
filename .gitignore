@@ -21,3 +21,4 @@ data/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+postgres/

@@ -1,0 +1,198 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f5f6f8;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --muted: #f1f4f7;
+  --muted-foreground: #64748b;
+  --border: #e3e8ef;
+  --input: #dbe2ea;
+  --ring: #10b981;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-foreground: #ffffff;
+  --primary-soft: #ecfdf5;
+  --accent: #eef2f6;
+  --destructive: #dc2626;
+  --income: #059669;
+  --expense: #e11d48;
+  --transfer: #475569;
+  --warning: #d97706;
+  --chart-grid: #e8edf3;
+  --shadow-color: 220 40% 20%;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0a0e13;
+  --foreground: #e6e9ee;
+  --card: #10161d;
+  --card-foreground: #e6e9ee;
+  --popover: #141b24;
+  --muted: #18202a;
+  --muted-foreground: #8d99aa;
+  --border: #1f2833;
+  --input: #2a3542;
+  --ring: #34d399;
+  --primary: #10b981;
+  --primary-hover: #34d399;
+  --primary-foreground: #04261c;
+  --primary-soft: #0c2a21;
+  --accent: #1a232e;
+  --destructive: #f05252;
+  --income: #34d399;
+  --expense: #fb7185;
+  --transfer: #94a3b8;
+  --warning: #fbbf24;
+  --chart-grid: #1c252f;
+  --shadow-color: 220 40% 2%;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-transfer: var(--transfer);
+  --color-warning: var(--warning);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html,
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .card-shadow {
+    box-shadow:
+      0 1px 2px hsl(var(--shadow-color) / 0.05),
+      0 1px 3px hsl(var(--shadow-color) / 0.04);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Recharts tweaks */
+.recharts-wrapper .recharts-cartesian-grid line {
+  stroke: var(--chart-grid);
+}
+.recharts-wrapper .recharts-text {
+  fill: var(--muted-foreground);
+  font-size: 11px;
+}
+.recharts-wrapper *:focus {
+  outline: none;
+}
+.recharts-tooltip-cursor {
+  fill: var(--muted);
+  opacity: 0.6;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-overlay-in {
+  animation: overlay-in 150ms ease-out;
+}
+.dialog-content {
+  animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (min-width: 640px) {
+  .dialog-content {
+    animation: content-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+.animate-sheet-in {
+  animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-pop-in {
+  animation: pop-in 140ms ease-out;
+}

@@ -1,0 +1,45 @@
+# Slavotax – self-hosted budget & money manager
+#
+# Quick start:
+#   cp .env.example .env      # then edit DB_PASSWORD
+#   docker compose up -d
+# Open http://<your-server>:3000
+name: slavotax
+
+services:
+  slavotax:
+    image: ghcr.io/mrnechev/slavotax:${SLAVOTAX_VERSION:-latest}
+    container_name: slavotax
+    restart: unless-stopped
+    ports:
+      - "${SLAVOTAX_PORT:-3000}:3000"
+    environment:
+      DB_HOST: database
+      DB_USERNAME: ${DB_USERNAME:-slavotax}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-slavotax}
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      DEMO_ENABLED: ${DEMO_ENABLED:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      EXCHANGE_RATES_AUTO_UPDATE: ${EXCHANGE_RATES_AUTO_UPDATE:-true}
+      TZ: ${TZ:-UTC}
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres:18-alpine
+    container_name: slavotax_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-slavotax}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-slavotax}
+    volumes:
+      - ${DB_DATA_LOCATION:-./postgres}:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

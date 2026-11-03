@@ -1,0 +1,644 @@
+import {
+  type Account,
+  convertMinor,
+  getCurrency,
+  minorToInputString,
+  parseAmountToMinor,
+  type RecordInput,
+  type RecordItem,
+  type RecordType,
+} from '@slavotax/shared';
+import { format } from 'date-fns';
+import { ArrowDown, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { toast } from 'sonner';
+import { errorMessage } from '@/api/client';
+import {
+  useAccounts,
+  useCurrencies,
+  useDeleteRecord,
+  useLabels,
+  usePayees,
+  useSaveRecord,
+  useUser,
+} from '@/api/queries';
+import {
+  CategoryButton,
+  CategoryPickerPanel,
+  rememberCategory,
+} from '@/components/categories/category-picker';
+import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Field, Input, Select, Textarea } from '@/components/ui/input';
+import { Segmented } from '@/components/ui/misc';
+import { money } from '@/lib/format';
+import { cn, storage } from '@/lib/utils';
+
+export interface RecordDefaults {
+  type?: RecordType;
+  accountId?: string;
+  toAccountId?: string;
+  categoryId?: string | null;
+  amount?: number;
+  date?: string;
+  note?: string;
+}
+
+interface EditorContextValue {
+  openNew: (defaults?: RecordDefaults) => void;
+  openEdit: (record: RecordItem) => void;
+}
+
+const EditorContext = createContext<EditorContextValue>({ openNew: () => {}, openEdit: () => {} });
+
+export function useRecordEditor() {
+  return useContext(EditorContext);
+}
+
+const lastAccount = storage<string | null>('last-account', null);
+
+type EditorState =
+  | { mode: 'new'; defaults?: RecordDefaults }
+  | { mode: 'edit'; record: RecordItem }
+  | null;
+
+export function RecordEditorProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<EditorState>(null);
+  const openNew = useCallback(
+    (defaults?: RecordDefaults) => setState({ mode: 'new', defaults }),
+    [],
+  );
+  const openEdit = useCallback((record: RecordItem) => setState({ mode: 'edit', record }), []);
+  const value = useMemo(() => ({ openNew, openEdit }), [openNew, openEdit]);
+  return (
+    <EditorContext.Provider value={value}>
+      {children}
+      <Dialog open={!!state} onOpenChange={(o) => !o && setState(null)}>
+        {state && (
+          <RecordEditorDialog
+            key={state.mode === 'edit' ? state.record.id : 'new'}
+            state={state}
+            onClose={() => setState(null)}
+          />
+        )}
+      </Dialog>
+    </EditorContext.Provider>
+  );
+}
+
+interface FormState {
+  type: RecordType;
+  amount: string;
+  accountId: string;
+  toAccountId: string;
+  toAmount: string;
+  toAmountTouched: boolean;
+  categoryId: string | null;
+  date: string;
+  time: string;
+  note: string;
+  payee: string;
+  labelIds: string[];
+}
+
+function initialState(state: NonNullable<EditorState>, accounts: Account[]): FormState {
+  const now = new Date();
+  const active = accounts.filter((a) => !a.archived);
+  const fallbackAccount =
+    (lastAccount.get() && active.find((a) => a.id === lastAccount.get())?.id) ||
+    active[0]?.id ||
+    '';
+  if (state.mode === 'edit') {
+    const r = state.record;
+    const d = new Date(r.occurredAt);
+    const base = {
+      date: format(d, 'yyyy-MM-dd'),
+      time: format(d, 'HH:mm'),
+      note: r.note ?? '',
+      payee: r.payee ?? '',
+      labelIds: r.labelIds,
+      toAmountTouched: true,
+    };
+    if (r.type === 'transfer') {
+      const incoming = r.amount > 0;
+      const fromId = incoming ? (r.counterpartAccountId ?? '') : r.accountId;
+      const toId = incoming ? r.accountId : (r.counterpartAccountId ?? '');
+      const fromAmount = incoming ? -(r.counterpartAmount ?? -r.amount) : -r.amount;
+      const toAmount = incoming ? r.amount : (r.counterpartAmount ?? -r.amount);
+      const fromCur = accounts.find((a) => a.id === fromId)?.currency ?? r.currency;
+      const toCur = accounts.find((a) => a.id === toId)?.currency ?? r.currency;
+      return {
+        ...base,
+        type: 'transfer',
+        amount: minorToInputString(fromAmount, fromCur),
+        accountId: fromId,
+        toAccountId: toId,
+        toAmount: minorToInputString(toAmount, toCur),
+        categoryId: null,
+      };
+    }
+    return {
+      ...base,
+      type: r.type,
+      amount: minorToInputString(Math.abs(r.amount), r.currency),
+      accountId: r.accountId,
+      toAccountId: '',
+      toAmount: '',
+      categoryId: r.categoryId,
+    };
+  }
+  const d = state.defaults ?? {};
+  const accountId = d.accountId ?? fallbackAccount;
+  const currency = accounts.find((a) => a.id === accountId)?.currency ?? 'EUR';
+  return {
+    type: d.type ?? 'expense',
+    amount: d.amount ? minorToInputString(d.amount, currency) : '',
+    accountId,
+    toAccountId: d.toAccountId ?? active.find((a) => a.id !== accountId)?.id ?? '',
+    toAmount: '',
+    toAmountTouched: false,
+    categoryId: d.categoryId ?? null,
+    date: d.date ?? format(now, 'yyyy-MM-dd'),
+    time: format(now, 'HH:mm'),
+    note: d.note ?? '',
+    payee: '',
+    labelIds: [],
+  };
+}
+
+function RecordEditorDialog({
+  state,
+  onClose,
+}: {
+  state: NonNullable<EditorState>;
+  onClose: () => void;
+}) {
+  const user = useUser();
+  const { data: accounts = [] } = useAccounts();
+  const { data: labels = [] } = useLabels();
+  const { data: payees = [] } = usePayees();
+  const { data: currencies } = useCurrencies();
+  const save = useSaveRecord();
+  const remove = useDeleteRecord();
+  const confirm = useConfirm();
+  const [form, setForm] = useState<FormState>(() => initialState(state, accounts));
+  const [picking, setPicking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const amountRef = useRef<HTMLInputElement>(null);
+
+  const isEdit = state.mode === 'edit';
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
+
+  const activeAccounts = accounts.filter(
+    (a) => !a.archived || a.id === form.accountId || a.id === form.toAccountId,
+  );
+  const account = accounts.find((a) => a.id === form.accountId);
+  const toAccount = accounts.find((a) => a.id === form.toAccountId);
+  const currency = account?.currency ?? user.baseCurrency;
+  const toCurrency = toAccount?.currency ?? currency;
+  const crossCurrency = form.type === 'transfer' && !!toAccount && toCurrency !== currency;
+  const parsedAmount = parseAmountToMinor(form.amount || '0', currency);
+
+  // Suggest the received amount for cross-currency transfers using the stored rates.
+  useEffect(() => {
+    if (!crossCurrency || form.toAmountTouched || !currencies) return;
+    const rates: Record<string, number> = { [currencies.baseCurrency]: 1 };
+    for (const r of currencies.rates) rates[r.currency] = r.rate;
+    const converted = parsedAmount ? convertMinor(parsedAmount, currency, toCurrency, rates) : 0;
+    setForm((f) => ({
+      ...f,
+      toAmount: converted ? minorToInputString(converted, toCurrency) : '',
+    }));
+  }, [crossCurrency, parsedAmount, currency, toCurrency, currencies, form.toAmountTouched]);
+
+  // Keep the recorded amount expression readable when it contains an operator.
+  const expressionPreview =
+    /[+\-*/]/.test(form.amount.replace(/^-/, '')) && parsedAmount !== null
+      ? money(parsedAmount, currency)
+      : null;
+
+  const submit = async (addAnother: boolean) => {
+    setError(null);
+    const amount = parseAmountToMinor(form.amount, currency);
+    if (amount === null || amount <= 0) {
+      setError('Enter an amount greater than zero');
+      amountRef.current?.focus();
+      return;
+    }
+    if (!form.accountId) {
+      setError('Choose an account');
+      return;
+    }
+    const occurredAt = new Date(`${form.date}T${form.time || '12:00'}`);
+    if (Number.isNaN(occurredAt.getTime())) {
+      setError('Enter a valid date and time');
+      return;
+    }
+    let input: RecordInput;
+    if (form.type === 'transfer') {
+      if (!form.toAccountId || form.toAccountId === form.accountId) {
+        setError('Choose two different accounts');
+        return;
+      }
+      const toAmount = crossCurrency ? parseAmountToMinor(form.toAmount, toCurrency) : amount;
+      if (!toAmount || toAmount <= 0) {
+        setError('Enter the amount received by the destination account');
+        return;
+      }
+      input = {
+        type: 'transfer',
+        accountId: form.accountId,
+        toAccountId: form.toAccountId,
+        amount,
+        toAmount,
+        occurredAt: occurredAt.toISOString(),
+        note: form.note || null,
+        payee: null,
+        labelIds: form.labelIds,
+      };
+    } else {
+      input = {
+        type: form.type,
+        accountId: form.accountId,
+        amount,
+        categoryId: form.categoryId,
+        occurredAt: occurredAt.toISOString(),
+        note: form.note || null,
+        payee: form.payee || null,
+        labelIds: form.labelIds,
+      };
+    }
+    try {
+      await save.mutateAsync({ id: isEdit ? state.record.id : undefined, input });
+      lastAccount.set(form.accountId);
+      if (form.type !== 'transfer') rememberCategory(form.type, form.categoryId);
+      toast.success(
+        isEdit
+          ? 'Record updated'
+          : form.type === 'transfer'
+            ? 'Transfer saved'
+            : `${form.type === 'expense' ? 'Expense' : 'Income'} saved`,
+      );
+      if (addAnother) {
+        setForm((f) => ({
+          ...f,
+          amount: '',
+          note: '',
+          payee: '',
+          toAmount: '',
+          toAmountTouched: false,
+        }));
+        amountRef.current?.focus();
+      } else {
+        onClose();
+      }
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  };
+
+  const onDelete = async () => {
+    if (!isEdit) return;
+    const ok = await confirm({
+      title: 'Delete this record?',
+      description:
+        state.record.type === 'transfer'
+          ? 'Both sides of the transfer will be removed. This cannot be undone.'
+          : 'This cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await remove.mutateAsync(state.record.id);
+      toast.success('Record deleted');
+      onClose();
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  };
+
+  const typeColor =
+    form.type === 'expense'
+      ? 'text-expense'
+      : form.type === 'income'
+        ? 'text-income'
+        : 'text-foreground';
+
+  if (accounts.length === 0) {
+    return (
+      <DialogContent title="Add record" size="md">
+        <p className="text-sm text-muted-foreground">
+          Create an account first (for example “Cash” or “Bank account”) – records always belong to
+          an account.
+        </p>
+        <div className="mt-5 flex justify-end">
+          <Button
+            onClick={() => {
+              onClose();
+              window.location.assign('/accounts?new=1');
+            }}
+          >
+            Create an account
+          </Button>
+        </div>
+      </DialogContent>
+    );
+  }
+
+  return (
+    <DialogContent
+      title={picking ? 'Choose category' : isEdit ? 'Edit record' : 'Add record'}
+      size="md"
+      onOpenAutoFocus={(e) => {
+        e.preventDefault();
+        if (!isEdit) amountRef.current?.focus();
+      }}
+    >
+      {picking ? (
+        <CategoryPickerPanel
+          kind={form.type === 'income' ? 'income' : 'expense'}
+          value={form.categoryId}
+          onBack={() => setPicking(false)}
+          onSelect={(id) => {
+            set('categoryId', id);
+            setPicking(false);
+          }}
+        />
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit(false);
+          }}
+          className="grid gap-4"
+        >
+          <Segmented<RecordType>
+            value={form.type}
+            onChange={(t) => setForm((f) => ({ ...f, type: t }))}
+            className="w-full"
+            options={[
+              {
+                value: 'expense',
+                label: (
+                  <>
+                    <Minus /> Expense
+                  </>
+                ),
+                className: 'text-expense',
+              },
+              {
+                value: 'income',
+                label: (
+                  <>
+                    <Plus /> Income
+                  </>
+                ),
+                className: 'text-income',
+              },
+              {
+                value: 'transfer',
+                label: (
+                  <>
+                    <Repeat /> Transfer
+                  </>
+                ),
+              },
+            ]}
+          />
+
+          <div className="rounded-2xl bg-muted/60 px-4 py-3">
+            <label htmlFor="amount" className="text-xs font-medium text-muted-foreground">
+              {form.type === 'transfer' ? 'Amount sent' : 'Amount'}
+            </label>
+            <div className="flex items-baseline gap-2">
+              <span className={cn('text-3xl font-semibold', typeColor)}>
+                {form.type === 'expense' ? '−' : form.type === 'income' ? '+' : ''}
+              </span>
+              <input
+                id="amount"
+                ref={amountRef}
+                value={form.amount}
+                onChange={(e) => set('amount', e.target.value)}
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="0.00"
+                className={cn(
+                  'tabular w-full min-w-0 bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground/40',
+                  typeColor,
+                )}
+              />
+              <span className="text-lg font-medium text-muted-foreground">
+                {getCurrency(currency).symbol}
+              </span>
+            </div>
+            {expressionPreview && (
+              <p className="mt-1 text-xs text-muted-foreground">= {expressionPreview}</p>
+            )}
+          </div>
+
+          {form.type === 'transfer' ? (
+            <div className="grid gap-3">
+              <Field label="From account" htmlFor="from">
+                <Select
+                  id="from"
+                  value={form.accountId}
+                  onChange={(e) => set('accountId', e.target.value)}
+                >
+                  {activeAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · {money(a.balance, a.currency)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <div className="-my-1 flex justify-center">
+                <span className="rounded-full bg-muted p-1.5 text-muted-foreground">
+                  <ArrowDown className="size-4" />
+                </span>
+              </div>
+              <Field label="To account" htmlFor="to">
+                <Select
+                  id="to"
+                  value={form.toAccountId}
+                  onChange={(e) => set('toAccountId', e.target.value)}
+                >
+                  <option value="">Choose account…</option>
+                  {activeAccounts
+                    .filter((a) => a.id !== form.accountId)
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name} · {money(a.balance, a.currency)}
+                      </option>
+                    ))}
+                </Select>
+              </Field>
+              {crossCurrency && (
+                <Field
+                  label={`Amount received (${toCurrency})`}
+                  htmlFor="toAmount"
+                  hint="Suggested from your exchange rates – adjust it to what you actually received."
+                >
+                  <Input
+                    id="toAmount"
+                    inputMode="decimal"
+                    value={form.toAmount}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, toAmount: e.target.value, toAmountTouched: true }))
+                    }
+                  />
+                </Field>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Account" htmlFor="account" className="sm:col-span-2">
+                <Select
+                  id="account"
+                  value={form.accountId}
+                  onChange={(e) => set('accountId', e.target.value)}
+                >
+                  {activeAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · {money(a.balance, a.currency)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Category" className="sm:col-span-2">
+                <CategoryButton value={form.categoryId} onClick={() => setPicking(true)} />
+              </Field>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Date" htmlFor="date">
+              <Input
+                id="date"
+                type="date"
+                value={form.date}
+                onChange={(e) => set('date', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Time" htmlFor="time">
+              <Input
+                id="time"
+                type="time"
+                value={form.time}
+                onChange={(e) => set('time', e.target.value)}
+              />
+            </Field>
+          </div>
+
+          {form.type !== 'transfer' && (
+            <Field label={form.type === 'income' ? 'Payer' : 'Payee'} htmlFor="payee">
+              <Input
+                id="payee"
+                list="payee-options"
+                value={form.payee}
+                onChange={(e) => set('payee', e.target.value)}
+                placeholder={form.type === 'income' ? 'Who paid you?' : 'Shop, company or person'}
+                maxLength={120}
+              />
+              <datalist id="payee-options">
+                {payees.map((p) => (
+                  <option key={p} value={p} />
+                ))}
+              </datalist>
+            </Field>
+          )}
+
+          <Field label="Note" htmlFor="note">
+            <Textarea
+              id="note"
+              value={form.note}
+              onChange={(e) => set('note', e.target.value)}
+              placeholder="What was it for?"
+              maxLength={500}
+              rows={2}
+            />
+          </Field>
+
+          {labels.length > 0 && (
+            <Field label="Labels">
+              <div className="flex flex-wrap gap-1.5">
+                {labels.map((l) => {
+                  const active = form.labelIds.includes(l.id);
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() =>
+                        set(
+                          'labelIds',
+                          active
+                            ? form.labelIds.filter((x) => x !== l.id)
+                            : [...form.labelIds, l.id],
+                        )
+                      }
+                      className={cn(
+                        'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                        active
+                          ? 'text-white'
+                          : 'border-border text-muted-foreground hover:bg-muted',
+                      )}
+                      style={
+                        active ? { backgroundColor: l.color, borderColor: l.color } : undefined
+                      }
+                    >
+                      {l.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+          )}
+
+          {error && (
+            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-1 flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+            {isEdit && (
+              <Button
+                variant="destructive-ghost"
+                onClick={onDelete}
+                loading={remove.isPending}
+                className="sm:mr-auto"
+              >
+                <Trash2 /> Delete
+              </Button>
+            )}
+            {!isEdit && (
+              <Button
+                variant="outline"
+                onClick={() => void submit(true)}
+                disabled={save.isPending}
+                className="sm:mr-auto"
+              >
+                Save & add another
+              </Button>
+            )}
+            <Button type="submit" loading={save.isPending} className="sm:min-w-28">
+              {isEdit ? 'Save changes' : 'Save'}
+            </Button>
+          </div>
+        </form>
+      )}
+    </DialogContent>
+  );
+}

@@ -1,0 +1,168 @@
+import type { Interval } from '@slavotax/shared';
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
+  differenceInCalendarDays,
+  endOfDay,
+  format,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+  subDays,
+  subMonths,
+  subWeeks,
+} from 'date-fns';
+
+export const PERIOD_PRESETS = [
+  { id: '7d', label: 'Last 7 days', short: '7D' },
+  { id: '30d', label: 'Last 30 days', short: '30D' },
+  { id: '12w', label: 'Last 12 weeks', short: '12W' },
+  { id: '6m', label: 'Last 6 months', short: '6M' },
+  { id: '1y', label: 'Last 12 months', short: '1Y' },
+  { id: 'week', label: 'Week', short: 'Week' },
+  { id: 'month', label: 'Month', short: 'Month' },
+  { id: 'year', label: 'Year', short: 'Year' },
+  { id: 'all', label: 'All time', short: 'All' },
+  { id: 'custom', label: 'Custom range', short: 'Custom' },
+] as const;
+
+export type PeriodPreset = (typeof PERIOD_PRESETS)[number]['id'];
+
+export interface PeriodState {
+  preset: PeriodPreset;
+  /** For calendar presets (week/month/year): 0 = current, -1 = previous … */
+  offset: number;
+  /** Custom range (inclusive), YYYY-MM-DD. */
+  from?: string;
+  to?: string;
+}
+
+export interface ResolvedPeriod {
+  from: Date;
+  /** Exclusive end. */
+  to: Date;
+  label: string;
+  interval: Interval;
+  days: number;
+  navigable: boolean;
+}
+
+export function autoInterval(days: number): Interval {
+  if (days <= 35) return 'day';
+  if (days <= 190) return 'week';
+  return 'month';
+}
+
+export function resolvePeriod(
+  state: PeriodState,
+  opts: { weekStartsOn?: 0 | 1 | 6; firstRecord?: string | null; now?: Date } = {},
+): ResolvedPeriod {
+  const now = opts.now ?? new Date();
+  const today = startOfDay(now);
+  const tomorrow = addDays(today, 1);
+  const weekStartsOn = opts.weekStartsOn ?? 1;
+  let from: Date;
+  let to: Date = tomorrow;
+  let label: string;
+  let navigable = false;
+
+  switch (state.preset) {
+    case '7d':
+      from = subDays(today, 6);
+      label = 'Last 7 days';
+      break;
+    case '30d':
+      from = subDays(today, 29);
+      label = 'Last 30 days';
+      break;
+    case '12w':
+      from = subWeeks(startOfWeek(today, { weekStartsOn }), 11);
+      label = 'Last 12 weeks';
+      break;
+    case '6m':
+      from = subMonths(startOfMonth(today), 5);
+      label = 'Last 6 months';
+      break;
+    case '1y':
+      from = subMonths(startOfMonth(today), 11);
+      label = 'Last 12 months';
+      break;
+    case 'week': {
+      from = addWeeks(startOfWeek(today, { weekStartsOn }), state.offset);
+      to = addWeeks(from, 1);
+      const end = subDays(to, 1);
+      label =
+        state.offset === 0
+          ? 'This week'
+          : state.offset === -1
+            ? 'Last week'
+            : `${format(from, 'd MMM')} – ${format(end, from.getFullYear() === now.getFullYear() ? 'd MMM' : 'd MMM yyyy')}`;
+      navigable = true;
+      break;
+    }
+    case 'month':
+      from = addMonths(startOfMonth(today), state.offset);
+      to = addMonths(from, 1);
+      label = format(from, from.getFullYear() === now.getFullYear() ? 'MMMM' : 'MMMM yyyy');
+      navigable = true;
+      break;
+    case 'year':
+      from = addYears(startOfYear(today), state.offset);
+      to = addYears(from, 1);
+      label = format(from, 'yyyy');
+      navigable = true;
+      break;
+    case 'all':
+      from = opts.firstRecord
+        ? startOfMonth(parseISO(opts.firstRecord))
+        : subMonths(startOfMonth(today), 11);
+      label = 'All time';
+      break;
+    case 'custom': {
+      from = state.from ? startOfDay(parseISO(state.from)) : subDays(today, 29);
+      to = state.to ? addDays(startOfDay(parseISO(state.to)), 1) : tomorrow;
+      if (to <= from) to = addDays(from, 1);
+      label = `${format(from, 'd MMM yyyy')} – ${format(subDays(to, 1), 'd MMM yyyy')}`;
+      break;
+    }
+  }
+  const days = Math.max(1, differenceInCalendarDays(to, from));
+  return { from, to, label, interval: autoInterval(days), days, navigable };
+}
+
+export function periodToParams(state: PeriodState): Record<string, string> {
+  const p: Record<string, string> = { period: state.preset };
+  if (state.offset) p.offset = String(state.offset);
+  if (state.preset === 'custom') {
+    if (state.from) p.from = state.from;
+    if (state.to) p.to = state.to;
+  }
+  return p;
+}
+
+export function periodFromParams(params: URLSearchParams, fallback: PeriodState): PeriodState {
+  const preset = params.get('period') as PeriodPreset | null;
+  if (!preset || !PERIOD_PRESETS.some((p) => p.id === preset)) return fallback;
+  return {
+    preset,
+    offset: Number(params.get('offset') ?? 0) || 0,
+    from: params.get('from') ?? undefined,
+    to: params.get('to') ?? undefined,
+  };
+}
+
+export const isoDay = (d: Date) => format(d, 'yyyy-MM-dd');
+
+/** Label for a chart bucket. */
+export function bucketLabel(date: string, interval: Interval, long = false): string {
+  const d = parseISO(date);
+  if (interval === 'month') return format(d, long ? 'MMMM yyyy' : "MMM ''yy");
+  if (interval === 'week') return long ? `Week of ${format(d, 'd MMM yyyy')}` : format(d, 'd MMM');
+  return format(d, long ? 'EEE, d MMM yyyy' : 'd MMM');
+}
+
+export { endOfDay };

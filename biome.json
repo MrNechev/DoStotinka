@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/dist", "!**/drizzle/meta", "!**/*.gen.ts"]
+    "includes": ["**", "!**/dist", "!**/drizzle/meta", "!**/*.gen.ts", "!**/public"]
   },
   "formatter": {
     "enabled": true,
@@ -25,7 +25,13 @@
         "noAutofocus": "off",
         "useKeyWithClickEvents": "off",
         "noStaticElementInteractions": "off",
-        "useSemanticElements": "off"
+        "useSemanticElements": "off",
+        "noLabelWithoutControl": {
+          "level": "error",
+          "options": {
+            "inputComponents": ["Switch", "Checkbox", "Input", "Select", "Textarea"]
+          }
+        }
       },
       "suspicious": {
         "noArrayIndexKey": "off"

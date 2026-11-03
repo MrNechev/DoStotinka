@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.env
+.env
+postgres
+.git
+.github
+docs
+coverage
+.DS_Store
