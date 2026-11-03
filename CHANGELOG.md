@@ -11,6 +11,7 @@ All notable changes to this project are documented in this file. The format is b
 - Badge with the number of overdue planned payments in the navigation.
 - End-to-end browser tests (Playwright) in CI.
 - Guide for moving from Wallet by BudgetBakers.
+- Service worker for the installable web app (faster start, offline shell; data is never cached).
 
 ### Fixed
 - Forms opened right after a page load could keep an empty account.
