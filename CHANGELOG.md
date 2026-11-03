@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Personal API tokens (Settings → API tokens) and an API guide with an iOS Shortcuts recipe.
+- CSV export of the Records page uses the current filters.
 - Month-end forecast on the dashboard based on today's balance and open planned payments.
 - Badge with the number of overdue planned payments in the navigation.
 - End-to-end browser tests (Playwright) in CI.

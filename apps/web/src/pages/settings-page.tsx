@@ -1,11 +1,13 @@
-import { CURRENCIES, getCurrency } from '@slavotax/shared';
+import { type CreatedToken, CURRENCIES, getCurrency } from '@slavotax/shared';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
   BookOpen,
   Code,
+  Copy,
   Download,
   FileJson,
   FileUp,
+  KeyRound,
   Laptop,
   RefreshCw,
   Trash2,
@@ -15,8 +17,10 @@ import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import {
+  useAccounts,
   useAddCurrency,
   useChangePassword,
+  useCreateToken,
   useCurrencies,
   useDeleteAccount,
   useRefreshRates,
@@ -427,25 +431,27 @@ function SecuritySection() {
       )}
       <h3 className="mb-2 mt-6 text-sm font-semibold">Active sessions</h3>
       <ul className="divide-y divide-border rounded-xl border border-border">
-        {sessions.map((s) => (
-          <li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
-            <Laptop className="size-5 shrink-0 text-muted-foreground" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm">{describeAgent(s.userAgent)}</p>
-              <p className="text-xs text-muted-foreground">
-                {s.ip ?? 'unknown IP'} · active{' '}
-                {formatDistanceToNow(parseISO(s.lastUsedAt), { addSuffix: true })}
-              </p>
-            </div>
-            {s.current ? (
-              <Badge tone="success">this device</Badge>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => revoke.mutate(s.id)}>
-                Sign out
-              </Button>
-            )}
-          </li>
-        ))}
+        {sessions
+          .filter((s) => !s.name)
+          .map((s) => (
+            <li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
+              <Laptop className="size-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm">{describeAgent(s.userAgent)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {s.ip ?? 'unknown IP'} · active{' '}
+                  {formatDistanceToNow(parseISO(s.lastUsedAt), { addSuffix: true })}
+                </p>
+              </div>
+              {s.current ? (
+                <Badge tone="success">this device</Badge>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => revoke.mutate(s.id)}>
+                  Sign out
+                </Button>
+              )}
+            </li>
+          ))}
       </ul>
     </Section>
   );
@@ -474,6 +480,139 @@ function describeAgent(ua: string | null) {
             ? 'Linux'
             : '';
   return os ? `${browser} on ${os}` : browser;
+}
+
+function ApiTokensSection() {
+  const user = useUser();
+  const { data: sessions = [] } = useSessions();
+  const { data: accounts = [] } = useAccounts();
+  const create = useCreateToken();
+  const revoke = useRevokeSession();
+  const [name, setName] = useState('');
+  const [created, setCreated] = useState<CreatedToken | null>(null);
+  const tokens = sessions.filter((s) => s.name);
+  if (user.isDemo) return null;
+  const origin = window.location.origin;
+  const example = created
+    ? `curl -X POST ${origin}/api/records \\
+  -H "Authorization: Bearer ${created.token}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"type":"expense","accountId":"${accounts[0]?.id ?? '<account id>'}","amount":1250,"occurredAt":"${new Date().toISOString()}","note":"Coffee"}'`
+    : '';
+  return (
+    <Section
+      title="API tokens"
+      description="Let scripts, phone automations (iOS Shortcuts, Tasker) or apps use your data via the API."
+    >
+      <form
+        className="flex flex-wrap gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          create.mutate(name, {
+            onSuccess: (t) => {
+              setCreated(t);
+              setName('');
+            },
+            onError: (err) => toast.error(errorMessage(err)),
+          });
+        }}
+      >
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Token name, e.g. “iPhone Shortcut”"
+          className="max-w-xs"
+          required
+          maxLength={60}
+        />
+        <Button type="submit" variant="outline" loading={create.isPending}>
+          <KeyRound /> Create token
+        </Button>
+      </form>
+      {tokens.length > 0 && (
+        <ul className="mt-4 divide-y divide-border rounded-xl border border-border">
+          {tokens.map((t) => (
+            <li key={t.id} className="flex items-center gap-3 px-3 py-2.5">
+              <KeyRound className="size-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{t.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Created {formatDistanceToNow(parseISO(t.createdAt), { addSuffix: true })} · last
+                  used {formatDistanceToNow(parseISO(t.lastUsedAt), { addSuffix: true })}
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => revoke.mutate(t.id)}>
+                Revoke
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-3 text-xs text-muted-foreground">
+        See the{' '}
+        <a
+          href="/api/docs"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-primary hover:underline"
+        >
+          API documentation
+        </a>{' '}
+        for all endpoints. Amounts are in cents (1250 = 12.50).
+      </p>
+      <Dialog open={!!created} onOpenChange={(o) => !o && setCreated(null)}>
+        {created && (
+          <DialogContent
+            size="lg"
+            title={`Token “${created.name}” created`}
+            description="Copy it now – it will not be shown again."
+          >
+            <div className="grid gap-4">
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={created.token}
+                  className="font-mono text-xs"
+                  onFocus={(e) => e.target.select()}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(created.token);
+                    toast.success('Token copied');
+                  }}
+                >
+                  <Copy /> Copy
+                </Button>
+              </div>
+              <div>
+                <p className="mb-1.5 text-sm font-medium">Example: add an expense</p>
+                <pre className="overflow-x-auto rounded-xl bg-muted p-3 text-xs leading-relaxed">
+                  {example}
+                </pre>
+              </div>
+              {accounts.length > 0 && (
+                <div>
+                  <p className="mb-1.5 text-sm font-medium">Your account IDs</p>
+                  <ul className="grid gap-1 text-xs">
+                    {accounts.map((a) => (
+                      <li
+                        key={a.id}
+                        className="flex justify-between gap-3 rounded-lg bg-muted/60 px-2.5 py-1.5"
+                      >
+                        <span>{a.name}</span>
+                        <code className="truncate text-muted-foreground">{a.id}</code>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </Section>
+  );
 }
 
 function DataSection() {
@@ -572,6 +711,7 @@ export default function SettingsPage() {
         <PreferencesSection />
         <CurrenciesSection />
         <SecuritySection />
+        <ApiTokensSection />
         <DataSection />
         <DangerSection />
         <p className="flex flex-wrap items-center justify-center gap-4 pb-4 text-xs text-muted-foreground">

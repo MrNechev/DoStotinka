@@ -57,6 +57,15 @@ export interface Session {
   userAgent: string | null;
   ip: string | null;
   current: boolean;
+  /** Name of a personal API token (null for normal browser sessions). */
+  name: string | null;
+}
+
+export interface CreatedToken {
+  id: string;
+  name: string;
+  /** Shown only once. */
+  token: string;
 }
 
 export interface Account {

@@ -76,6 +76,8 @@ export const sessions = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     userAgent: text('user_agent'),
     ip: text('ip'),
+    /** Set for personal API tokens (long-lived, created in Settings). */
+    name: text('name'),
   },
   (t) => [index('sessions_user_idx').on(t.userId)],
 );

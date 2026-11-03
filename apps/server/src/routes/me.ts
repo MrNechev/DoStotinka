@@ -1,4 +1,5 @@
 import {
+  type CreatedToken,
   changePasswordInput,
   deleteAccountInput,
   type Session,
@@ -8,7 +9,7 @@ import { and, desc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { sessions, users } from '../db/schema';
-import { hashPassword, verifyPassword } from '../lib/crypto';
+import { generateToken, hashPassword, sha256, verifyPassword } from '../lib/crypto';
 import { isValidTimeZone } from '../lib/dates';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { clearSessionCookie, currentUser } from '../plugins/auth';
@@ -90,9 +91,37 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         userAgent: s.userAgent,
         ip: s.ip,
         current: s.id === req.sessionId,
+        name: s.name,
       }),
     );
   });
+
+  app.post(
+    '/tokens',
+    {
+      schema: {
+        tags: ['user'],
+        summary: 'Create a personal API token (for scripts, automations and apps)',
+        body: z.object({ name: z.string().trim().min(1).max(60) }),
+      },
+    },
+    async (req, reply) => {
+      const user = currentUser(req);
+      if (user.isDemo) throw forbidden('API tokens are not available for the demo account');
+      const token = generateToken();
+      const id = sha256(token);
+      await app.db.insert(sessions).values({
+        id,
+        userId: user.id,
+        name: req.body.name,
+        expiresAt: new Date(Date.now() + 10 * 365 * 86_400_000),
+        userAgent: 'API token',
+        ip: req.ip ?? null,
+      });
+      const body: CreatedToken = { id: id.slice(0, 16), name: req.body.name, token };
+      return reply.status(201).send(body);
+    },
+  );
 
   app.delete(
     '/sessions/:id',

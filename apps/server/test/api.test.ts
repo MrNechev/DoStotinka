@@ -1055,3 +1055,26 @@ describe('filtered export', () => {
     expect(lines[1]).toContain('coffee');
   });
 });
+
+describe('API tokens', () => {
+  it('creates a token that authenticates API calls and can be revoked', async () => {
+    const { call } = await registerUser(ctx.app);
+    const created = await call('POST', '/api/me/tokens', { name: 'iPhone Shortcut' });
+    expect(created.status).toBe(201);
+    const auth = { authorization: `Bearer ${created.body.token}` };
+    const acc = await ctx.app.inject({
+      method: 'POST',
+      url: '/api/accounts',
+      headers: auth,
+      payload: { name: 'Via API', type: 'cash', currency: 'EUR', color: '#22C55E' },
+    });
+    expect(acc.statusCode).toBe(201);
+    const sessions = (await call<any[]>('GET', '/api/me/sessions')).body;
+    const token = sessions.find((s) => s.name === 'iPhone Shortcut');
+    expect(token).toBeTruthy();
+    expect(new Date(token.expiresAt).getFullYear()).toBeGreaterThan(new Date().getFullYear() + 5);
+    expect((await call('DELETE', `/api/me/sessions/${token.id}`)).status).toBe(204);
+    const after = await ctx.app.inject({ method: 'GET', url: '/api/me', headers: auth });
+    expect(after.statusCode).toBe(401);
+  });
+});

@@ -43,7 +43,10 @@ export function registerAuth(app: FastifyInstance, db: Database, config: Config)
     req.user = row.user;
     req.sessionId = id;
     if (now.getTime() - row.session.lastUsedAt.getTime() > TOUCH_INTERVAL_MS) {
-      const expiresAt = new Date(now.getTime() + config.SESSION_TTL_DAYS * 86_400_000);
+      // Browser sessions slide; named API tokens keep their own (long) expiry.
+      const expiresAt = row.session.name
+        ? row.session.expiresAt
+        : new Date(now.getTime() + config.SESSION_TTL_DAYS * 86_400_000);
       await db.update(sessions).set({ lastUsedAt: now, expiresAt }).where(eq(sessions.id, id));
     }
   });

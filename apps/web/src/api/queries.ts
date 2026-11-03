@@ -13,6 +13,7 @@ import type {
   CategoryInput,
   CategoryStatsResponse,
   CategoryUpdateInput,
+  CreatedToken,
   CurrenciesResponse,
   Goal,
   GoalInput,
@@ -179,6 +180,15 @@ export function useChangePassword() {
 
 export function useSessions() {
   return useQuery({ queryKey: qk.sessions, queryFn: () => api<Session[]>('/me/sessions') });
+}
+
+export function useCreateToken() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) =>
+      api<CreatedToken>('/me/tokens', { method: 'POST', body: { name } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.sessions }),
+  });
 }
 
 export function useRevokeSession() {

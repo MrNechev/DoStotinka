@@ -68,7 +68,8 @@ leaves it.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
 - **Demo account** with a full year of realistic example data.
-- **REST API** with interactive OpenAPI documentation at `/api/docs` – ready for a future mobile app.
+- **REST API** with interactive OpenAPI documentation at `/api/docs` and personal API tokens –
+  ready for automations and a future mobile app.
 
 ## Screenshots
 
@@ -266,9 +267,10 @@ More details for contributors are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 ### API
 
 The web app talks to a documented JSON API under `/api`. Browse it interactively at
-`http://<your-server>:3000/api/docs`. Clients other than the browser can authenticate with
-`POST /api/auth/login` and `"issueToken": true`, then send `Authorization: Bearer <token>`.
-All amounts are integers in minor units (cents).
+`http://<your-server>:3000/api/docs`. Create a personal API token in **Settings → API tokens** and
+send it as `Authorization: Bearer <token>` – handy for scripts and phone automations (e.g. an iOS
+Shortcut that logs a cash expense). All amounts are integers in minor units (cents). See
+[docs/API.md](docs/API.md) for examples.
 
 ## Roadmap
 
