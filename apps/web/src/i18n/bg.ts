@@ -808,6 +808,66 @@ export const bg: Record<string, string> = {
   'This permanently deletes the account and its {n} records. Transfers to other accounts keep their other side. Consider archiving instead.':
     'Това изтрива окончателно сметката и нейните {n} записа. Преводите към други сметки запазват другата си страна. Обмислете архивиране вместо това.',
 
+  // ─── Server messages ───
+  'A category cannot be its own parent': 'Категорията не може да бъде родител на себе си',
+  'Administrator rights required': 'Нужни са администраторски права',
+  'An account with this e-mail already exists': 'Вече съществува профил с този имейл',
+  'API tokens are not available for the demo account':
+    'API токените не са достъпни за демо профила',
+  'At least one administrator must remain': 'Трябва да остане поне един администратор',
+  'A transfer needs two different accounts': 'Преводът изисква две различни сметки',
+  'Choose two different accounts for a transfer': 'Изберете две различни сметки за превода',
+  'Current password is incorrect': 'Текущата парола е грешна',
+  'Disable the demo account with DEMO_ENABLED=false instead':
+    'Изключете демо профила с DEMO_ENABLED=false',
+  'Invalid cursor': 'Невалиден курсор',
+  'Invalid e-mail or password': 'Грешен имейл или парола',
+  'Move or delete the subcategories first': 'Първо преместете или изтрийте подкатегориите',
+  'Only the next due occurrence can be confirmed': 'Може да се потвърди само следващото плащане',
+  'Password is incorrect': 'Паролата е грешна',
+  'Records can only be moved to an account with the same currency':
+    'Записите могат да се преместват само в сметка със същата валута',
+  'Registration is disabled on this server': 'Регистрацията е изключена на този сървър',
+  'Reminders are disabled on this server': 'Напомнянията са изключени на този сървър',
+  'Reminders are not available for the demo account': 'Напомнянията не са достъпни за демо профила',
+  'Restoring a backup is not available for the demo account':
+    'Възстановяването на копие не е достъпно за демо профила',
+  'Save a reminder URL first': 'Първо запазете URL за напомняния',
+  'Subcategories cannot have their own subcategories':
+    'Подкатегориите не могат да имат свои подкатегории',
+  'The comparison range is too long': 'Периодът за сравнение е твърде дълъг',
+  'The currency cannot be changed once the account has records':
+    'Валутата не може да се променя, след като сметката има записи',
+  'The demo account cannot be changed': 'Демо профилът не може да бъде променян',
+  'The demo account cannot be deleted': 'Демо профилът не може да бъде изтрит',
+  'The demo account is disabled': 'Демо профилът е изключен',
+  'The demo account is not ready yet': 'Демо профилът все още не е готов',
+  'The requested range is too long': 'Избраният период е твърде дълъг',
+  'The settings of the shared demo account cannot be changed':
+    'Настройките на споделения демо профил не могат да се променят',
+  'This currency is used by a budget or a goal': 'Тази валута се използва от бюджет или цел',
+  'This currency is used by one of your accounts':
+    'Тази валута се използва от някоя от сметките ви',
+  'This occurrence has already been confirmed or skipped':
+    'Това плащане вече е потвърдено или пропуснато',
+  'This planned payment has no open occurrences': 'Това планирано плащане няма предстоящи плащания',
+  'Unknown time zone': 'Неизвестна часова зона',
+  'Use Settings → Delete account to delete yourself':
+    'Използвайте Настройки → Изтриване на профила, за да изтриете себе си',
+  'You cannot remove your own administrator rights':
+    'Не можете да премахнете собствените си администраторски права',
+  'Budget not found': 'Бюджетът не е намерен',
+  'Category not found': 'Категорията не е намерена',
+  'Goal not found': 'Целта не е намерена',
+  'Label not found': 'Етикетът не е намерен',
+  'Planned payment not found': 'Планираното плащане не е намерено',
+  'Record not found': 'Записът не е намерен',
+  'Session not found': 'Сесията не е намерена',
+  'User not found': 'Потребителят не е намерен',
+  'Something went wrong': 'Нещо се обърка',
+  'Authentication required': 'Необходим е вход',
+  Forbidden: 'Забранено',
+
   // ─── Account types ───
   Cash: 'В брой',
   'Bank account': 'Банкова сметка',

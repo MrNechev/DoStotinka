@@ -1,4 +1,5 @@
 import type { ApiErrorBody } from '@slavotax/shared';
+import { t } from '@/i18n';
 
 export class ApiError extends Error {
   constructor(
@@ -67,8 +68,9 @@ function safeParse(text: string): unknown {
   }
 }
 
+/** User-facing message of an error (known server messages are translated). */
 export function errorMessage(err: unknown): string {
-  if (err instanceof ApiError) return err.message;
-  if (err instanceof Error) return err.message;
-  return 'Something went wrong';
+  if (err instanceof ApiError) return t(err.message);
+  if (err instanceof Error) return t(err.message);
+  return t('Something went wrong');
 }
