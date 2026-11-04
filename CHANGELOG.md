@@ -6,7 +6,11 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.3.0] – 2026-11-04
+
 ### Added
+- Reminders and server messages follow the user's language.
+- Reorder categories (move up / down) on the categories page.
 - Bulgarian translation of the whole interface, the default categories and dates; the language
   follows the browser and can be changed in Settings or on the login page.
 - Daily reminders for overdue and upcoming planned payments via ntfy, Gotify, Discord, Slack or a
@@ -88,6 +92,7 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/MrNechev/slavotax/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/MrNechev/slavotax/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MrNechev/slavotax/releases/tag/v0.1.0
