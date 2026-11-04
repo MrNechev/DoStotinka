@@ -330,11 +330,24 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 
 ## Roadmap
 
-- [x] CSV import (from Wallet and bank statements)
-- [x] Translations (Bulgarian first)
+**Next**
+
+- [ ] **Automatic transaction import** (optional, off by default) – records appear on their own:
+  instantly from the payment notifications of your banking apps and Google Wallet, and complete from
+  your bank through open banking (PSD2, e.g. DSK, UBB and Revolut via Enable Banking), collected in an
+  inbox for review. The research behind it – what is possible with which bank, Google Pay, e-mail
+  and how other apps do it – is in [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
+
+**Later**
+
 - [ ] More languages (contributions welcome)
 - [ ] Mobile app that connects to your own server
 - [ ] Shared accounts / households
+
+**Done**
+
+- [x] CSV import (from Wallet and bank statements)
+- [x] Translations (Bulgarian first)
 - [x] Attachments (receipts) and record templates
 - [x] Notifications for upcoming payments
 

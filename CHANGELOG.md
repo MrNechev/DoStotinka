@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Documentation
+- Research on **automatic transaction import** (open banking via PSD2 for DSK, UBB and Revolut,
+  phone notifications, Google Pay / Gmail, bank e-mails) and a proposed design:
+  [docs/AUTOMATIC_IMPORT.md](docs/AUTOMATIC_IMPORT.md). It is the next item on the roadmap.
+
 ## [0.5.1] – 2026-11-04
 
 ### Changed
