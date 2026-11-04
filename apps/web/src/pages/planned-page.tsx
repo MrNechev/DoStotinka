@@ -29,7 +29,7 @@ import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, CardHeader, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { fmt } from '@/lib/date';
 import { dueLabel, money, recurrenceLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -214,7 +214,10 @@ export default function PlannedPage() {
           <UpcomingList days={30} />
         </Card>
         <Card className="overflow-hidden">
-          <CardHeader title={t('All planned payments')} description={`${active.length} active`} />
+          <CardHeader
+            title={t('All planned payments')}
+            description={tn(active.length, '{n} active payment', '{n} active payments')}
+          />
           {isLoading ? (
             <div className="grid gap-3 p-4">
               {Array.from({ length: 4 }, (_, i) => (

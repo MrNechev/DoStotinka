@@ -174,7 +174,9 @@ export default function AccountsPage() {
             className="mb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setShowArchived((v) => !v)}
           >
-            {showArchived ? t('Hide') : t('Show')} archived accounts ({archived.length})
+            {showArchived
+              ? t('Hide archived accounts ({n})', { n: archived.length })
+              : t('Show archived accounts ({n})', { n: archived.length })}
           </button>
           {showArchived && (
             <Card className="divide-y divide-border overflow-hidden opacity-80">

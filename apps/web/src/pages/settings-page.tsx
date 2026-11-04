@@ -47,7 +47,7 @@ import { Badge, Card, CardHeader, PageHeader } from '@/components/ui/misc';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
 import { LANGUAGES, type Language, language, setLanguage, t, tn } from '@/i18n';
 import { ago } from '@/lib/date';
-import { numberFmt, plural } from '@/lib/format';
+import { longDate, numberFmt } from '@/lib/format';
 import { browserTimeZone, downloadUrl } from '@/lib/utils';
 
 function Section({
@@ -798,7 +798,9 @@ function RemindersSection() {
             <Bell /> {t('Send test')}
           </Button>
           {data?.lastSentOn && (
-            <span className="text-xs text-muted-foreground">Last checked on {data.lastSentOn}</span>
+            <span className="text-xs text-muted-foreground">
+              {t('Last checked on {date}', { date: longDate(data.lastSentOn) })}
+            </span>
           )}
         </div>
       </form>

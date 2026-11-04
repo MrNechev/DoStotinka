@@ -1,4 +1,5 @@
 import type { Category } from '@slavotax/shared';
+import { t } from '@/i18n';
 
 export const UNCATEGORIZED_COLOR = '#94A3B8';
 
@@ -48,10 +49,10 @@ export function buildCategoryIndex(categories: Category[] = []): CategoryIndex {
       tops.filter((c) => (!kind || c.kind === kind) && (includeArchived || !c.archived)),
     colorOf,
     iconOf: (id) => (id ? byId.get(id)?.icon : undefined) ?? 'circle-help',
-    nameOf: (id) => (id ? byId.get(id)?.name : undefined) ?? 'Uncategorized',
+    nameOf: (id) => (id ? byId.get(id)?.name : undefined) ?? t('Uncategorized'),
     pathOf: (id) => {
       const c = id ? byId.get(id) : undefined;
-      if (!c) return 'Uncategorized';
+      if (!c) return t('Uncategorized');
       const p = parentOf(id);
       return p ? `${p.name} › ${c.name}` : c.name;
     },

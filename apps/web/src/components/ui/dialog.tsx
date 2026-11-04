@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { Dialog as D } from 'radix-ui';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { t } from '@/i18n';
 import { cn } from '@/lib/utils';
 
@@ -28,11 +28,19 @@ export function DialogContent({
   const width = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl', xl: 'sm:max-w-4xl' }[
     size
   ];
+  const contentRef = useRef<HTMLDivElement>(null);
   return (
     <D.Portal>
       <D.Overlay className="animate-overlay-in fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]" />
       <D.Content
-        onOpenAutoFocus={onOpenAutoFocus}
+        ref={contentRef}
+        onOpenAutoFocus={(e) => {
+          onOpenAutoFocus?.(e);
+          // A dialog that skips the default focus still has to hold the focus, otherwise
+          // keyboard users tab through the page behind it.
+          const el = contentRef.current;
+          if (e.defaultPrevented && el && !el.contains(document.activeElement)) el.focus();
+        }}
         className={cn(
           'dialog-content fixed z-50 flex max-h-[92dvh] w-full flex-col border border-border bg-card text-card-foreground shadow-2xl outline-none',
           // mobile: bottom sheet

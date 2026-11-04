@@ -284,30 +284,39 @@ export default function CategoriesPage() {
                 const isOpen = open.has(g.id) || !!q;
                 return (
                   <div key={g.id} className={cn(g.archived && 'opacity-60')}>
-                    <div
-                      className="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-muted/50"
-                      onClick={() => {
-                        const next = new Set(open);
-                        next.has(g.id) ? next.delete(g.id) : next.add(g.id);
-                        setOpen(next);
-                      }}
-                    >
-                      <ChevronRight
-                        className={cn(
-                          'size-4 text-muted-foreground transition-transform',
-                          isOpen && 'rotate-90',
-                        )}
-                      />
-                      <IconBadge icon={g.icon} color={g.color ?? '#64748B'} size="md" />
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-2">
-                          <span className="truncate font-medium">{g.name}</span>
-                          {g.archived && <Badge>{t('archived')}</Badge>}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {index.childrenOf(g.id).length} subcategories · {groupUsage(g)} records
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50">
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => {
+                          const next = new Set(open);
+                          next.has(g.id) ? next.delete(g.id) : next.add(g.id);
+                          setOpen(next);
+                        }}
+                        className="-my-1 flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg py-1 text-left"
+                      >
+                        <ChevronRight
+                          className={cn(
+                            'size-4 shrink-0 text-muted-foreground transition-transform',
+                            isOpen && 'rotate-90',
+                          )}
+                        />
+                        <IconBadge icon={g.icon} color={g.color ?? '#64748B'} size="md" />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="truncate font-medium">{g.name}</span>
+                            {g.archived && <Badge>{t('archived')}</Badge>}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {tn(
+                              index.childrenOf(g.id).length,
+                              '{n} subcategory',
+                              '{n} subcategories',
+                            )}{' '}
+                            · {tn(groupUsage(g), '{n} record', '{n} records')}
+                          </span>
+                        </span>
+                      </button>
                       {renderActions(g)}
                     </div>
                     {isOpen && (
@@ -329,7 +338,7 @@ export default function CategoriesPage() {
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-sm">{c.name}</span>
                               <span className="block text-[11px] text-muted-foreground">
-                                {usage[c.id] ?? 0} records
+                                {tn(usage[c.id] ?? 0, '{n} record', '{n} records')}
                               </span>
                             </span>
                             {renderActions(c)}

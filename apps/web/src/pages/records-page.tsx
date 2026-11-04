@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 import { Card, PageHeader, Segmented } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
-import { buildCategoryIndex } from '@/lib/categories';
+import { buildCategoryIndex, UNCATEGORIZED_COLOR } from '@/lib/categories';
 import { money } from '@/lib/format';
 import { browserTimeZone, cn, downloadUrl } from '@/lib/utils';
 
@@ -43,7 +43,11 @@ export default function RecordsPage() {
   };
 
   const type = (params.get('types') as TypeFilter | null) ?? 'all';
-  const categoryId = params.get('categories');
+  const categoryParam = params.get('categories');
+  // `none` selects uncategorized records; `exact` leaves out the subcategories.
+  const uncategorized = categoryParam === 'none';
+  const categoryId = uncategorized ? null : categoryParam;
+  const exactCategory = !!categoryId && params.get('exact') === '1';
   const labelId = params.get('labels');
   const [search, setSearch] = useState(params.get('q') ?? '');
 
@@ -52,6 +56,7 @@ export default function RecordsPage() {
       (prev) => {
         const next = new URLSearchParams(prev);
         value ? next.set(key, value) : next.delete(key);
+        if (key === 'categories') next.delete('exact');
         return next;
       },
       { replace: true },
@@ -71,6 +76,8 @@ export default function RecordsPage() {
     accountIds: filters.accountIds.length ? filters.accountIds : undefined,
     types: type === 'all' ? undefined : [type],
     categoryIds: categoryId ? [categoryId] : undefined,
+    exactCategories: exactCategory || undefined,
+    uncategorized: uncategorized || undefined,
     labelIds: labelId ? [labelId] : undefined,
     search: params.get('q') ?? undefined,
   };
@@ -97,8 +104,8 @@ export default function RecordsPage() {
               onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
             >
               <CheckSquare />{' '}
-              <span className="hidden sm:inline">{selecting ? 'Done' : 'Select'}</span>
-              <span className="sm:hidden">{selecting ? 'Done' : ''}</span>
+              <span className="hidden sm:inline">{selecting ? t('Done') : t('Select')}</span>
+              <span className="sm:hidden">{selecting ? t('Done') : ''}</span>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/import">
@@ -118,43 +125,55 @@ export default function RecordsPage() {
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <PeriodPicker filters={filters} />
         <AccountFilter filters={filters} />
-        <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className={cn(category && 'pr-2')}>
-              {category ? (
-                <>
-                  <IconBadge icon={category.icon} color={index.colorOf(category.id)} size="xs" />
-                  <span className="max-w-40 truncate">{category.name}</span>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="rounded p-0.5 hover:bg-muted"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setParam('categories', null);
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && setParam('categories', null)}
-                    aria-label={t('Clear category')}
-                  >
-                    <X className="size-3.5" />
-                  </span>
-                </>
-              ) : (
-                'All categories'
-              )}
+        <div className="inline-flex">
+          <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn((category || uncategorized) && 'rounded-r-none')}
+              >
+                {category ? (
+                  <>
+                    <IconBadge icon={category.icon} color={index.colorOf(category.id)} size="xs" />
+                    <span className="max-w-40 truncate">
+                      {exactCategory
+                        ? t('{name} (general)', { name: category.name })
+                        : category.name}
+                    </span>
+                  </>
+                ) : uncategorized ? (
+                  <>
+                    <IconBadge icon="circle-help" color={UNCATEGORIZED_COLOR} size="xs" />
+                    {t('Uncategorized')}
+                  </>
+                ) : (
+                  t('All categories')
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[min(92vw,420px)] p-3">
+              <CategoryPickerPanel
+                kind="expense"
+                value={categoryId}
+                onSelect={(id) => {
+                  setParam('categories', id);
+                  setCategoryOpen(false);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          {(category || uncategorized) && (
+            <Button
+              variant="outline"
+              onClick={() => setParam('categories', null)}
+              aria-label={t('Clear category')}
+              title={t('Clear category')}
+              className="-ml-px rounded-l-none px-2.5"
+            >
+              <X className="size-3.5" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[min(92vw,420px)] p-3">
-            <CategoryPickerPanel
-              kind="expense"
-              value={categoryId}
-              onSelect={(id) => {
-                setParam('categories', id);
-                setCategoryOpen(false);
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+          )}
+        </div>
         {labels.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>

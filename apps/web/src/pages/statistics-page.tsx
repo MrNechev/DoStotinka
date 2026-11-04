@@ -30,13 +30,16 @@ export default function StatisticsPage() {
   const navigate = useNavigate();
   const [categoryId, setCategoryId] = useState<string>('');
 
-  const recordsLink = (id: string | null) => {
+  const recordsLink = (id: string | null, exact = false, kind?: 'expense' | 'income') => {
     const p = new URLSearchParams({ period: filters.period.preset });
     if (filters.period.offset) p.set('offset', String(filters.period.offset));
     if (filters.period.from) p.set('from', filters.period.from);
     if (filters.period.to) p.set('to', filters.period.to);
     if (filters.accountIds.length) p.set('accounts', filters.accountIds.join(','));
-    if (id) p.set('categories', id);
+    // `none` = uncategorized; `exact` = only the category itself, not its subcategories.
+    p.set('categories', id ?? 'none');
+    if (id && exact) p.set('exact', '1');
+    if (kind) p.set('types', kind);
     return `/records?${p.toString()}`;
   };
 
@@ -100,7 +103,7 @@ export default function StatisticsPage() {
               <option value="">{t('All categories')}</option>
               {groups.map((g) => (
                 <optgroup key={g.id} label={g.name}>
-                  <option value={g.id}>{g.name} – all</option>
+                  <option value={g.id}>{t('{name} – all', { name: g.name })}</option>
                   {index
                     .childrenOf(g.id)
                     .filter((c) => !c.archived)

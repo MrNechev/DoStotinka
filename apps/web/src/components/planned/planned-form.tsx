@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select, Textarea } from '@/components/ui/input';
 import { Segmented, Switch } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { fmt } from '@/lib/date';
 import { recurrenceLabel } from '@/lib/format';
 
@@ -28,13 +28,21 @@ const FREQ_LABELS: Record<Frequency, string> = {
   monthly: t('Monthly'),
   yearly: t('Yearly'),
 };
-const UNIT: Record<Frequency, string> = {
-  once: '',
-  daily: 'day(s)',
-  weekly: 'week(s)',
-  monthly: 'month(s)',
-  yearly: 'year(s)',
-};
+/** Unit shown after the "every N" input. */
+function unitLabel(frequency: Frequency, n: number): string {
+  switch (frequency) {
+    case 'daily':
+      return tn(n, 'day', 'days');
+    case 'weekly':
+      return tn(n, 'week', 'weeks');
+    case 'monthly':
+      return tn(n, 'month', 'months');
+    case 'yearly':
+      return tn(n, 'year', 'years');
+    default:
+      return '';
+  }
+}
 
 export function PlannedFormDialog({
   plan,
@@ -263,7 +271,9 @@ export function PlannedFormDialog({
                       onChange={(e) => set('interval', e.target.value)}
                       className="w-24"
                     />
-                    <span className="text-sm text-muted-foreground">{UNIT[form.frequency]}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {unitLabel(form.frequency, Number(form.interval) || 1)}
+                    </span>
                   </div>
                 </Field>
               )}

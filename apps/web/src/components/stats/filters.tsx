@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 import { Checkbox, Segmented } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import {
   comparisonRange,
   isoDay,
@@ -47,6 +47,7 @@ export function useStatsFilters(
   const resolved = resolvePeriod(period, {
     weekStartsOn: user.weekStartsOn,
     firstRecord: bounds?.first,
+    lastRecord: bounds?.last,
   });
   const accountIds = fixedAccountIds ?? params.get('accounts')?.split(',').filter(Boolean) ?? [];
   const intervalParam = params.get('interval') as Interval | null;
@@ -218,13 +219,18 @@ export function AccountFilter({
     accountIds.length === 0
       ? t('All accounts')
       : accountIds.length === 1
-        ? (accounts.find((a) => a.id === accountIds[0])?.name ?? '1 account')
-        : `${accountIds.length} accounts`;
+        ? (accounts.find((a) => a.id === accountIds[0])?.name ??
+          tn(1, '{n} account', '{n} accounts'))
+        : tn(accountIds.length, '{n} account', '{n} accounts');
+  // "All accounts" (an empty selection) means every account that counts in statistics. Only a
+  // selection of exactly those collapses to it – ticking an excluded account must keep it.
+  const included = accounts.filter((a) => !a.excludeFromStats);
   const toggle = (id: string) => {
     const next = new Set(selected);
     if (next.has(id)) next.delete(id);
     else next.add(id);
-    setAccountIds(next.size === accounts.length ? [] : [...next]);
+    const isDefault = next.size === included.length && included.every((a) => next.has(a.id));
+    setAccountIds(isDefault ? [] : [...next]);
   };
   return (
     <Popover>

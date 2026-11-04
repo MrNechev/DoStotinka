@@ -45,6 +45,11 @@ describe('import helpers', () => {
     expect(parseAmountValue('1 234,56 €')).toBe(1234.56);
     expect(parseAmountValue('-1.234,56')).toBe(-1234.56);
     expect(parseAmountValue('(45.00)')).toBe(-45);
+    expect(parseAmountValue('€-12,50')).toBe(-12.5);
+    expect(parseAmountValue('EUR -12.50')).toBe(-12.5);
+    expect(parseAmountValue('\u221212.50')).toBe(-12.5);
+    expect(parseAmountValue('12.50-')).toBe(-12.5);
+    expect(parseAmountValue('$ 12.50')).toBe(12.5);
     expect(parseAmountValue('abc')).toBeNull();
   });
   it('detects the type', () => {

@@ -1442,3 +1442,42 @@ describe('attachments', () => {
     expect((await upload(cookie, rec.id, png, 'image/png')).statusCode).toBe(400);
   });
 });
+
+describe('record filters', () => {
+  it('filters uncategorized records and exact parent categories', async () => {
+    const { call } = await registerUser(ctx.app);
+    const cats = (await call<any[]>('GET', '/api/categories')).body;
+    const food = cats.find((c) => c.systemKey === 'food' && !c.parentId)!;
+    const groceries = cats.find((c) => c.parentId === food.id)!;
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const add = (categoryId: string | null, amount: number, type = 'expense') =>
+      call('POST', '/api/records', {
+        type,
+        accountId: acc.id,
+        amount,
+        categoryId,
+        occurredAt: new Date().toISOString(),
+      });
+    await add(food.id, 100);
+    await add(groceries.id, 200);
+    await add(null, 300);
+    await add(null, 400, 'income');
+    const amounts = async (query: string) =>
+      (await call('GET', `/api/records?${query}`)).body.items.map((r: any) => r.amount).sort();
+
+    expect(await amounts(`categoryIds=${food.id}`)).toEqual([-100, -200].sort());
+    expect(await amounts(`categoryIds=${food.id}&exactCategories=true`)).toEqual([-100]);
+    expect(await amounts('uncategorized=true&types=expense')).toEqual([-300]);
+    expect(await amounts('uncategorized=true')).toEqual([-300, 400].sort());
+    const summary = (await call('GET', '/api/records/summary?uncategorized=true&types=expense'))
+      .body;
+    expect(summary.expense).toBe(300);
+  });
+});

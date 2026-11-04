@@ -21,7 +21,7 @@ import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { fmt } from '@/lib/date';
 import { money, percent } from '@/lib/format';
@@ -107,7 +107,7 @@ function BudgetCard({
           {money(b.spent, b.currency)}
         </span>
         <span className="tabular text-sm text-muted-foreground">
-          of {money(b.amount, b.currency)}
+          {t('of {amount}', { amount: money(b.amount, b.currency) })}
         </span>
       </div>
       <div className="relative mt-2">
@@ -132,12 +132,17 @@ function BudgetCard({
           </span>
         ) : (
           <>
-            <span className="font-medium text-foreground">{money(b.remaining, b.currency)}</span>{' '}
-            left · {percent(b.ratio)} used
+            <span className="font-medium text-foreground">
+              {t('{amount} left', { amount: money(b.remaining, b.currency) })}
+            </span>{' '}
+            · {t('{percent} used', { percent: percent(b.ratio) })}
             {b.elapsed < 1 && daysLeft > 0 && (
               <>
                 {' '}
-                · {money(Math.floor(b.remaining / daysLeft), b.currency)}/day for {daysLeft} days
+                ·{' '}
+                {tn(daysLeft, '{amount}/day for {n} day', '{amount}/day for {n} days', {
+                  amount: money(Math.floor(b.remaining / daysLeft), b.currency),
+                })}
               </>
             )}
           </>
@@ -174,7 +179,7 @@ function HistoryDialog({ budget, onClose }: { budget: BudgetStatus; onClose: () 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        title={`${budget.name} – history`}
+        title={t('{name} – history', { name: budget.name })}
         description={t('Limit {amount} per {period}', {
           amount: money(budget.amount, budget.currency),
           period: t(budget.period),

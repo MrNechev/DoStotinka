@@ -18,7 +18,7 @@ import { RecordRow, useRecordLookups } from '@/components/records/record-list';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, PageHeader } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { fmt } from '@/lib/date';
 import { longDate, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -223,7 +223,7 @@ export default function CalendarPage() {
         <Card>
           <CardHeader
             title={longDate(selected)}
-            description={`${selectedRecords.length} records`}
+            description={tn(selectedRecords.length, '{n} record', '{n} records')}
             action={
               <Button size="sm" variant="outline" onClick={() => openNew({ date: selected })}>
                 <Plus /> {t('Add')}

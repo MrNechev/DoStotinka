@@ -7,6 +7,7 @@ import {
   differenceInCalendarDays,
   endOfDay,
   format,
+  isValid,
   parseISO,
   startOfDay,
   startOfHour,
@@ -60,9 +61,22 @@ export function autoInterval(days: number): Interval {
   return 'month';
 }
 
+/** Parses a `YYYY-MM-DD` day; undefined for anything else (e.g. a hand-edited URL). */
+function parseDay(value: string | undefined): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const d = parseISO(value);
+  return isValid(d) && format(d, 'yyyy-MM-dd') === value ? d : undefined;
+}
+
 export function resolvePeriod(
   state: PeriodState,
-  opts: { weekStartsOn?: 0 | 1 | 6; firstRecord?: string | null; now?: Date } = {},
+  opts: {
+    weekStartsOn?: 0 | 1 | 6;
+    firstRecord?: string | null;
+    /** Date of the newest record – "All time" also covers records dated in the future. */
+    lastRecord?: string | null;
+    now?: Date;
+  } = {},
 ): ResolvedPeriod {
   const now = opts.now ?? new Date();
   const today = startOfDay(now);
@@ -119,15 +133,19 @@ export function resolvePeriod(
       label = format(from, 'yyyy');
       navigable = true;
       break;
-    case 'all':
-      from = opts.firstRecord
-        ? startOfMonth(parseISO(opts.firstRecord))
-        : subMonths(startOfMonth(today), 11);
+    case 'all': {
+      const first = opts.firstRecord ? parseISO(opts.firstRecord) : null;
+      const last = opts.lastRecord ? parseISO(opts.lastRecord) : null;
+      from = first && isValid(first) ? startOfMonth(first) : subMonths(startOfMonth(today), 11);
+      if (last && isValid(last) && last >= tomorrow) to = addDays(startOfDay(last), 1);
       label = t('All time');
       break;
+    }
     case 'custom': {
-      from = state.from ? startOfDay(parseISO(state.from)) : subDays(today, 29);
-      to = state.to ? addDays(startOfDay(parseISO(state.to)), 1) : tomorrow;
+      const customFrom = parseDay(state.from);
+      const customTo = parseDay(state.to);
+      from = customFrom ? startOfDay(customFrom) : subDays(today, 29);
+      to = customTo ? addDays(startOfDay(customTo), 1) : tomorrow;
       if (to <= from) to = addDays(from, 1);
       const last = subDays(to, 1);
       const sameYear = from.getFullYear() === last.getFullYear();
@@ -155,11 +173,12 @@ export function periodToParams(state: PeriodState): Record<string, string> {
 export function periodFromParams(params: URLSearchParams, fallback: PeriodState): PeriodState {
   const preset = params.get('period') as PeriodPreset | null;
   if (!preset || !PERIOD_PRESETS.some((p) => p.id === preset)) return fallback;
+  const offset = Number(params.get('offset') ?? 0);
   return {
     preset,
-    offset: Number(params.get('offset') ?? 0) || 0,
-    from: params.get('from') ?? undefined,
-    to: params.get('to') ?? undefined,
+    offset: Number.isInteger(offset) && Math.abs(offset) < 1000 ? offset : 0,
+    from: parseDay(params.get('from') ?? undefined) ? params.get('from')! : undefined,
+    to: parseDay(params.get('to') ?? undefined) ? params.get('to')! : undefined,
   };
 }
 

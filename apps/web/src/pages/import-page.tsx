@@ -3,6 +3,7 @@ import {
   ACCOUNT_TYPES,
   type AccountType,
   CURRENCIES,
+  type CurrenciesResponse,
   convertMinor,
   type ImportRecordInput,
   type ImportResult,
@@ -52,6 +53,11 @@ const STEPS: { id: Step; label: string }[] = [
 ];
 const FIXED_ACCOUNT = '__single_account__';
 
+/** Currency an amount of the file is written in (falls back to the account currency). */
+function rowCurrency(d: { currency: string | null }, accountCurrency: string) {
+  return d.currency && isSupportedCurrency(d.currency) ? d.currency : accountCurrency;
+}
+
 interface Draft {
   accountKey: string;
   currency: string | null;
@@ -64,6 +70,8 @@ interface Draft {
   labels: string[];
   toAccountKey?: string;
   toAmount?: number;
+  /** Currency of the receiving side of a transfer (from its own row). */
+  toCurrency?: string | null;
 }
 
 type AccountChoice =
@@ -146,6 +154,7 @@ function buildDrafts(rows: string[][], mapping: ColumnMapping, dateFormat: DateF
       type: 'transfer',
       toAccountKey: match.accountKey,
       toAmount: match.amount,
+      toCurrency: match.currency,
       categoryName: '',
     });
   }
@@ -222,7 +231,8 @@ export default function ImportPage() {
       for (const key of [d.accountKey, d.toAccountKey].filter((k): k is string => !!k)) {
         const entry = map.get(key) ?? { count: 0, currency: null };
         entry.count++;
-        if (!entry.currency && d.currency && key === d.accountKey) entry.currency = d.currency;
+        const currency = key === d.accountKey ? d.currency : d.toCurrency;
+        if (!entry.currency && currency) entry.currency = currency;
         map.set(key, entry);
       }
     }
@@ -316,10 +326,30 @@ export default function ImportPage() {
           ? { key, existingId: c.id }
           : { key, create: { name: c.name, type: c.type, currency: c.currency, color: '#3B82F6' } };
       });
+      // Records in another currency than their account are converted. Start tracking currencies
+      // that have no exchange rate yet (the server fills in the reference rate) and reload them.
+      let rateSource = currencies;
+      const tracked = new Set([
+        rateSource?.baseCurrency,
+        ...(rateSource?.rates.map((r) => r.currency) ?? []),
+      ]);
+      const missing = new Set<string>();
+      for (const d of built.drafts) {
+        for (const code of [d.currency, currencyOfKey(d.accountKey)]) {
+          if (code && !tracked.has(code) && isSupportedCurrency(code)) missing.add(code);
+        }
+      }
+      for (const currency of missing) {
+        rateSource = await api<CurrenciesResponse>('/currencies/rates', {
+          method: 'POST',
+          body: { currency },
+        });
+      }
+      if (missing.size) void qc.invalidateQueries({ queryKey: qk.currencies });
       const rateMap: Record<string, number> = {};
-      if (currencies) {
-        rateMap[currencies.baseCurrency] = 1;
-        for (const r of currencies.rates) rateMap[r.currency] = r.rate;
+      if (rateSource) {
+        rateMap[rateSource.baseCurrency] = 1;
+        for (const r of rateSource.rates) rateMap[r.currency] = r.rate;
       }
       const records: ImportRecordInput[] = built.drafts.map((d) => {
         const currency = currencyOfKey(d.accountKey);
@@ -459,7 +489,7 @@ export default function ImportPage() {
             <Info className="mt-0.5 size-4 shrink-0" />
             <p>
               <span className="font-medium text-foreground">{t('Coming from Wallet?')}</span>{' '}
-              {t('In the Wallet web app open')} <em>Records → Export</em>{' '}
+              {t('In the Wallet web app open')} <em>{t('Records → Export')}</em>{' '}
               {t(
                 "and download your records as CSV. Slavotax recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.",
               )}{' '}
@@ -516,12 +546,17 @@ export default function ImportPage() {
             </Field>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
-            {built.drafts.length} records ready
+            {tn(built.drafts.length, '{n} record ready', '{n} records ready')}
             {built.errors.length > 0 && (
               <span className="text-warning">
                 {' '}
-                · {built.errors.length} rows will be skipped (unreadable date or amount, e.g. line{' '}
-                {built.errors.slice(0, 3).join(', ')})
+                ·{' '}
+                {tn(
+                  built.errors.length,
+                  '{n} row will be skipped (unreadable date or amount, e.g. line {lines})',
+                  '{n} rows will be skipped (unreadable date or amount, e.g. line {lines})',
+                  { lines: built.errors.slice(0, 3).join(', ') },
+                )}
               </span>
             )}
           </p>
@@ -533,7 +568,7 @@ export default function ImportPage() {
               onClick={prepareAccounts}
               disabled={mapping.date < 0 || mapping.amount < 0 || !built.drafts.length}
             >
-              Next <ArrowRight />
+              {t('Next')} <ArrowRight />
             </Button>
           </div>
         </Card>
@@ -690,7 +725,10 @@ export default function ImportPage() {
           </div>
           {totals.first && totals.last && (
             <p className="mt-3 text-sm text-muted-foreground">
-              From {fmt(totals.first, 'd MMM yyyy')} to {fmt(totals.last, 'd MMM yyyy')}
+              {t('From {from} to {to}', {
+                from: fmt(totals.first, 'd MMM yyyy'),
+                to: fmt(totals.last, 'd MMM yyyy'),
+              })}
             </p>
           )}
           <div className="mt-4 overflow-x-auto rounded-xl border border-border">
@@ -737,8 +775,11 @@ export default function ImportPage() {
                           )}
                         >
                           {money(
-                            toMinor(d.type === 'expense' ? -d.amount : d.amount, currency),
-                            currency,
+                            toMinor(
+                              d.type === 'expense' ? -d.amount : d.amount,
+                              rowCurrency(d, currency),
+                            ),
+                            rowCurrency(d, currency),
                             { sign: d.type === 'transfer' ? 'auto' : 'exceptZero' },
                           )}
                         </td>
@@ -764,7 +805,7 @@ export default function ImportPage() {
               <ArrowLeft /> {t('Back')}
             </Button>
             <Button onClick={() => runImport.mutate()} loading={runImport.isPending}>
-              Import {built.drafts.length} records
+              {tn(built.drafts.length, 'Import {n} record', 'Import {n} records')}
             </Button>
           </div>
         </Card>

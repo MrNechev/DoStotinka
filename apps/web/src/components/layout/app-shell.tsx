@@ -31,7 +31,7 @@ import {
   MenuTrigger,
 } from '@/components/ui/menu';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { useRecordEditor } from '../records/record-editor';
 import { Logo, LogoMark } from './logo';
@@ -84,7 +84,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           {item.to === '/planned' && overdue > 0 && (
             <span
               className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-expense px-1.5 text-[11px] font-semibold text-white"
-              title={`${overdue} overdue`}
+              title={tn(overdue, '{n} payment overdue', '{n} payments overdue')}
             >
               {overdue}
             </span>
@@ -179,6 +179,8 @@ export function AppShell() {
       const target = e.target as HTMLElement;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (target.closest('input, textarea, select, [contenteditable], [role="dialog"]')) return;
+      // Never replace an open dialog (e.g. a record being edited).
+      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
       if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         openNew();

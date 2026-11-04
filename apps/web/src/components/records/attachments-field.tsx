@@ -140,7 +140,6 @@ export function AttachmentsField({
       ))}
       {pending.map((file, i) => (
         <PendingTile
-          // biome-ignore lint/suspicious/noArrayIndexKey: files have no id; order is stable
           key={`${file.name}-${i}`}
           file={file}
           onRemove={() => onPendingChange(pending.filter((_, j) => j !== i))}

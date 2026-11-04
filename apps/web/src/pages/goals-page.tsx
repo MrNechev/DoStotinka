@@ -347,7 +347,7 @@ function GoalCard({
           {money(goal.currentAmount, goal.currency)}
         </span>
         <span className="tabular text-sm text-muted-foreground">
-          of {money(goal.targetAmount, goal.currency)}
+          {t('of {amount}', { amount: money(goal.targetAmount, goal.currency) })}
         </span>
       </div>
       <div className="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted">
@@ -362,15 +362,17 @@ function GoalCard({
           <Badge tone="success">{t('Goal reached 🎉')}</Badge>
         ) : (
           <span>
-            {money(Math.max(0, goal.targetAmount - goal.currentAmount), goal.currency)} to go
+            {t('{amount} to go', {
+              amount: money(Math.max(0, goal.targetAmount - goal.currentAmount), goal.currency),
+            })}
           </span>
         )}
       </div>
       {!reached && goal.monthlyNeeded !== null && (
         <p className="mt-3 rounded-xl bg-muted/60 px-3 py-2 text-sm">
-          Save{' '}
-          <span className="tabular font-semibold">{money(goal.monthlyNeeded, goal.currency)}</span>{' '}
-          per month to reach it on time.
+          {t('Save {amount} per month to reach it on time.', {
+            amount: money(goal.monthlyNeeded, goal.currency),
+          })}
         </p>
       )}
       {goal.note && <p className="mt-3 text-sm text-muted-foreground">{goal.note}</p>}

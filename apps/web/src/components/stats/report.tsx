@@ -74,7 +74,9 @@ function SubRows({
         <tr key={r.id} className="bg-muted/30 text-xs">
           <td className="sticky left-0 z-10 bg-card py-1.5 pl-12 pr-3">
             <span className="block max-w-44 truncate text-muted-foreground">
-              {r.id === parentId ? `${index.nameOf(r.id)} (general)` : index.nameOf(r.id)}
+              {r.id === parentId
+                ? t('{name} (general)', { name: index.nameOf(r.id) })
+                : index.nameOf(r.id)}
             </span>
           </td>
           {r.values.map((v, i) => (
@@ -123,7 +125,7 @@ function Section({
       {rows.length === 0 && (
         <tr>
           <td colSpan={columns + 3} className="px-3 py-3 text-sm text-muted-foreground">
-            No {label.toLowerCase()} in this period.
+            {t('No {label} in this period.', { label: label.toLowerCase() })}
           </td>
         </tr>
       )}
@@ -194,7 +196,7 @@ function Section({
       })}
       <tr className="border-t-2 border-border font-semibold">
         <td className="sticky left-0 z-10 bg-card px-3 py-2 text-sm">
-          Total {label.toLowerCase()}
+          {t('Total {label}', { label: label.toLowerCase() })}
         </td>
         {totals.map((v, i) => (
           <td

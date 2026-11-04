@@ -41,7 +41,9 @@ export function BulkBar({
   return (
     <div className="fixed inset-x-0 bottom-20 z-40 flex justify-center px-3 lg:bottom-6 lg:pl-64">
       <div className="animate-pop-in flex max-w-full flex-wrap items-center gap-1.5 rounded-2xl border border-border bg-popover p-2 shadow-2xl">
-        <span className="px-2 text-sm font-medium">{plural(count, 'record')} selected</span>
+        <span className="px-2 text-sm font-medium">
+          {tn(count, '{n} record selected', '{n} records selected')}
+        </span>
         {count < totalLoaded && (
           <Button size="sm" variant="ghost" onClick={onSelectAll}>
             {t('Select all {n}', { n: totalLoaded })}

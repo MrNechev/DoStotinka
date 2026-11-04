@@ -500,6 +500,8 @@ function RecordEditorDialog({
                         type="button"
                         title={`${categoryIndex.pathOf(sg.categoryId)} · ${acc.name}`}
                         onClick={() => {
+                          // The suggestion's amount is in the account currency.
+                          setPayCurrency(null);
                           setForm((f) => ({
                             ...f,
                             type: sg.type,

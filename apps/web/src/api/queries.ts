@@ -384,6 +384,8 @@ export interface RecordFilters {
   to?: string;
   accountIds?: string[];
   categoryIds?: string[];
+  exactCategories?: boolean;
+  uncategorized?: boolean;
   labelIds?: string[];
   types?: string[];
   search?: string;

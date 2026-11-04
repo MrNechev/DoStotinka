@@ -193,6 +193,10 @@ export const recordListQuery = z.object({
   to: isoDateTime.optional(),
   accountIds: uuidList,
   categoryIds: uuidList,
+  /** Match `categoryIds` exactly instead of including their subcategories. */
+  exactCategories: z.stringbool().optional(),
+  /** Records without a category (combined with `categoryIds` as "or"). */
+  uncategorized: z.stringbool().optional(),
   labelIds: uuidList,
   types: z
     .string()

@@ -168,9 +168,12 @@ export function parseDateValue(raw: string, format: DateFormat): Date | null {
 
 /** Parses an amount like "-1 234,56 €" into a number (major units). */
 export function parseAmountValue(raw: string): number | null {
-  const cleaned = raw.replace(/[^\d.,+-]/g, '');
-  if (!cleaned) return null;
-  const negative = /^\s*-|\(.*\)|-\s*$/.test(raw);
+  // Typographic minus signs and dashes (e.g. "−12.50") count as a minus.
+  const normalized = raw.replace(/[\u2012-\u2015\u2212\uFE63\uFF0D]/g, '-');
+  const cleaned = normalized.replace(/[^\d.,+-]/g, '');
+  if (!/\d/.test(cleaned)) return null;
+  // The sign is checked after removing currency codes and symbols ("€-12,50", "EUR -12.50").
+  const negative = /^-|-$/.test(cleaned) || /\(.*\d.*\)/.test(normalized);
   const value = evaluateAmountExpression(cleaned.replace(/^[+-]/, '').replace(/-$/, ''));
   if (value === null) return null;
   return negative ? -Math.abs(value) : value;

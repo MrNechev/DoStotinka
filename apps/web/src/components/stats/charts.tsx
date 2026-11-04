@@ -267,7 +267,7 @@ export function CategoryBreakdown({
   title?: string;
   description?: string;
   /** Builds a link to the records page for a category. */
-  recordsLink?: (categoryId: string | null) => string;
+  recordsLink?: (categoryId: string | null, exact?: boolean, type?: 'expense' | 'income') => string;
   compact?: boolean;
 }) {
   const [parentId, setParentId] = useState<string | null>(null);
@@ -340,7 +340,7 @@ export function CategoryBreakdown({
   };
 
   return (
-    <Card>
+    <Card className="@container">
       <CardHeader
         title={
           parent ? (
@@ -378,10 +378,13 @@ export function CategoryBreakdown({
           className="py-10"
         />
       ) : (
+        // The chart sits next to the list only when the card itself is wide enough (it is often
+        // one of two cards side by side), otherwise the list would be squeezed.
         <div
           className={cn(
             'grid gap-4 px-5 pb-5 transition-opacity',
-            !compact && 'md:grid-cols-[minmax(200px,260px)_1fr] md:items-start',
+            !compact &&
+              '@lg:grid-cols-[minmax(160px,200px)_minmax(0,1fr)] @lg:items-start @2xl:grid-cols-[minmax(200px,260px)_minmax(0,1fr)]',
             isFetching && 'opacity-60',
           )}
         >
@@ -437,7 +440,7 @@ export function CategoryBreakdown({
               )}
             </div>
           </div>
-          <ul className="grid gap-0.5">
+          <ul className="grid min-w-0 gap-0.5">
             {slices.slice(0, showAll ? undefined : compact ? 6 : 8).map((s) => {
               const ratio = changeRatio(s.amount, s.previousAmount);
               const content = (
@@ -465,10 +468,10 @@ export function CategoryBreakdown({
                       </span>
                     </span>
                     {!compact && (
-                      <span className="mt-0.5 flex justify-between text-[11px] text-muted-foreground">
-                        <span>{tn(s.count, '{n} record', '{n} records')}</span>
+                      <span className="mt-0.5 flex justify-between gap-2 text-[11px] text-muted-foreground">
+                        <span className="shrink-0">{tn(s.count, '{n} record', '{n} records')}</span>
                         {ratio !== null && Number.isFinite(ratio) && (
-                          <span>
+                          <span className="min-w-0 truncate">
                             {t('{change} vs previous', {
                               change: `${ratio >= 0 ? '+' : '−'}${percent(Math.abs(ratio))}`,
                             })}
@@ -498,7 +501,10 @@ export function CategoryBreakdown({
                       {content}
                     </button>
                   ) : recordsLink ? (
-                    <Link to={recordsLink(s.categoryId)} className={rowClass}>
+                    <Link
+                      to={recordsLink(s.categoryId, !!parentId && s.categoryId === parentId, type)}
+                      className={rowClass}
+                    >
                       {content}
                     </Link>
                   ) : (

@@ -15,8 +15,10 @@ import {
   ilike,
   inArray,
   isNotNull,
+  isNull,
   lt,
   lte,
+  ne,
   or,
   type SQL,
   sql,
@@ -354,10 +356,17 @@ export async function filterConditions(
   if (q.to) conditions.push(lt(records.occurredAt, new Date(q.to)));
   if (q.accountIds?.length) conditions.push(inArray(records.accountId, q.accountIds));
   if (q.types?.length) conditions.push(inArray(records.type, q.types));
+  const categoryConditions: SQL[] = [];
   if (q.categoryIds?.length) {
-    const expanded = await expandCategoryIds(db, userId, q.categoryIds);
-    conditions.push(inArray(records.categoryId, expanded));
+    const ids = q.exactCategories
+      ? q.categoryIds
+      : await expandCategoryIds(db, userId, q.categoryIds);
+    categoryConditions.push(inArray(records.categoryId, ids));
   }
+  if (q.uncategorized) {
+    categoryConditions.push(and(isNull(records.categoryId), ne(records.type, 'transfer'))!);
+  }
+  if (categoryConditions.length) conditions.push(or(...categoryConditions)!);
   if (q.labelIds?.length) {
     conditions.push(
       inArray(
