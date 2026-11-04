@@ -94,7 +94,8 @@ register.
 The web app uses a tiny gettext-style layer (`apps/web/src/i18n`): the English text is the key,
 `t('Due in {n} days', { n })` interpolates and `tn()` handles plurals. The language is detected
 from the browser (or chosen in Settings) and fixed per page load – switching reloads the page – so
-`t()` also works in plain modules. Dates are formatted with the matching `date-fns` locale via
+`t()` also works in plain modules. `main.tsx` loads the dictionary of that language (a separate
+chunk) before it imports the app, so texts translated at import time are already translated. Dates are formatted with the matching `date-fns` locale via
 `lib/date.ts`. Default categories that were never renamed are translated on the client using their
 `system_key`. A unit test fails when a UI string has no Bulgarian translation. Server-generated
 reminders use the `users.language` column, which the web app keeps in sync.

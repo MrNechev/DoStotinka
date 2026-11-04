@@ -11,6 +11,9 @@ All notable changes to this project are documented in this file. The format is b
 - Single sign-on with OpenID Connect (Authentik, Authelia, Keycloak, Google …): configure
   `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `PUBLIC_URL`.
 
+### Changed
+- Translations are loaded on demand, so English users no longer download the Bulgarian dictionary.
+
 ### Fixed
 - Docker Compose passes every setting from `.env` to the app (previously only some were
   forwarded, e.g. `NOTIFICATIONS_ENABLED` had no effect). `PORT` and `NODE_ENV` stay fixed inside
