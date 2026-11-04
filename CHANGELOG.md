@@ -13,7 +13,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Fixed
 - Docker Compose passes every setting from `.env` to the app (previously only some were
-  forwarded, e.g. `NOTIFICATIONS_ENABLED` had no effect).
+  forwarded, e.g. `NOTIFICATIONS_ENABLED` had no effect). `PORT` and `NODE_ENV` stay fixed inside
+  the container.
 
 ## [0.4.0] – 2026-11-04
 
