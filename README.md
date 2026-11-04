@@ -93,10 +93,12 @@ leaves it.
 | <img src="docs/screenshots/records.webp" alt="Records" /> | <img src="docs/screenshots/add-record.webp" alt="Add record dialog" /> |
 | **Planned payments** | **Budgets** |
 | <img src="docs/screenshots/planned.webp" alt="Planned payments" /> | <img src="docs/screenshots/budgets.webp" alt="Budgets" /> |
-| **Report** | **Savings goals** |
-| <img src="docs/screenshots/report.webp" alt="Monthly report" /> | <img src="docs/screenshots/goals.webp" alt="Savings goals" /> |
-| **Calendar** | **Dark mode** |
-| <img src="docs/screenshots/calendar.webp" alt="Calendar" /> | <img src="docs/screenshots/dashboard-dark.webp" alt="Dark mode" /> |
+| **Savings goals** | **Debts** |
+| <img src="docs/screenshots/goals.webp" alt="Savings goals" /> | <img src="docs/screenshots/debts.webp" alt="Debts" /> |
+| **Report** | **Calendar** |
+| <img src="docs/screenshots/report.webp" alt="Monthly report" /> | <img src="docs/screenshots/calendar.webp" alt="Calendar" /> |
+
+<p align="center"><img src="docs/screenshots/dashboard-dark.webp" alt="Dark mode" width="900" /></p>
 
 <p align="center">
   <img src="docs/screenshots/mobile-dashboard.webp" alt="Mobile dashboard" width="260" />
