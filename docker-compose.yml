@@ -3,7 +3,7 @@
 # Quick start:
 #   cp .env.example .env      # then edit DB_PASSWORD
 #   docker compose up -d
-# Open http://<your-server>:3000
+# Open http://<your-server>:8742
 name: slavotax
 
 services:
@@ -12,14 +12,14 @@ services:
     container_name: slavotax
     restart: unless-stopped
     ports:
-      - "${SLAVOTAX_PORT:-3000}:3000"
+      - "${SLAVOTAX_PORT:-8742}:8742"
     # Every setting from .env reaches the app (see the README); the values below take precedence.
     env_file:
       - path: .env
         required: false
     environment:
       # Fixed inside the container (the published port is SLAVOTAX_PORT).
-      PORT: "3000"
+      PORT: "8742"
       NODE_ENV: production
       DB_HOST: database
       DB_USERNAME: ${DB_USERNAME:-slavotax}

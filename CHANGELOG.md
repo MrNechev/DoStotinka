@@ -6,13 +6,16 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Changed
+- **The default port is now 8742** instead of the very common 3000 (inside the container and as
+  the published port). When upgrading, use the new `docker-compose.yml` or change the port
+  mapping in yours to `"${SLAVOTAX_PORT:-8742}:8742"`, and update your reverse proxy.
+- Translations are loaded on demand, so English users no longer download the Bulgarian dictionary.
+
 ### Added
 - Dashboard card with open debts (owed to me / I owe) and overdue ones.
 - Single sign-on with OpenID Connect (Authentik, Authelia, Keycloak, Google …): configure
   `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `PUBLIC_URL`.
-
-### Changed
-- Translations are loaded on demand, so English users no longer download the Bulgarian dictionary.
 
 ### Fixed
 - Docker Compose passes every setting from `.env` to the app (previously only some were

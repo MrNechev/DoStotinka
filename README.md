@@ -128,7 +128,7 @@ sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$(openssl rand -hex 24)/" .env
 docker compose up -d
 ```
 
-Open **http://&lt;your-server&gt;:3000**, create your account – done. Images are published for
+Open **http://&lt;your-server&gt;:8742**, create your account – done. Images are published for
 `linux/amd64` and `linux/arm64` (e.g. Raspberry Pi 4/5) at `ghcr.io/mrnechev/slavotax`.
 
 > Want to look around first? Click **“Explore the demo account”** on the login page
@@ -155,6 +155,10 @@ git pull && docker compose -f docker-compose.yml -f docker-compose.build.yml up 
 
 Database migrations run automatically when the container starts.
 
+> **Upgrading from 0.4 or older:** the app now listens on port **8742** (instead of 3000). Download
+> the current `docker-compose.yml` (or change the port mapping in yours to
+> `"${SLAVOTAX_PORT:-8742}:8742"`) and update the port in your reverse proxy.
+
 ### After installing
 
 - Create your account – the first account on a server becomes its **administrator**. Under
@@ -169,7 +173,7 @@ All settings are environment variables (set them in `.env` when using Docker Com
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `SLAVOTAX_PORT` | `3000` | Host port of the web app (Compose only). |
+| `SLAVOTAX_PORT` | `8742` | Host port of the web app (Compose only). |
 | `SLAVOTAX_VERSION` | `latest` | Image tag to run (Compose only). |
 | `DB_PASSWORD` | – | **Required.** PostgreSQL password. |
 | `DB_USERNAME` | `slavotax` | PostgreSQL user. |
@@ -215,11 +219,11 @@ login is left to the provider for SSO logins.
 
 ### Reverse proxy
 
-Slavotax is a normal HTTP service on port 3000. Example for **Caddy**:
+Slavotax is a normal HTTP service on port 8742. Example for **Caddy**:
 
 ```caddyfile
 money.example.com {
-    reverse_proxy localhost:3000
+    reverse_proxy localhost:8742
 }
 ```
 
@@ -229,7 +233,7 @@ Example for **Nginx**:
 server {
     server_name money.example.com;
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:8742;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -277,7 +281,7 @@ docker exec slavotax-dev-db createdb -U slavotax slavotax_test   # for the tests
 echo "DATABASE_URL=postgres://slavotax:slavotax@localhost:54329/slavotax" > .env
 echo "NODE_ENV=development" >> .env
 
-pnpm dev   # API on http://localhost:3000, web app with hot reload on http://localhost:5173
+pnpm dev   # API on http://localhost:8742, web app with hot reload on http://localhost:5173
 ```
 
 | Command | What it does |
@@ -316,7 +320,7 @@ More details for contributors are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 ### API
 
 The web app talks to a documented JSON API under `/api`. Browse it interactively at
-`http://<your-server>:3000/api/docs`. Create a personal API token in **Settings → API tokens** and
+`http://<your-server>:8742/api/docs`. Create a personal API token in **Settings → API tokens** and
 send it as `Authorization: Bearer <token>` – handy for scripts and phone automations (e.g. an iOS
 Shortcut that logs a cash expense). All amounts are integers in minor units (cents). See
 [docs/API.md](docs/API.md) for examples.

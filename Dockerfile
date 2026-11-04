@@ -34,7 +34,7 @@ RUN apk add --no-cache tini
 WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
-    PORT=3000 \
+    PORT=8742 \
     WEB_DIST=/app/public \
     APP_VERSION=${APP_VERSION}
 
@@ -45,7 +45,7 @@ COPY --from=build --chown=node:node /src/apps/server/drizzle ./drizzle
 COPY --from=build --chown=node:node /src/apps/web/dist ./public
 
 USER node
-EXPOSE 3000
+EXPOSE 8742
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:${PORT}/api/health" > /dev/null || exit 1
 
