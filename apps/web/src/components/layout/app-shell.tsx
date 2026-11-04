@@ -5,6 +5,7 @@ import {
   ChartPie,
   Flag,
   FolderTree,
+  Handshake,
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
@@ -45,6 +46,7 @@ const NAV = [
   { to: '/planned', label: t('Planned payments'), icon: CalendarClock },
   { to: '/budgets', label: t('Budgets'), icon: Target },
   { to: '/goals', label: t('Goals'), icon: Flag },
+  { to: '/debts', label: t('Debts'), icon: Handshake },
   { to: '/categories', label: t('Categories'), icon: FolderTree },
   { to: '/settings', label: t('Settings'), icon: Settings },
 ];

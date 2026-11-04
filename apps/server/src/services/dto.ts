@@ -93,6 +93,7 @@ export function toRecord(
     counterpartAmount: extra.counterpartAmount ?? null,
     plannedPaymentId: r.plannedPaymentId,
     attachmentCount: extra.attachmentCount ?? 0,
+    debtId: r.debtId,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

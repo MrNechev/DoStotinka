@@ -1,8 +1,8 @@
-import { CheckSquare, Download, FileUp, Plus, Search, Tag, X } from 'lucide-react';
+import { CheckSquare, Download, FileUp, Handshake, Plus, Search, Tag, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { buildQuery } from '@/api/client';
-import { useCategories, useLabels, useRecordSummary, useRecords } from '@/api/queries';
+import { useCategories, useDebts, useLabels, useRecordSummary, useRecords } from '@/api/queries';
 import { CategoryPickerPanel } from '@/components/categories/category-picker';
 import { BulkBar } from '@/components/records/bulk-bar';
 import { useRecordEditor } from '@/components/records/record-editor';
@@ -49,6 +49,7 @@ export default function RecordsPage() {
   const categoryId = uncategorized ? null : categoryParam;
   const exactCategory = !!categoryId && params.get('exact') === '1';
   const labelId = params.get('labels');
+  const debtId = params.get('debt');
   const [search, setSearch] = useState(params.get('q') ?? '');
 
   const setParam = (key: string, value: string | null) =>
@@ -79,6 +80,7 @@ export default function RecordsPage() {
     exactCategories: exactCategory || undefined,
     uncategorized: uncategorized || undefined,
     labelIds: labelId ? [labelId] : undefined,
+    debtId: debtId ?? undefined,
     search: params.get('q') ?? undefined,
   };
   const records = useRecords(query);
@@ -86,6 +88,8 @@ export default function RecordsPage() {
   const summary = useRecordSummary(query);
 
   const category = categoryId ? index.byId.get(categoryId) : undefined;
+  const { data: debts = [] } = useDebts();
+  const debt = debtId ? debts.find((d) => d.id === debtId) : undefined;
   const label = labelId ? labels.find((l) => l.id === labelId) : undefined;
 
   // Exports exactly what is shown: the same filters as the list.
@@ -174,6 +178,21 @@ export default function RecordsPage() {
             </Button>
           )}
         </div>
+        {debtId && (
+          <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card pl-3 pr-1 text-sm">
+            <Handshake className="size-4 text-muted-foreground" />
+            {t('Debt: {name}', { name: debt?.person ?? '…' })}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setParam('debt', null)}
+              aria-label={t('Show all records')}
+              title={t('Show all records')}
+            >
+              <X className="size-3.5" />
+            </Button>
+          </span>
+        )}
         {labels.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>

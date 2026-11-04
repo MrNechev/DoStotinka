@@ -195,6 +195,8 @@ export const recordListQuery = z.object({
   to: isoDateTime.optional(),
   accountIds: uuidList,
   categoryIds: uuidList,
+  /** Records of one debt (lending, borrowing and repayments). */
+  debtId: uuid.optional(),
   /** Match `categoryIds` exactly instead of including their subcategories. */
   exactCategories: z.stringbool().optional(),
   /** Records without a category (combined with `categoryIds` as "or"). */
@@ -412,6 +414,51 @@ export const goalContributionInput = z.object({
   /** Positive to add savings, negative to take money out. */
   amount: minorAmount.refine((v) => v !== 0, 'Amount cannot be zero'),
 });
+
+// ───────────────────────────── Debts ─────────────────────────────
+
+export const DEBT_DIRECTIONS = ['lent', 'borrowed'] as const;
+export type DebtDirection = (typeof DEBT_DIRECTIONS)[number];
+
+/** Money lent to or borrowed from someone. */
+export const debtInput = z
+  .object({
+    direction: z.enum(DEBT_DIRECTIONS),
+    person: z.string().trim().min(1, 'Name is required').max(80),
+    amount: positiveMinorAmount,
+    /** Day the money was lent or borrowed. */
+    date: isoDate,
+    /** Account the money left or arrived in; without one only the amount owed is tracked. */
+    accountId: uuid.nullable().optional(),
+    /** Currency of a debt without an account (defaults to the base currency). */
+    currency: currencyCode.optional(),
+    dueDate: isoDate.nullable().optional(),
+    note: optionalText(500),
+  })
+  .refine((v) => !v.dueDate || v.dueDate >= v.date, {
+    message: 'The due date cannot be before the date',
+    path: ['dueDate'],
+  });
+export type DebtInput = z.input<typeof debtInput>;
+
+export const debtUpdateInput = z.object({
+  person: z.string().trim().min(1).max(80).optional(),
+  dueDate: isoDate.nullable().optional(),
+  note: optionalText(500),
+  /** Close (settled or forgiven) or reopen the debt. */
+  closed: z.boolean().optional(),
+});
+export type DebtUpdateInput = z.input<typeof debtUpdateInput>;
+
+/** A repayment, or more money lent/borrowed, moving through an account. */
+export const debtMovementInput = z.object({
+  kind: z.enum(['repayment', 'increase']),
+  amount: positiveMinorAmount,
+  accountId: uuid,
+  occurredAt: isoDateTime,
+  note: optionalText(500),
+});
+export type DebtMovementInput = z.input<typeof debtMovementInput>;
 
 // ───────────────────────────── Record templates ─────────────────────────────
 

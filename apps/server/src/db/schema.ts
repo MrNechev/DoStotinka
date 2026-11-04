@@ -47,6 +47,7 @@ export const accountTypeEnum = pgEnum('account_type', [
 export const recordTypeEnum = pgEnum('record_type', ['expense', 'income', 'transfer']);
 export const categoryKindEnum = pgEnum('category_kind', ['expense', 'income']);
 export const frequencyEnum = pgEnum('frequency', ['once', 'daily', 'weekly', 'monthly', 'yearly']);
+export const debtDirectionEnum = pgEnum('debt_direction', ['lent', 'borrowed']);
 export const budgetPeriodEnum = pgEnum('budget_period', ['week', 'month', 'year']);
 
 export const users = pgTable(
@@ -200,6 +201,32 @@ export const plannedPayments = pgTable(
   (t) => [index('planned_payments_user_idx').on(t.userId)],
 );
 
+/**
+ * Money lent to or borrowed from a person. Money movements are records linked via
+ * `records.debt_id` (they change account balances but are not income or expenses); an amount
+ * that never went through an account is kept in `opening_amount`.
+ */
+export const debts = pgTable(
+  'debts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    direction: debtDirectionEnum('direction').notNull(),
+    person: text('person').notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    /** Positive amount owed before any linked record (minor units of `currency`). */
+    openingAmount: money('opening_amount').notNull().default(0),
+    date: date('date', { mode: 'string' }).notNull(),
+    dueDate: date('due_date', { mode: 'string' }),
+    note: text('note'),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index('debts_user_idx').on(t.userId)],
+);
+
 export const records = pgTable(
   'records',
   {
@@ -228,9 +255,12 @@ export const records = pgTable(
     }),
     /** Due date of the planned payment occurrence this record settled. */
     plannedDueDate: date('planned_due_date', { mode: 'string' }),
+    /** Lending, borrowing or a repayment – excluded from income/expense statistics. */
+    debtId: uuid('debt_id').references(() => debts.id, { onDelete: 'cascade' }),
     ...timestamps,
   },
   (t) => [
+    index('records_debt_idx').on(t.debtId),
     index('records_user_date_idx').on(t.userId, t.occurredAt),
     index('records_account_date_idx').on(t.accountId, t.occurredAt),
     index('records_category_idx').on(t.categoryId),
@@ -387,3 +417,4 @@ export type LabelRow = typeof labels.$inferSelect;
 export type GoalRow = typeof goals.$inferSelect;
 export type AttachmentRow = typeof attachments.$inferSelect;
 export type RecordTemplateRow = typeof recordTemplates.$inferSelect;
+export type DebtRow = typeof debts.$inferSelect;

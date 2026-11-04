@@ -39,6 +39,7 @@ All tables (except the shared `reference_rates` cache) carry a `user_id`; every 
 | `attachments` | Files of a record (receipts, invoices) stored as `bytea`. No foreign key to `records` because editing a record re-creates its rows with the same ids; files are deleted with their record and orphans are swept periodically. Both sides of a transfer share the files of the outgoing row. |
 | `planned_payments` | Recurrence rule (`frequency`, `interval`, `start_date`, `end_date`) plus `next_due_date` – the next unpaid occurrence. Paying creates a record linked via `planned_payment_id` and advances `next_due_date`; skipping only advances it. |
 | `budgets` | Limit per week/month/year for a set of categories (parents include their subcategories) and accounts (empty = all). |
+| `debts` | Money lent (`lent`) or borrowed (`borrowed`) per person. Money movements are records with `debt_id` (lending/borrowing and repayments); an amount owed from before is `opening_amount`. Statistics, budgets and record summaries ignore records with a `debt_id`. |
 | `goals` | Savings goals: target amount/date and either a manually saved amount or a linked account whose balance is the progress. |
 | `exchange_rates` | Per user: value of 1 unit of a currency in the user's base currency, with its source (`ecb`, `manual`, `fixed`, `default`). |
 | `reference_rates` | Global cache of the ECB daily rates (units per EUR). |

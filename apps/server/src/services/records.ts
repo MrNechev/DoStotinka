@@ -73,15 +73,16 @@ async function assertLabels(tx: Tx, userId: string, labelIds: string[] | undefin
   return unique;
 }
 
-interface InsertMeta {
+export interface InsertMeta {
   ids?: { main?: string; counterpart?: string };
   createdAt?: Date;
   plannedPaymentId?: string | null;
   plannedDueDate?: string | null;
+  debtId?: string | null;
 }
 
 /** Inserts the row(s) for a record input. Returns the created rows (transfer = 2 rows). */
-async function insertRecordRows(
+export async function insertRecordRows(
   tx: Tx,
   user: UserRow,
   input: RecordInputParsed,
@@ -97,6 +98,7 @@ async function insertRecordRows(
     payee: input.payee ?? null,
     plannedPaymentId: meta.plannedPaymentId ?? null,
     plannedDueDate: meta.plannedDueDate ?? null,
+    debtId: meta.debtId ?? null,
     ...(meta.createdAt ? { createdAt: meta.createdAt } : {}),
   };
 
@@ -219,6 +221,7 @@ export async function updateRecord(
       createdAt: main.createdAt,
       plannedPaymentId: main.plannedPaymentId,
       plannedDueDate: main.plannedDueDate,
+      debtId: main.debtId,
     });
     // A transfer that became an expense/income loses its second row – keep its files.
     const gone = group.map((r) => r.id).filter((rid) => !inserted.some((r) => r.id === rid));
@@ -355,6 +358,7 @@ export async function filterConditions(
   if (q.from) conditions.push(gte(records.occurredAt, new Date(q.from)));
   if (q.to) conditions.push(lt(records.occurredAt, new Date(q.to)));
   if (q.accountIds?.length) conditions.push(inArray(records.accountId, q.accountIds));
+  if (q.debtId) conditions.push(eq(records.debtId, q.debtId));
   if (q.types?.length) conditions.push(inArray(records.type, q.types));
   const categoryConditions: SQL[] = [];
   if (q.categoryIds?.length) {
@@ -485,13 +489,14 @@ export async function summarizeRecords(
   const rows = await db
     .select({
       type: records.type,
+      isDebt: sql<boolean>`${records.debtId} is not null`,
       currency: records.currency,
       total: sql<number>`coalesce(sum(${records.amount}), 0)::bigint`.mapWith(Number),
       count: sql<number>`count(*)::int`,
     })
     .from(records)
     .where(and(...conditions))
-    .groupBy(records.type, records.currency);
+    .groupBy(records.type, sql`${records.debtId} is not null`, records.currency);
   const rates = await getRateMap(db, user.id, user.baseCurrency);
   const result: RecordSummary = {
     currency: user.baseCurrency,
@@ -503,10 +508,12 @@ export async function summarizeRecords(
   };
   for (const r of rows) {
     const value = convertMinor(r.total, r.currency, user.baseCurrency, rates);
+    result.count += r.count;
+    // Lending, borrowing and repayments are neither income nor expenses.
+    if (r.isDebt) continue;
     if (r.type === 'income') result.income += value;
     else if (r.type === 'expense') result.expense -= value;
     else result.transferCount += r.count;
-    result.count += r.count;
   }
   result.net = result.income - result.expense;
   return result;

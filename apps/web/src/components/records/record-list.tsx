@@ -1,8 +1,8 @@
-import type { Account, Label, RecordItem } from '@slavotax/shared';
+import type { Account, Debt, Label, RecordItem } from '@slavotax/shared';
 import { parseISO } from 'date-fns';
 import { CalendarClock, Check, Inbox, Paperclip } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
-import { useAccounts, useCategories, useLabels } from '@/api/queries';
+import { useAccounts, useCategories, useDebts, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
@@ -17,19 +17,33 @@ interface Lookups {
   accounts: Map<string, Account>;
   categories: CategoryIndex;
   labels: Map<string, Label>;
+  debts: Map<string, Debt>;
+}
+
+/** "Lent to Alex", "Repaid by Alex", "Borrowed from Mom", "Repaid to Mom". */
+export function debtRecordTitle(record: RecordItem, debt: Debt | undefined): string {
+  const name = debt?.person ?? '?';
+  if (debt?.direction === 'borrowed') {
+    return record.amount > 0
+      ? t('Borrowed from {name}', { name })
+      : t('Repaid to {name}', { name });
+  }
+  return record.amount < 0 ? t('Lent to {name}', { name }) : t('Repaid by {name}', { name });
 }
 
 export function useRecordLookups(): Lookups {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
   const { data: labels = [] } = useLabels();
+  const { data: debts = [] } = useDebts();
   return useMemo(
     () => ({
       accounts: new Map(accounts.map((a) => [a.id, a])),
       categories: buildCategoryIndex(categories),
       labels: new Map(labels.map((l) => [l.id, l])),
+      debts: new Map(debts.map((d) => [d.id, d])),
     }),
-    [accounts, categories, labels],
+    [accounts, categories, labels, debts],
   );
 }
 
@@ -58,19 +72,19 @@ export function RecordRow({
     : undefined;
   const isTransfer = record.type === 'transfer';
   const cat = lookups.categories;
-  const title = isTransfer
-    ? record.amount < 0
-      ? t('Transfer to {name}', { name: counterpart?.name ?? t('deleted account') })
-      : t('Transfer from {name}', { name: counterpart?.name ?? t('deleted account') })
-    : cat.nameOf(record.categoryId);
+  const isDebt = !!record.debtId;
+  const title = isDebt
+    ? debtRecordTitle(record, lookups.debts.get(record.debtId!))
+    : isTransfer
+      ? record.amount < 0
+        ? t('Transfer to {name}', { name: counterpart?.name ?? t('deleted account') })
+        : t('Transfer from {name}', { name: counterpart?.name ?? t('deleted account') })
+      : cat.nameOf(record.categoryId);
   const parentName =
     !isTransfer && record.categoryId ? cat.parentOf(record.categoryId)?.name : undefined;
   const details = [record.payee, record.note].filter(Boolean).join(' · ');
-  const amountClass = isTransfer
-    ? 'text-foreground'
-    : record.amount < 0
-      ? 'text-expense'
-      : 'text-income';
+  const amountClass =
+    isTransfer || isDebt ? 'text-foreground' : record.amount < 0 ? 'text-expense' : 'text-income';
 
   return (
     <button
@@ -95,7 +109,9 @@ export function RecordRow({
           {selection.selected.has(record.id) && <Check className="size-3.5" strokeWidth={3} />}
         </span>
       )}
-      {isTransfer ? (
+      {isDebt ? (
+        <IconBadge icon="handshake" color="#0EA5E9" size="md" />
+      ) : isTransfer ? (
         <IconBadge icon="arrow-left-right" color="#64748B" size="md" />
       ) : (
         <IconBadge
@@ -226,10 +242,10 @@ export function RecordList({
   return (
     <div className="pb-2">
       {groups.map(([day, items]) => {
-        // Daily totals per currency (transfers excluded).
+        // Daily totals per currency (transfers and debts excluded).
         const totals = new Map<string, number>();
         for (const r of items) {
-          if (r.type === 'transfer') continue;
+          if (r.type === 'transfer' || r.debtId) continue;
           totals.set(r.currency, (totals.get(r.currency) ?? 0) + r.amount);
         }
         return (

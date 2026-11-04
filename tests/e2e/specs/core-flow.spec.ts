@@ -76,4 +76,10 @@ test('the demo account shows a filled dashboard', async ({ page }) => {
   await dialog.getByRole('button', { name: /Morning coffee/ }).click();
   await expect(dialog.getByLabel('Payee')).toHaveValue('Corner Café');
   await expect(dialog.locator('#amount')).toHaveValue('2.40');
+  await page.keyboard.press('Escape');
+
+  // Debts show what is still owed.
+  await page.goto('/debts');
+  await expect(page.getByText('Alex')).toBeVisible();
+  await expect(page.getByText('Owed to me').first()).toBeVisible();
 });

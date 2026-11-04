@@ -1656,3 +1656,110 @@ describe('two-factor login', () => {
     expect((await login()).statusCode).toBe(200);
   });
 });
+
+describe('debts', () => {
+  it('tracks lending, borrowing and repayments outside of income and expenses', async () => {
+    const { call } = await registerUser(ctx.app);
+    const color = '#22C55E';
+    const bank = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color,
+        initialBalance: 100000,
+      })
+    ).body;
+    const balance = async () =>
+      (await call<any[]>('GET', '/api/accounts')).body.find((a) => a.id === bank.id)!.balance;
+
+    const lent = await call('POST', '/api/debts', {
+      direction: 'lent',
+      person: 'Peter',
+      amount: 20000,
+      date: '2026-05-01',
+      accountId: bank.id,
+      dueDate: '2026-06-01',
+    });
+    expect(lent.status).toBe(201);
+    expect(lent.body).toMatchObject({
+      outstanding: 20000,
+      total: 20000,
+      repaid: 0,
+      recordCount: 1,
+    });
+    expect(await balance()).toBe(80000);
+
+    // Lending is not spending.
+    const q = `from=${encodeURIComponent('2026-05-01T00:00:00Z')}&to=${encodeURIComponent('2026-06-01T00:00:00Z')}&tz=UTC`;
+    expect((await call('GET', `/api/stats/summary?${q}`)).body.expense).toBe(0);
+    expect((await call('GET', '/api/records/summary?types=expense')).body.expense).toBe(0);
+
+    const repay = (amount: number, kind = 'repayment') =>
+      call('POST', `/api/debts/${lent.body.id}/movements`, {
+        kind,
+        amount,
+        accountId: bank.id,
+        occurredAt: iso('2026-05-10T10:00:00Z'),
+      });
+    expect((await repay(5000)).body).toMatchObject({ outstanding: 15000, repaid: 5000 });
+    expect((await call('GET', `/api/stats/summary?${q}`)).body.income).toBe(0);
+    const settled = (await repay(15000)).body;
+    expect(settled.outstanding).toBe(0);
+    expect(settled.closedAt).not.toBeNull();
+    expect(await balance()).toBe(100000);
+    const reopened = (await repay(3000, 'increase')).body;
+    expect(reopened).toMatchObject({ outstanding: 3000, total: 23000, closedAt: null });
+
+    // Editing a linked record keeps the link.
+    const linked = (await call('GET', `/api/records?debtId=${lent.body.id}`)).body.items;
+    expect(linked).toHaveLength(4);
+    const first = linked.find((r: any) => r.amount === -20000);
+    await call('PUT', `/api/records/${first.id}`, {
+      type: 'expense',
+      accountId: bank.id,
+      amount: 25000,
+      occurredAt: first.occurredAt,
+    });
+    const afterEdit = (await call<any[]>('GET', '/api/debts')).body[0];
+    expect(afterEdit).toMatchObject({ total: 28000, outstanding: 8000 });
+
+    // A debt from before using the app does not touch any account.
+    const borrowed = (
+      await call('POST', '/api/debts', {
+        direction: 'borrowed',
+        person: 'Mom',
+        amount: 50000,
+        date: '2026-01-15',
+      })
+    ).body;
+    expect(borrowed).toMatchObject({ currency: 'EUR', outstanding: 50000, recordCount: 0 });
+    const paidBack = (
+      await call('POST', `/api/debts/${borrowed.id}/movements`, {
+        kind: 'repayment',
+        amount: 10000,
+        accountId: bank.id,
+        occurredAt: iso('2026-05-20T10:00:00Z'),
+      })
+    ).body;
+    expect(paidBack.outstanding).toBe(40000);
+
+    // Backups keep debts and their records together.
+    const backup = (await call('GET', '/api/export/backup.json')).body;
+    const other = await registerUser(ctx.app);
+    expect((await other.call('POST', '/api/me/restore', backup)).status).toBe(200);
+    const restored = (await other.call<any[]>('GET', '/api/debts')).body;
+    expect(restored.map((d) => [d.person, d.outstanding])).toEqual([
+      ['Mom', 40000],
+      ['Peter', 8000],
+    ]);
+
+    const before = await balance();
+    expect((await call('DELETE', `/api/debts/${lent.body.id}`)).status).toBe(204);
+    expect(await balance()).toBe(before + 25000 - 5000 - 15000 + 3000);
+    expect((await call('GET', `/api/records?debtId=${lent.body.id}`)).body.items).toHaveLength(0);
+    expect((await other.call('PATCH', `/api/debts/${borrowed.id}`, { closed: true })).status).toBe(
+      404,
+    );
+  });
+});

@@ -7,6 +7,9 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Debts: track money lent and borrowed per person, record repayments into or out of any account,
+  see what is still open and when it is due. Debt records change account balances but are not
+  counted as income or expenses.
 - Two-factor login with an authenticator app (TOTP) and ten one-time recovery codes
   (Settings → Security). Administrators can switch it off for users who lost their phone.
 - Record templates: save the values of a record as a template (“Save as template” in the record

@@ -16,6 +16,10 @@ import type {
   CategoryUpdateInput,
   CreatedToken,
   CurrenciesResponse,
+  Debt,
+  DebtInput,
+  DebtMovementInput,
+  DebtUpdateInput,
   Goal,
   GoalInput,
   Interval,
@@ -78,6 +82,7 @@ export function invalidateFinancialData(qc: QueryClient) {
     qc.invalidateQueries({ queryKey: qk.planned }),
     qc.invalidateQueries({ queryKey: qk.categoryUsage }),
     qc.invalidateQueries({ queryKey: ['goals'] }),
+    qc.invalidateQueries({ queryKey: ['debts'] }),
   ]);
 }
 
@@ -392,6 +397,7 @@ export interface RecordFilters {
   labelIds?: string[];
   types?: string[];
   search?: string;
+  debtId?: string;
 }
 
 export function useRecords(filters: RecordFilters, pageSize = 50) {
@@ -787,6 +793,46 @@ export function useRefreshRates() {
 }
 
 // ───────────────────────────── Goals ─────────────────────────────
+
+// ───── Debts ─────
+
+export function useDebts() {
+  return useQuery({ queryKey: ['debts'], queryFn: () => api<Debt[]>('/debts') });
+}
+
+export function useCreateDebt() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: DebtInput) => api<Debt>('/debts', { method: 'POST', body: input }),
+    onSuccess: () => invalidateFinancialData(qc),
+  });
+}
+
+export function useUpdateDebt() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: DebtUpdateInput }) =>
+      api<Debt>(`/debts/${id}`, { method: 'PATCH', body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['debts'] }),
+  });
+}
+
+export function useDebtMovement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: DebtMovementInput }) =>
+      api<Debt>(`/debts/${id}/movements`, { method: 'POST', body: input }),
+    onSuccess: () => invalidateFinancialData(qc),
+  });
+}
+
+export function useDeleteDebt() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/debts/${id}`, { method: 'DELETE' }),
+    onSuccess: () => invalidateFinancialData(qc),
+  });
+}
 
 // ───── Two-factor login ─────
 

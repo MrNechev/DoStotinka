@@ -137,6 +137,8 @@ export interface RecordItem {
   plannedPaymentId: string | null;
   /** Number of attached files (receipts, invoices). */
   attachmentCount: number;
+  /** Lending, borrowing or a repayment of this debt (not counted as income or expense). */
+  debtId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -208,6 +210,27 @@ export interface BudgetStatus extends Budget {
   ratio: number;
   /** Fraction of the period that has elapsed (0..1). */
   elapsed: number;
+}
+
+export interface Debt {
+  id: string;
+  direction: 'lent' | 'borrowed';
+  person: string;
+  currency: string;
+  /** Amount owed that did not go through an account. */
+  openingAmount: number;
+  /** Everything lent / borrowed so far (opening amount + increases). */
+  total: number;
+  /** Everything paid back so far. */
+  repaid: number;
+  /** Still owed (never negative); in `currency`. */
+  outstanding: number;
+  date: string;
+  dueDate: string | null;
+  note: string | null;
+  closedAt: string | null;
+  recordCount: number;
+  createdAt: string;
 }
 
 export interface RecordTemplate {

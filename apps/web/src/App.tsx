@@ -30,6 +30,7 @@ const CategoriesPage = lazy(() => import('./pages/categories-page'));
 const SettingsPage = lazy(() => import('./pages/settings-page'));
 const ImportPage = lazy(() => import('./pages/import-page'));
 const GoalsPage = lazy(() => import('./pages/goals-page'));
+const DebtsPage = lazy(() => import('./pages/debts-page'));
 const AdminPage = lazy(() => import('./pages/admin-page'));
 
 const queryClient = new QueryClient({
@@ -138,6 +139,7 @@ const router = createBrowserRouter([
           { path: 'planned', element: page(<PlannedPage />) },
           { path: 'budgets', element: page(<BudgetsPage />) },
           { path: 'goals', element: page(<GoalsPage />) },
+          { path: 'debts', element: page(<DebtsPage />) },
           { path: 'categories', element: page(<CategoriesPage />) },
           { path: 'settings', element: page(<SettingsPage />) },
           { path: 'import', element: page(<ImportPage />) },

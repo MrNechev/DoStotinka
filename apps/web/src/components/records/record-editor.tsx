@@ -10,7 +10,7 @@ import {
   type RecordTemplate,
   type RecordType,
 } from '@slavotax/shared';
-import { ArrowDown, Copy, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
+import { ArrowDown, Copy, Handshake, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
 import {
   createContext,
   type ReactNode,
@@ -27,6 +27,7 @@ import {
   useAccounts,
   useCategories,
   useCurrencies,
+  useDebts,
   useDeleteRecord,
   useLabels,
   usePayees,
@@ -52,6 +53,7 @@ import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 import { AttachmentsField } from './attachments-field';
+import { debtRecordTitle } from './record-list';
 import { SaveTemplateButton, TemplateChips } from './templates';
 
 export interface RecordDefaults {
@@ -223,6 +225,10 @@ function RecordEditorDialog({
   const amountRef = useRef<HTMLInputElement>(null);
 
   const isEdit = state.mode === 'edit';
+  // Lending, borrowing and repayments belong to a debt: their type and category are fixed.
+  const debtId = isEdit ? state.record.debtId : null;
+  const { data: debts = [] } = useDebts();
+  const debt = debtId ? debts.find((d) => d.id === debtId) : undefined;
 
   // Accounts may still be loading when the dialog opens – pick defaults once they arrive.
   useEffect(() => {
@@ -584,39 +590,51 @@ function RecordEditorDialog({
             </div>
           )}
 
-          <Segmented<RecordType>
-            value={form.type}
-            onChange={(v) => setForm((f) => ({ ...f, type: v }))}
-            className="w-full"
-            options={[
-              {
-                value: 'expense',
-                label: (
-                  <>
-                    <Minus /> {t('Expense')}
-                  </>
-                ),
-                className: 'text-expense',
-              },
-              {
-                value: 'income',
-                label: (
-                  <>
-                    <Plus /> {t('Income')}
-                  </>
-                ),
-                className: 'text-income',
-              },
-              {
-                value: 'transfer',
-                label: (
-                  <>
-                    <Repeat /> {t('Transfer')}
-                  </>
-                ),
-              },
-            ]}
-          />
+          {debtId ? (
+            <p className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2 text-sm">
+              <Handshake className="size-4 shrink-0 text-muted-foreground" />
+              <span>
+                {state.mode === 'edit' && debtRecordTitle(state.record, debt)} ·{' '}
+                <span className="text-muted-foreground">
+                  {t('part of a debt – not counted as income or expense')}
+                </span>
+              </span>
+            </p>
+          ) : (
+            <Segmented<RecordType>
+              value={form.type}
+              onChange={(v) => setForm((f) => ({ ...f, type: v }))}
+              className="w-full"
+              options={[
+                {
+                  value: 'expense',
+                  label: (
+                    <>
+                      <Minus /> {t('Expense')}
+                    </>
+                  ),
+                  className: 'text-expense',
+                },
+                {
+                  value: 'income',
+                  label: (
+                    <>
+                      <Plus /> {t('Income')}
+                    </>
+                  ),
+                  className: 'text-income',
+                },
+                {
+                  value: 'transfer',
+                  label: (
+                    <>
+                      <Repeat /> {t('Transfer')}
+                    </>
+                  ),
+                },
+              ]}
+            />
+          )}
 
           <div className="rounded-2xl bg-muted/60 px-4 py-3">
             <label htmlFor="amount" className="text-xs font-medium text-muted-foreground">
@@ -749,9 +767,11 @@ function RecordEditorDialog({
                   ))}
                 </Select>
               </Field>
-              <Field label={t('Category')} className="sm:col-span-2">
-                <CategoryButton value={form.categoryId} onClick={() => setPicking(true)} />
-              </Field>
+              {!debtId && (
+                <Field label={t('Category')} className="sm:col-span-2">
+                  <CategoryButton value={form.categoryId} onClick={() => setPicking(true)} />
+                </Field>
+              )}
             </div>
           )}
 
@@ -851,7 +871,9 @@ function RecordEditorDialog({
             </Field>
           )}
 
-          <SaveTemplateButton input={templateInput} suggestedName={suggestedTemplateName} />
+          {!debtId && (
+            <SaveTemplateButton input={templateInput} suggestedName={suggestedTemplateName} />
+          )}
 
           {error && (
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -870,9 +892,11 @@ function RecordEditorDialog({
                 >
                   <Trash2 /> {t('Delete')}
                 </Button>
-                <Button variant="outline" onClick={duplicate}>
-                  <Copy /> {t('Duplicate')}
-                </Button>
+                {!debtId && (
+                  <Button variant="outline" onClick={duplicate}>
+                    <Copy /> {t('Duplicate')}
+                  </Button>
+                )}
               </>
             )}
             {!isEdit && (

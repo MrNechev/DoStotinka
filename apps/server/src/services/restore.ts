@@ -14,6 +14,7 @@ import {
   attachments,
   budgets,
   categories,
+  debts,
   exchangeRates,
   goals,
   labels,
@@ -96,10 +97,27 @@ export const backupSchema = z.object({
         counterpartAccountId: nullableId,
         plannedPaymentId: nullableId,
         plannedDueDate: day.nullable().optional(),
+        debtId: nullableId,
         createdAt: date.optional(),
       }),
     )
     .max(500_000),
+  debts: z
+    .array(
+      z.object({
+        id,
+        direction: z.enum(['lent', 'borrowed']),
+        person: z.string().min(1).max(80),
+        currency: z.string().length(3),
+        openingAmount: money.default(0),
+        date: day,
+        dueDate: day.nullable().optional(),
+        note: text.nullable().optional(),
+        closedAt: date.nullable().optional(),
+      }),
+    )
+    .max(10_000)
+    .default([]),
   recordLabels: z
     .array(z.object({ recordId: id, labelId: id }))
     .max(1_000_000)
@@ -196,6 +214,7 @@ export interface RestoreResult {
   budgets: number;
   goals: number;
   templates: number;
+  debts: number;
 }
 
 /** Replaces all data of `user` with the contents of a backup (all IDs are re-generated). */
@@ -210,6 +229,7 @@ export async function restoreBackup(
       attachments,
       recordTemplates,
       records,
+      debts,
       plannedPayments,
       budgets,
       goals,
@@ -326,6 +346,23 @@ export async function restoreBackup(
       }));
     await chunked(plannedRows, (c) => tx.insert(plannedPayments).values(c));
 
+    const debt = remap();
+    await chunked(
+      backup.debts.map((d) => ({
+        id: debt.fresh(d.id),
+        userId: user.id,
+        direction: d.direction,
+        person: d.person,
+        currency: d.currency,
+        openingAmount: Math.max(0, d.openingAmount),
+        date: d.date,
+        dueDate: d.dueDate ?? null,
+        note: d.note ?? null,
+        closedAt: d.closedAt ?? null,
+      })),
+      (c) => tx.insert(debts).values(c),
+    );
+
     const recordRows = backup.records
       .filter((r) => acc.get(r.accountId))
       .map((r) => ({
@@ -345,6 +382,7 @@ export async function restoreBackup(
         counterpartAccountId: acc.get(r.counterpartAccountId),
         plannedPaymentId: plan.get(r.plannedPaymentId),
         plannedDueDate: r.plannedDueDate ?? null,
+        debtId: debt.get(r.debtId),
         createdAt: r.createdAt ?? r.occurredAt,
       }));
     await chunked(recordRows, (c) => tx.insert(records).values(c));
@@ -427,6 +465,7 @@ export async function restoreBackup(
       budgets: backup.budgets.length,
       goals: backup.goals.length,
       templates: backup.templates.length,
+      debts: backup.debts.length,
     };
   });
 }

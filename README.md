@@ -62,6 +62,9 @@ leaves it.
 - **Calendar** – see your spending day by day and what is due next.
 - **Budgets** – weekly, monthly or yearly limits for any set of categories and accounts, with
   history.
+- **Debts** – money lent to friends or borrowed from family, with repayments, due dates and what
+  is still open. Lending and repaying move money between your accounts but never count as income
+  or expenses.
 - **Savings goals** – save towards a target (optionally by a date); progress comes from manual
   contributions or the balance of a linked account, with the monthly amount you need to put aside.
 - **Multi-currency** – Euro by default; 55 currencies supported. Exchange rates are updated daily

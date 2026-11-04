@@ -6,6 +6,7 @@ import {
   accounts,
   budgets,
   categories,
+  debts,
   exchangeRates,
   goals,
   labels,
@@ -58,6 +59,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
   await tx.delete(plannedPayments).where(eq(plannedPayments.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
   await tx.delete(goals).where(eq(goals.userId, userId));
+  await tx.delete(debts).where(eq(debts.userId, userId));
   await tx.delete(recordTemplates).where(eq(recordTemplates.userId, userId));
   await tx.delete(labels).where(eq(labels.userId, userId));
   await tx.delete(accounts).where(eq(accounts.userId, userId));
@@ -945,6 +947,50 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
       amount: 200_00,
     },
   ]);
+
+  // Debts: money lent to a friend (partly repaid) and an older loan from family.
+  const alex = randomUUID();
+  const mom = randomUUID();
+  await tx.insert(debts).values([
+    {
+      id: alex,
+      userId,
+      direction: 'lent',
+      person: 'Alex',
+      currency: 'EUR',
+      date: addDays(today, -25),
+      dueDate: addDays(today, 12),
+      note: 'Concert tickets',
+    },
+    {
+      id: mom,
+      userId,
+      direction: 'borrowed',
+      person: 'Mom',
+      currency: 'EUR',
+      openingAmount: 600_00,
+      date: addDays(today, -120),
+      note: 'Help with the car repair',
+    },
+  ]);
+  await tx.insert(records).values(
+    [
+      { debtId: alex, accountId: acc.bank, amount: -120_00, day: -25, payee: 'Alex' },
+      { debtId: alex, accountId: acc.cash, amount: 40_00, day: -8, payee: 'Alex' },
+      { debtId: mom, accountId: acc.bank, amount: -150_00, day: -60, payee: 'Mom' },
+      { debtId: mom, accountId: acc.bank, amount: -150_00, day: -30, payee: 'Mom' },
+    ].map((r) => ({
+      id: randomUUID(),
+      userId,
+      accountId: r.accountId,
+      type: r.amount < 0 ? ('expense' as const) : ('income' as const),
+      amount: r.amount,
+      currency: 'EUR',
+      occurredAt: at(addDays(today, r.day), 18, 30),
+      payee: r.payee,
+      debtId: r.debtId,
+    })),
+  );
 
   const nextSummer = `${Number(today.slice(0, 4)) + (today.slice(5, 7) > '06' ? 1 : 0)}-07-01`;
   await tx.insert(goals).values([

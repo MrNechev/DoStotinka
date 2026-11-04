@@ -125,6 +125,7 @@ export async function summary(
       from records r
       where ${accountScope(user.id, scope.accountIds)}
         and r.type in ('income', 'expense')
+        and r.debt_id is null
         and r.occurred_at >= ${from.toISOString()}::timestamptz
         and r.occurred_at < ${to.toISOString()}::timestamptz
       group by r.type, r.currency
@@ -202,6 +203,7 @@ export async function categoryBreakdown(
     left join categories c on c.id = r.category_id
     where ${accountScope(user.id, scope.accountIds)}
       and r.type = ${type}
+      and r.debt_id is null
       and ((${inCurrent}) or (${inPrevious}))
       ${parentFilter}
     group by 1, 2
@@ -266,6 +268,7 @@ export async function timeseries(
     left join categories c on c.id = r.category_id
     where ${accountScope(user.id, scope.accountIds)}
       and r.type = ${type}
+      and r.debt_id is null
       and r.occurred_at >= ${scope.from.toISOString()}::timestamptz
       and r.occurred_at < ${scope.to.toISOString()}::timestamptz
       ${categoryFilter}
@@ -305,6 +308,7 @@ export async function cashflow(
     from records r
     where ${accountScope(user.id, scope.accountIds)}
       and r.type in ('income', 'expense')
+      and r.debt_id is null
       and r.occurred_at >= ${scope.from.toISOString()}::timestamptz
       and r.occurred_at < ${scope.to.toISOString()}::timestamptz
     group by 1, 2, 3

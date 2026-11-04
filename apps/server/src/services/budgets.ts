@@ -49,6 +49,7 @@ export async function spentFor(
   const conditions: SQL[] = [
     sql`r.user_id = ${user.id}::uuid`,
     sql`r.type = 'expense'`,
+    sql`r.debt_id is null`,
     sql`r.occurred_at >= ${from.toISOString()}::timestamptz`,
     sql`r.occurred_at < ${to.toISOString()}::timestamptz`,
   ];
