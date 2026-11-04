@@ -20,6 +20,7 @@ All notable changes to this project are documented in this file. The format is b
   before uploading; a paperclip in the record list marks records with files.
 
 ### Fixed
+- The Accounts page calls negative balances “Liabilities” (no longer “Debts”).
 - Import: records in a currency without an exchange rate yet are now converted (the currency is
   tracked automatically); amounts like `€-12,50`, `EUR -12.50` or `−12.50` are read as negative;
   accounts that only receive transfers get the currency from the file; the preview shows amounts
