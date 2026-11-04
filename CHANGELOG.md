@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.4.0] – 2026-11-04
+
 ### Added
 - Debts: track money lent and borrowed per person, record repayments into or out of any account,
   see what is still open and when it is due. Debt records change account balances but are not

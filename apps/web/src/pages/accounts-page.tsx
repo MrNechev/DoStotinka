@@ -135,7 +135,7 @@ export default function AccountsPage() {
           </p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">{t('Debts')}</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Liabilities')}</p>
           <p className="tabular mt-1 text-2xl font-semibold text-expense">
             {money(debts, user.baseCurrency)}
           </p>
