@@ -1,27 +1,28 @@
 import { CalendarClock, ChartPie, Coins, ShieldCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Logo } from '@/components/layout/logo';
+import { LANGUAGES, language, setLanguage, t } from '@/i18n';
 
 const FEATURES = [
   {
     icon: Coins,
-    title: 'All your accounts in one place',
-    text: 'Cash, bank, savings or cards – in any currency.',
+    title: t('All your accounts in one place'),
+    text: t('Cash, bank, savings or cards – in any currency.'),
   },
   {
     icon: ChartPie,
-    title: 'Clear statistics',
-    text: 'See exactly where your money goes, day by day.',
+    title: t('Clear statistics'),
+    text: t('See exactly where your money goes, day by day.'),
   },
   {
     icon: CalendarClock,
-    title: 'Never miss a payment',
-    text: 'Plan rent, bills and subscriptions ahead.',
+    title: t('Never miss a payment'),
+    text: t('Plan rent, bills and subscriptions ahead.'),
   },
   {
     icon: ShieldCheck,
-    title: 'Your data, your server',
-    text: 'Self-hosted and open source. No tracking.',
+    title: t('Your data, your server'),
+    text: t('Self-hosted and open source. No tracking.'),
   },
 ];
 
@@ -34,10 +35,10 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         <Logo className="relative [&_span]:text-white" />
         <div className="relative max-w-lg">
           <h1 className="text-4xl font-semibold leading-tight tracking-tight">
-            Know where your money goes.
+            {t('Know where your money goes.')}
           </h1>
           <p className="mt-3 text-lg text-emerald-50/80">
-            A simple, private budget & money manager for everyday life.
+            {t('A simple, private budget & money manager for everyday life.')}
           </p>
           <div className="mt-10 grid gap-5">
             {FEATURES.map((f) => (
@@ -54,13 +55,27 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
         <p className="relative text-sm text-emerald-50/60">
-          Open source · Self-hosted · Made for humans
+          {t('Open source · Self-hosted · Made for humans')}
         </p>
       </div>
       <div className="flex flex-col justify-center px-6 py-10 sm:px-12">
         <div className="mx-auto w-full max-w-sm">
           <Logo className="mb-10 lg:hidden" />
           {children}
+          <div className="mt-10 flex justify-center gap-3 text-xs text-muted-foreground">
+            {LANGUAGES.map((l) => (
+              <button
+                key={l.code}
+                type="button"
+                onClick={() => l.code !== language && setLanguage(l.code)}
+                className={
+                  l.code === language ? 'font-semibold text-foreground' : 'hover:text-foreground'
+                }
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

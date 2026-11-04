@@ -42,6 +42,7 @@ import {
   Skeleton,
 } from '@/components/ui/misc';
 import { ColorPicker } from '@/components/ui/pickers';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 
@@ -58,8 +59,10 @@ function LabelDialog({ label, onClose }: { label?: Label; onClose: () => void })
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="sm"
-        title={label ? 'Edit label' : 'New label'}
-        description="Labels are free tags you can attach to any record, e.g. “Vacation” or “Work”."
+        title={label ? t('Edit label') : t('New label')}
+        description={t(
+          'Labels are free tags you can attach to any record, e.g. “Vacation” or “Work”.',
+        )}
       >
         <form
           className="grid gap-4"
@@ -73,7 +76,7 @@ function LabelDialog({ label, onClose }: { label?: Label; onClose: () => void })
             }
           }}
         >
-          <Field label="Name" htmlFor="label-name">
+          <Field label={t('Name')} htmlFor="label-name">
             <Input
               id="label-name"
               value={name}
@@ -83,15 +86,15 @@ function LabelDialog({ label, onClose }: { label?: Label; onClose: () => void })
               autoFocus
             />
           </Field>
-          <Field label="Colour">
+          <Field label={t('Colour')}>
             <ColorPicker value={color} onChange={setColor} />
           </Field>
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              Save
+              {t('Save')}
             </Button>
           </DialogFooter>
         </form>
@@ -127,16 +130,29 @@ export default function CategoriesPage() {
     const children = index.childrenOf(c.id);
     const count = c.parentId ? (usage[c.id] ?? 0) : groupUsage(c);
     const ok = await confirm({
-      title: `Delete “${c.name}”?`,
+      title: t('Delete “{name}”?', { name: c.name }),
       description: c.parentId
-        ? `${count} record(s) will be moved to “${index.nameOf(c.parentId)}”.`
-        : `This also deletes its ${children.length} subcategories. ${count} record(s) will become uncategorized. Archiving keeps the history instead.`,
-      confirmLabel: 'Delete',
+        ? tn(
+            count,
+            '{n} record will be moved to “{name}”.',
+            '{n} records will be moved to “{name}”.',
+            {
+              name: index.nameOf(c.parentId),
+            },
+          )
+        : t(
+            'This also deletes its {subs} subcategories. {n} records will become uncategorized. Archiving keeps the history instead.',
+            {
+              subs: children.length,
+              n: count,
+            },
+          ),
+      confirmLabel: t('Delete'),
       destructive: true,
     });
     if (!ok) return;
     remove.mutate(c.id, {
-      onSuccess: () => toast.success('Category deleted'),
+      onSuccess: () => toast.success(t('Category deleted')),
       onError: (e) => toast.error(errorMessage(e)),
     });
   };
@@ -144,7 +160,10 @@ export default function CategoriesPage() {
   const toggleArchive = (c: Category) =>
     save.mutate(
       { id: c.id, input: { archived: !c.archived } },
-      { onSuccess: () => toast.success(c.archived ? 'Category restored' : 'Category archived') },
+      {
+        onSuccess: () =>
+          toast.success(c.archived ? t('Category restored') : t('Category archived')),
+      },
     );
 
   /** Swaps a category with its neighbour among its siblings. */
@@ -164,7 +183,7 @@ export default function CategoriesPage() {
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Actions"
+          aria-label={t('Actions')}
           onClick={(e) => e.stopPropagation()}
         >
           <MoreHorizontal />
@@ -172,10 +191,10 @@ export default function CategoriesPage() {
       </MenuTrigger>
       <MenuContent>
         <MenuItem icon={<ArrowUp />} onSelect={() => move(c, -1)}>
-          Move up
+          {t('Move up')}
         </MenuItem>
         <MenuItem icon={<ArrowDown />} onSelect={() => move(c, 1)}>
-          Move down
+          {t('Move down')}
         </MenuItem>
         <MenuSeparator />
         {!c.parentId && (
@@ -183,21 +202,21 @@ export default function CategoriesPage() {
             icon={<Plus />}
             onSelect={() => setEditing({ defaults: { parentId: c.id, kind: c.kind } })}
           >
-            Add subcategory
+            {t('Add subcategory')}
           </MenuItem>
         )}
         <MenuItem icon={<Pencil />} onSelect={() => setEditing({ category: c })}>
-          Edit
+          {t('Edit')}
         </MenuItem>
         <MenuItem
           icon={c.archived ? <ArchiveRestore /> : <Archive />}
           onSelect={() => toggleArchive(c)}
         >
-          {c.archived ? 'Restore' : 'Archive'}
+          {c.archived ? t('Restore') : t('Archive')}
         </MenuItem>
         <MenuSeparator />
         <MenuItem icon={<Trash2 />} destructive onSelect={() => void onDelete(c)}>
-          Delete
+          {t('Delete')}
         </MenuItem>
       </MenuContent>
     </Menu>
@@ -206,11 +225,13 @@ export default function CategoriesPage() {
   return (
     <div>
       <PageHeader
-        title="Categories"
-        description="A detailed category tree for everything you spend on or earn. Customize it as you like."
+        title={t('Categories')}
+        description={t(
+          'A detailed category tree for everything you spend on or earn. Customize it as you like.',
+        )}
         actions={
           <Button onClick={() => setEditing({ defaults: { kind } })}>
-            <Plus /> New category
+            <Plus /> {t('New category')}
           </Button>
         }
       />
@@ -221,8 +242,8 @@ export default function CategoriesPage() {
               value={kind}
               onChange={setKind}
               options={[
-                { value: 'expense', label: 'Expenses' },
-                { value: 'income', label: 'Income' },
+                { value: 'expense', label: t('Expenses') },
+                { value: 'income', label: t('Income') },
               ]}
             />
             <div className="relative min-w-40 flex-1">
@@ -230,7 +251,7 @@ export default function CategoriesPage() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search…"
+                placeholder={t('Search…')}
                 className="h-9 pl-9"
               />
             </div>
@@ -240,7 +261,7 @@ export default function CategoriesPage() {
                 checked={showArchived}
                 onChange={(e) => setShowArchived(e.target.checked)}
               />
-              Show archived
+              {t('Show archived')}
             </label>
           </div>
           {isLoading ? (
@@ -281,7 +302,7 @@ export default function CategoriesPage() {
                       <div className="min-w-0 flex-1">
                         <p className="flex items-center gap-2">
                           <span className="truncate font-medium">{g.name}</span>
-                          {g.archived && <Badge>archived</Badge>}
+                          {g.archived && <Badge>{t('archived')}</Badge>}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {index.childrenOf(g.id).length} subcategories · {groupUsage(g)} records
@@ -322,7 +343,7 @@ export default function CategoriesPage() {
                           <span className="flex size-8 items-center justify-center rounded-full border border-dashed border-primary/50">
                             <Plus className="size-4" />
                           </span>
-                          Add subcategory
+                          {t('Add subcategory')}
                         </button>
                       </div>
                     )}
@@ -335,19 +356,19 @@ export default function CategoriesPage() {
 
         <Card>
           <CardHeader
-            title="Labels"
-            description="Tags that work across categories"
+            title={t('Labels')}
+            description={t('Tags that work across categories')}
             action={
               <Button size="sm" variant="outline" onClick={() => setEditingLabel('new')}>
-                <Plus /> New
+                <Plus /> {t('New')}
               </Button>
             }
           />
           {labels.length === 0 ? (
             <EmptyState
               icon={<Tag />}
-              title="No labels yet"
-              description="E.g. “Vacation”, “Work” or “Gifts”."
+              title={t('No labels yet')}
+              description={t('E.g. “Vacation”, “Work” or “Gifts”.')}
               className="py-8"
             />
           ) : (
@@ -363,20 +384,20 @@ export default function CategoriesPage() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => setEditingLabel(l)}
-                    aria-label="Edit label"
+                    aria-label={t('Edit label')}
                   >
                     <Pencil />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Delete label"
+                    aria-label={t('Delete label')}
                     onClick={async () => {
                       if (
                         await confirm({
-                          title: `Delete label “${l.name}”?`,
-                          description: 'It will be removed from all records.',
-                          confirmLabel: 'Delete',
+                          title: t('Delete label “{name}”?', { name: l.name }),
+                          description: t('It will be removed from all records.'),
+                          confirmLabel: t('Delete'),
                           destructive: true,
                         })
                       ) {

@@ -35,6 +35,7 @@ import type {
   UpdateProfileInput,
   User,
 } from '@slavotax/shared';
+import { CATEGORY_TEMPLATE } from '@slavotax/shared';
 import {
   keepPreviousData,
   type QueryClient,
@@ -43,6 +44,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { language, t } from '@/i18n';
 import { browserTimeZone } from '@/lib/utils';
 import { ApiError, api } from './client';
 
@@ -282,10 +284,25 @@ export function useReorderAccounts() {
 
 // ───────────────────────────── Categories & labels ─────────────────────────────
 
+/** English names of the default categories by system key (to translate untouched names). */
+const TEMPLATE_NAMES = new Map(
+  CATEGORY_TEMPLATE.flatMap((g) => [
+    [g.key, g.name] as const,
+    ...g.children.map((c) => [`${g.key}.${c.key}`, c.name] as const),
+  ]),
+);
+
 export function useCategories() {
   return useQuery({
     queryKey: qk.categories,
-    queryFn: () => api<Category[]>('/categories'),
+    queryFn: async () => {
+      const categories = await api<Category[]>('/categories');
+      if (language === 'en') return categories;
+      // Default categories that were never renamed are shown in the UI language.
+      return categories.map((c) =>
+        c.systemKey && TEMPLATE_NAMES.get(c.systemKey) === c.name ? { ...c, name: t(c.name) } : c,
+      );
+    },
     staleTime: 5 * 60_000,
   });
 }

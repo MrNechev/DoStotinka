@@ -17,18 +17,20 @@ import {
   subMonths,
   subWeeks,
 } from 'date-fns';
+import { t } from '@/i18n';
+import { fmt, fmtCap } from './date';
 
 export const PERIOD_PRESETS = [
-  { id: '7d', label: 'Last 7 days', short: '7D' },
-  { id: '30d', label: 'Last 30 days', short: '30D' },
-  { id: '12w', label: 'Last 12 weeks', short: '12W' },
-  { id: '6m', label: 'Last 6 months', short: '6M' },
-  { id: '1y', label: 'Last 12 months', short: '1Y' },
-  { id: 'week', label: 'Week', short: 'Week' },
-  { id: 'month', label: 'Month', short: 'Month' },
-  { id: 'year', label: 'Year', short: 'Year' },
-  { id: 'all', label: 'All time', short: 'All' },
-  { id: 'custom', label: 'Custom range', short: 'Custom' },
+  { id: '7d', label: t('Last 7 days'), short: '7D' },
+  { id: '30d', label: t('Last 30 days'), short: '30D' },
+  { id: '12w', label: t('Last 12 weeks'), short: '12W' },
+  { id: '6m', label: t('Last 6 months'), short: '6M' },
+  { id: '1y', label: t('Last 12 months'), short: '1Y' },
+  { id: 'week', label: t('Week'), short: 'Week' },
+  { id: 'month', label: t('Month'), short: 'Month' },
+  { id: 'year', label: t('Year'), short: 'Year' },
+  { id: 'all', label: t('All time'), short: 'All' },
+  { id: 'custom', label: t('Custom range'), short: 'Custom' },
 ] as const;
 
 export type PeriodPreset = (typeof PERIOD_PRESETS)[number]['id'];
@@ -74,23 +76,23 @@ export function resolvePeriod(
   switch (state.preset) {
     case '7d':
       from = subDays(today, 6);
-      label = 'Last 7 days';
+      label = t('Last 7 days');
       break;
     case '30d':
       from = subDays(today, 29);
-      label = 'Last 30 days';
+      label = t('Last 30 days');
       break;
     case '12w':
       from = subWeeks(startOfWeek(today, { weekStartsOn }), 11);
-      label = 'Last 12 weeks';
+      label = t('Last 12 weeks');
       break;
     case '6m':
       from = subMonths(startOfMonth(today), 5);
-      label = 'Last 6 months';
+      label = t('Last 6 months');
       break;
     case '1y':
       from = subMonths(startOfMonth(today), 11);
-      label = 'Last 12 months';
+      label = t('Last 12 months');
       break;
     case 'week': {
       from = addWeeks(startOfWeek(today, { weekStartsOn }), state.offset);
@@ -98,17 +100,17 @@ export function resolvePeriod(
       const end = subDays(to, 1);
       label =
         state.offset === 0
-          ? 'This week'
+          ? t('This week')
           : state.offset === -1
-            ? 'Last week'
-            : `${format(from, 'd MMM')} – ${format(end, from.getFullYear() === now.getFullYear() ? 'd MMM' : 'd MMM yyyy')}`;
+            ? t('Last week')
+            : `${fmt(from, 'd MMM')} – ${fmt(end, from.getFullYear() === now.getFullYear() ? 'd MMM' : 'd MMM yyyy')}`;
       navigable = true;
       break;
     }
     case 'month':
       from = addMonths(startOfMonth(today), state.offset);
       to = addMonths(from, 1);
-      label = format(from, from.getFullYear() === now.getFullYear() ? 'MMMM' : 'MMMM yyyy');
+      label = fmtCap(from, from.getFullYear() === now.getFullYear() ? 'MMMM' : 'MMMM yyyy');
       navigable = true;
       break;
     case 'year':
@@ -121,7 +123,7 @@ export function resolvePeriod(
       from = opts.firstRecord
         ? startOfMonth(parseISO(opts.firstRecord))
         : subMonths(startOfMonth(today), 11);
-      label = 'All time';
+      label = t('All time');
       break;
     case 'custom': {
       from = state.from ? startOfDay(parseISO(state.from)) : subDays(today, 29);
@@ -131,8 +133,8 @@ export function resolvePeriod(
       const sameYear = from.getFullYear() === last.getFullYear();
       label =
         differenceInCalendarDays(last, from) === 0
-          ? format(from, 'EEE, d MMM yyyy')
-          : `${format(from, sameYear ? 'd MMM' : 'd MMM yyyy')} – ${format(last, 'd MMM yyyy')}`;
+          ? fmtCap(from, 'EEE, d MMM yyyy')
+          : `${fmt(from, sameYear ? 'd MMM' : 'd MMM yyyy')} – ${fmt(last, 'd MMM yyyy')}`;
       break;
     }
   }
@@ -166,9 +168,10 @@ export const isoDay = (d: Date) => format(d, 'yyyy-MM-dd');
 /** Label for a chart bucket. */
 export function bucketLabel(date: string, interval: Interval, long = false): string {
   const d = parseISO(date);
-  if (interval === 'month') return format(d, long ? 'MMMM yyyy' : "MMM ''yy");
-  if (interval === 'week') return long ? `Week of ${format(d, 'd MMM yyyy')}` : format(d, 'd MMM');
-  return format(d, long ? 'EEE, d MMM yyyy' : 'd MMM');
+  if (interval === 'month') return fmtCap(d, long ? 'MMMM yyyy' : "MMM ''yy");
+  if (interval === 'week')
+    return long ? t('Week of {date}', { date: fmt(d, 'd MMM yyyy') }) : fmt(d, 'd MMM');
+  return fmtCap(d, long ? 'EEE, d MMM yyyy' : 'd MMM');
 }
 
 /**

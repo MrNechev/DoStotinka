@@ -1,6 +1,7 @@
 import { ACCOUNT_TYPE_LABELS, type Account } from '@slavotax/shared';
 import { Link } from 'react-router';
 import { IconBadge } from '@/components/ui/category-icon';
+import { t } from '@/i18n';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +36,7 @@ export function AccountCard({ account, className }: { account: Account; classNam
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{account.name}</p>
           <p className="truncate text-xs text-muted-foreground">
-            {ACCOUNT_TYPE_LABELS[account.type]}
+            {t(ACCOUNT_TYPE_LABELS[account.type])}
           </p>
         </div>
       </div>

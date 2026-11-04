@@ -1,5 +1,5 @@
 import type { BudgetStatus } from '@slavotax/shared';
-import { differenceInCalendarDays, format, parseISO } from 'date-fns';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,15 +21,17 @@ import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
+import { fmt } from '@/lib/date';
 import { money, percent } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 function periodLabel(b: BudgetStatus) {
   const s = parseISO(b.periodStart);
-  if (b.period === 'month') return format(s, 'MMMM yyyy');
-  if (b.period === 'year') return format(s, 'yyyy');
-  return `${format(s, 'd MMM')} – ${format(parseISO(b.periodEnd), 'd MMM yyyy')}`;
+  if (b.period === 'month') return fmt(s, 'MMMM yyyy');
+  if (b.period === 'year') return fmt(s, 'yyyy');
+  return `${fmt(s, 'd MMM')} – ${fmt(parseISO(b.periodEnd), 'd MMM yyyy')}`;
 }
 
 function BudgetCard({
@@ -59,24 +61,24 @@ function BudgetCard({
         </div>
         <div className="flex items-center gap-1">
           {over ? (
-            <Badge tone="danger">over budget</Badge>
+            <Badge tone="danger">{t('over budget')}</Badge>
           ) : ahead ? (
-            <Badge tone="warning">spending fast</Badge>
+            <Badge tone="warning">{t('spending fast')}</Badge>
           ) : (
-            <Badge tone="success">on track</Badge>
+            <Badge tone="success">{t('on track')}</Badge>
           )}
           <Menu>
             <MenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Actions">
+              <Button variant="ghost" size="icon-sm" aria-label={t('Actions')}>
                 <MoreHorizontal />
               </Button>
             </MenuTrigger>
             <MenuContent>
               <MenuItem icon={<History />} onSelect={onHistory}>
-                History
+                {t('History')}
               </MenuItem>
               <MenuItem icon={<Pencil />} onSelect={onEdit}>
-                Edit
+                {t('Edit')}
               </MenuItem>
               <MenuSeparator />
               <MenuItem
@@ -85,8 +87,8 @@ function BudgetCard({
                 onSelect={async () => {
                   if (
                     !(await confirm({
-                      title: `Delete “${b.name}”?`,
-                      confirmLabel: 'Delete',
+                      title: t('Delete “{name}”?', { name: b.name }),
+                      confirmLabel: t('Delete'),
                       destructive: true,
                     }))
                   )
@@ -94,7 +96,7 @@ function BudgetCard({
                   remove.mutate(b.id, { onError: (e) => toast.error(errorMessage(e)) });
                 }}
               >
-                Delete
+                {t('Delete')}
               </MenuItem>
             </MenuContent>
           </Menu>
@@ -119,14 +121,14 @@ function BudgetCard({
           <div
             className="absolute -top-1 h-4.5 w-0.5 rounded-full bg-foreground/50"
             style={{ left: `${b.elapsed * 100}%` }}
-            title="Today"
+            title={t('Today')}
           />
         )}
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {over ? (
           <span className="font-medium text-expense">
-            Over by {money(-b.remaining, b.currency)}
+            {t('Over by {amount}', { amount: money(-b.remaining, b.currency) })}
           </span>
         ) : (
           <>
@@ -143,7 +145,7 @@ function BudgetCard({
       </p>
       <div className="mt-4 flex flex-wrap gap-1.5">
         {b.categoryIds.length === 0 ? (
-          <Badge>All expenses</Badge>
+          <Badge>{t('All expenses')}</Badge>
         ) : (
           b.categoryIds.slice(0, 4).map((id) => (
             <span
@@ -173,7 +175,10 @@ function HistoryDialog({ budget, onClose }: { budget: BudgetStatus; onClose: () 
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         title={`${budget.name} – history`}
-        description={`Limit ${money(budget.amount, budget.currency)} per ${budget.period}`}
+        description={t('Limit {amount} per {period}', {
+          amount: money(budget.amount, budget.currency),
+          period: t(budget.period),
+        })}
         size="lg"
       >
         {isLoading || !data ? (
@@ -186,7 +191,7 @@ function HistoryDialog({ budget, onClose }: { budget: BudgetStatus; onClose: () 
                 style={{ bottom: `${(budget.amount / max) * 100}%` }}
               >
                 <span className="absolute -top-5 right-0 text-[11px] text-muted-foreground">
-                  limit
+                  {t('limit')}
                 </span>
               </div>
               {data.map((d) => (
@@ -215,20 +220,22 @@ function HistoryDialog({ budget, onClose }: { budget: BudgetStatus; onClose: () 
                   className="flex-1 truncate text-center text-[11px] text-muted-foreground"
                 >
                   {budget.period === 'month'
-                    ? format(parseISO(d.periodStart), "MMM ''yy")
+                    ? fmt(parseISO(d.periodStart), "MMM ''yy")
                     : budget.period === 'year'
                       ? d.periodStart.slice(0, 4)
-                      : format(parseISO(d.periodStart), 'd MMM')}
+                      : fmt(parseISO(d.periodStart), 'd MMM')}
                 </span>
               ))}
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Within budget in {data.filter((d) => d.ratio <= 1).length} of {data.length} periods ·
-              average{' '}
-              {money(
-                Math.round(data.reduce((s, d) => s + d.spent, 0) / data.length),
-                budget.currency,
-              )}
+              {t('Within budget in {ok} of {total} periods · average {amount}', {
+                ok: data.filter((d) => d.ratio <= 1).length,
+                total: data.length,
+                amount: money(
+                  Math.round(data.reduce((s, d) => s + d.spent, 0) / data.length),
+                  budget.currency,
+                ),
+              })}
             </p>
           </div>
         )}
@@ -246,8 +253,8 @@ export default function BudgetsPage() {
   return (
     <div>
       <PageHeader
-        title="Budgets"
-        description="Set spending limits per week, month or year and see how you are doing."
+        title={t('Budgets')}
+        description={t('Set spending limits per week, month or year and see how you are doing.')}
         actions={
           <>
             <div className="flex items-center gap-1">
@@ -255,29 +262,29 @@ export default function BudgetsPage() {
                 variant="outline"
                 size="icon"
                 onClick={() => setOffset(offset - 1)}
-                aria-label="Previous period"
+                aria-label={t('Previous period')}
               >
                 <ChevronLeft />
               </Button>
               <span className="min-w-28 text-center text-sm font-medium">
                 {offset === 0
-                  ? 'Current period'
+                  ? t('Current period')
                   : offset === -1
-                    ? 'Previous period'
-                    : `${-offset} periods ago`}
+                    ? t('Previous period')
+                    : t('{n} periods ago', { n: -offset })}
               </span>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setOffset(offset + 1)}
                 disabled={offset >= 0}
-                aria-label="Next period"
+                aria-label={t('Next period')}
               >
                 <ChevronRight />
               </Button>
             </div>
             <Button onClick={() => setEditing('new')}>
-              <Plus /> New budget
+              <Plus /> {t('New budget')}
             </Button>
           </>
         }
@@ -292,11 +299,13 @@ export default function BudgetsPage() {
         <Card>
           <EmptyState
             icon={<Target />}
-            title="No budgets yet"
-            description="Create a budget, for example 400 € per month for groceries, and track your progress."
+            title={t('No budgets yet')}
+            description={t(
+              'Create a budget, for example 400 € per month for groceries, and track your progress.',
+            )}
             action={
               <Button onClick={() => setEditing('new')}>
-                <Plus /> New budget
+                <Plus /> {t('New budget')}
               </Button>
             }
           />

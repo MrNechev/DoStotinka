@@ -68,6 +68,8 @@ leaves it.
 - **Export & restore** – CSV export of records, a full JSON backup and restoring it.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
+- **English and Bulgarian** interface (including the category tree and dates) – more languages are
+  easy to add, see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
 - **Demo account** with a full year of realistic example data.
 - **REST API** with interactive OpenAPI documentation at `/api/docs` and personal API tokens –
   ready for automations and a future mobile app.
@@ -286,7 +288,8 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 ## Roadmap
 
 - [x] CSV import (from Wallet and bank statements)
-- [ ] Translations (Bulgarian first)
+- [x] Translations (Bulgarian first)
+- [ ] More languages (contributions welcome)
 - [ ] Mobile app that connects to your own server
 - [ ] Shared accounts / households
 - [ ] Attachments (receipts) and record templates

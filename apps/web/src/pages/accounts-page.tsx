@@ -8,6 +8,7 @@ import { AccountFormDialog } from '@/components/accounts/account-form';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Badge, Card, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
+import { t, tn } from '@/i18n';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -62,11 +63,12 @@ export default function AccountsPage() {
         <span className="min-w-0">
           <span className="flex items-center gap-2">
             <span className="truncate font-medium">{a.name}</span>
-            {a.excludeFromStats && <Badge>excluded</Badge>}
-            {a.archived && <Badge>archived</Badge>}
+            {a.excludeFromStats && <Badge>{t('excluded')}</Badge>}
+            {a.archived && <Badge>{t('archived')}</Badge>}
           </span>
           <span className="block truncate text-xs text-muted-foreground">
-            {ACCOUNT_TYPE_LABELS[a.type]} · {a.currency} · {a.recordCount} records
+            {t(ACCOUNT_TYPE_LABELS[a.type])} · {a.currency} ·{' '}
+            {tn(a.recordCount, '{n} record', '{n} records')}
           </span>
         </span>
       </Link>
@@ -90,7 +92,7 @@ export default function AccountsPage() {
           className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
           onClick={() => move(a.id, -1)}
           disabled={i === 0}
-          aria-label="Move up"
+          aria-label={t('Move up')}
         >
           <ArrowUp className="size-3.5" />
         </button>
@@ -99,7 +101,7 @@ export default function AccountsPage() {
           className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
           onClick={() => move(a.id, 1)}
           disabled={i === list.length - 1}
-          aria-label="Move down"
+          aria-label={t('Move down')}
         >
           <ArrowDown className="size-3.5" />
         </button>
@@ -110,28 +112,30 @@ export default function AccountsPage() {
   return (
     <div>
       <PageHeader
-        title="Accounts"
-        description="Cash, bank accounts, savings, cards – each with its own balance and currency."
+        title={t('Accounts')}
+        description={t(
+          'Cash, bank accounts, savings, cards – each with its own balance and currency.',
+        )}
         actions={
           <Button onClick={() => setEditing('new')}>
-            <Plus /> Add account
+            <Plus /> {t('Add account')}
           </Button>
         }
       />
 
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Total balance</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Total balance')}</p>
           <p className="tabular mt-1 text-2xl font-semibold">{money(total, user.baseCurrency)}</p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Assets</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Assets')}</p>
           <p className="tabular mt-1 text-2xl font-semibold text-income">
             {money(assets, user.baseCurrency)}
           </p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Debts</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Debts')}</p>
           <p className="tabular mt-1 text-2xl font-semibold text-expense">
             {money(debts, user.baseCurrency)}
           </p>
@@ -148,11 +152,13 @@ export default function AccountsPage() {
         ) : active.length === 0 ? (
           <EmptyState
             icon={<Wallet />}
-            title="No accounts yet"
-            description="Create an account for every place you keep money – for example your wallet and your bank account."
+            title={t('No accounts yet')}
+            description={t(
+              'Create an account for every place you keep money – for example your wallet and your bank account.',
+            )}
             action={
               <Button onClick={() => setEditing('new')}>
-                <Plus /> Add account
+                <Plus /> {t('Add account')}
               </Button>
             }
           />
@@ -168,7 +174,7 @@ export default function AccountsPage() {
             className="mb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setShowArchived((v) => !v)}
           >
-            {showArchived ? 'Hide' : 'Show'} archived accounts ({archived.length})
+            {showArchived ? t('Hide') : t('Show')} archived accounts ({archived.length})
           </button>
           {showArchived && (
             <Card className="divide-y divide-border overflow-hidden opacity-80">

@@ -13,6 +13,7 @@ import { IconBadge } from '@/components/ui/category-icon';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 import { Card, PageHeader, Segmented } from '@/components/ui/misc';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { money } from '@/lib/format';
 import { browserTimeZone, cn, downloadUrl } from '@/lib/utils';
@@ -87,8 +88,8 @@ export default function RecordsPage() {
   return (
     <div>
       <PageHeader
-        title="Records"
-        description="Every expense, income and transfer you have logged."
+        title={t('Records')}
+        description={t('Every expense, income and transfer you have logged.')}
         actions={
           <>
             <Button
@@ -101,14 +102,14 @@ export default function RecordsPage() {
             </Button>
             <Button variant="outline" asChild>
               <Link to="/import">
-                <FileUp /> <span className="hidden sm:inline">Import</span>
+                <FileUp /> <span className="hidden sm:inline">{t('Import')}</span>
               </Link>
             </Button>
             <Button variant="outline" onClick={exportCsv}>
-              <Download /> <span className="hidden sm:inline">Export CSV</span>
+              <Download /> <span className="hidden sm:inline">{t('Export CSV')}</span>
             </Button>
             <Button onClick={() => openNew()} className="hidden sm:inline-flex">
-              <Plus /> Add record
+              <Plus /> {t('Add record')}
             </Button>
           </>
         }
@@ -133,7 +134,7 @@ export default function RecordsPage() {
                       setParam('categories', null);
                     }}
                     onKeyDown={(e) => e.key === 'Enter' && setParam('categories', null)}
-                    aria-label="Clear category"
+                    aria-label={t('Clear category')}
                   >
                     <X className="size-3.5" />
                   </span>
@@ -159,7 +160,7 @@ export default function RecordsPage() {
             <PopoverTrigger asChild>
               <Button variant="outline">
                 <Tag className="text-muted-foreground" />
-                {label ? label.name : 'All labels'}
+                {label ? label.name : t('All labels')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-56 p-1">
@@ -168,7 +169,7 @@ export default function RecordsPage() {
                 className="w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
                 onClick={() => setParam('labels', null)}
               >
-                All labels
+                {t('All labels')}
               </button>
               {labels.map((l) => (
                 <button
@@ -189,12 +190,12 @@ export default function RecordsPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Segmented<TypeFilter>
           value={type}
-          onChange={(t) => setParam('types', t === 'all' ? null : t)}
+          onChange={(v) => setParam('types', v === 'all' ? null : v)}
           options={[
-            { value: 'all', label: 'All' },
-            { value: 'expense', label: 'Expenses' },
-            { value: 'income', label: 'Income' },
-            { value: 'transfer', label: 'Transfers' },
+            { value: 'all', label: t('All') },
+            { value: 'expense', label: t('Expenses') },
+            { value: 'income', label: t('Income') },
+            { value: 'transfer', label: t('Transfers') },
           ]}
         />
         <div className="relative min-w-48 flex-1 sm:max-w-xs">
@@ -202,7 +203,7 @@ export default function RecordsPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search notes, payees, categories…"
+            placeholder={t('Search notes, payees, categories…')}
             className="pl-9"
           />
         </div>
@@ -212,11 +213,11 @@ export default function RecordsPage() {
         {summary.data && (
           <div className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border px-4 py-3 text-sm">
             <span className="text-muted-foreground">
-              {summary.data.count} {summary.data.count === 1 ? 'record' : 'records'}
+              {tn(summary.data.count, '{n} record', '{n} records')}
             </span>
             {summary.data.income > 0 && (
               <span>
-                <span className="text-muted-foreground">Income </span>
+                <span className="text-muted-foreground">{t('Income')} </span>
                 <span className="tabular font-semibold text-income">
                   {money(summary.data.income, summary.data.currency)}
                 </span>
@@ -224,7 +225,7 @@ export default function RecordsPage() {
             )}
             {summary.data.expense > 0 && (
               <span>
-                <span className="text-muted-foreground">Expenses </span>
+                <span className="text-muted-foreground">{t('Expenses')} </span>
                 <span className="tabular font-semibold text-expense">
                   {money(summary.data.expense, summary.data.currency)}
                 </span>
@@ -232,7 +233,7 @@ export default function RecordsPage() {
             )}
             {summary.data.income > 0 && summary.data.expense > 0 && (
               <span>
-                <span className="text-muted-foreground">Cash flow </span>
+                <span className="text-muted-foreground">{t('Cash flow')} </span>
                 <span className="tabular font-semibold">
                   {money(summary.data.net, summary.data.currency, { sign: 'exceptZero' })}
                 </span>
@@ -246,8 +247,8 @@ export default function RecordsPage() {
           hasMore={records.hasNextPage}
           loadingMore={records.isFetchingNextPage}
           onLoadMore={() => void records.fetchNextPage()}
-          emptyTitle="No records found"
-          emptyDescription="Try a different period or filter – or add a new record."
+          emptyTitle={t('No records found')}
+          emptyDescription={t('Try a different period or filter – or add a new record.')}
           selection={selecting ? { selected, toggle } : undefined}
         />
       </Card>

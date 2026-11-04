@@ -1,5 +1,5 @@
-import { describeRecurrence, type PlannedPayment } from '@slavotax/shared';
-import { format, parseISO } from 'date-fns';
+import type { PlannedPayment } from '@slavotax/shared';
+import { parseISO } from 'date-fns';
 import {
   CalendarClock,
   Check,
@@ -29,7 +29,9 @@ import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, CardHeader, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
-import { dueLabel, money } from '@/lib/format';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
+import { dueLabel, money, recurrenceLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 function joinTotals(parts: (readonly [string, number])[], base: string) {
@@ -68,14 +70,14 @@ export default function PlannedPage() {
 
   const onDelete = async (p: PlannedPayment) => {
     const ok = await confirm({
-      title: `Delete “${p.name}”?`,
-      description: 'Records that were already created stay untouched.',
-      confirmLabel: 'Delete',
+      title: t('Delete “{name}”?', { name: p.name }),
+      description: t('Records that were already created stay untouched.'),
+      confirmLabel: t('Delete'),
       destructive: true,
     });
     if (!ok) return;
     remove.mutate(p.id, {
-      onSuccess: () => toast.success('Planned payment deleted'),
+      onSuccess: () => toast.success(t('Planned payment deleted')),
       onError: (e) => toast.error(errorMessage(e)),
     });
   };
@@ -84,18 +86,18 @@ export default function PlannedPage() {
     const { icon, color } = plannedIcon(p, lookups);
     const account = accounts.find((a) => a.id === p.accountId);
     const to = p.toAccountId ? accounts.find((a) => a.id === p.toAccountId) : undefined;
-    const isOverdue = !!p.nextDueDate && p.nextDueDate < format(new Date(), 'yyyy-MM-dd');
+    const isOverdue = !!p.nextDueDate && p.nextDueDate < fmt(new Date(), 'yyyy-MM-dd');
     return (
       <div key={p.id} className="flex items-center gap-3 px-4 py-3">
         <IconBadge icon={icon} color={color} size="md" />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2">
             <span className="truncate font-medium">{p.name}</span>
-            {isOverdue && <Badge tone="danger">overdue</Badge>}
-            {p.autoConfirm && <Badge tone="info">auto</Badge>}
+            {isOverdue && <Badge tone="danger">{t('overdue')}</Badge>}
+            {p.autoConfirm && <Badge tone="info">{t('auto')}</Badge>}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {describeRecurrence(p)} · {account?.name ?? '—'}
+            {recurrenceLabel(p)} · {account?.name ?? '—'}
             {to ? ` → ${to.name}` : ''}
             {p.type !== 'transfer' && p.categoryId
               ? ` · ${lookups.categories.nameOf(p.categoryId)}`
@@ -108,9 +110,9 @@ export default function PlannedPage() {
             )}
           >
             {p.nextDueDate
-              ? `Next: ${format(parseISO(p.nextDueDate), 'EEE, d MMM yyyy')} · ${dueLabel(p.nextDueDate)}`
-              : 'Finished'}
-            {p.paidCount > 0 && ` · paid ${p.paidCount}×`}
+              ? `${t('Next: {date}', { date: fmt(parseISO(p.nextDueDate), 'EEE, d MMM yyyy') })} · ${dueLabel(p.nextDueDate)}`
+              : t('Finished')}
+            {p.paidCount > 0 && ` · ${t('paid {n}×', { n: p.paidCount })}`}
           </p>
         </div>
         <span
@@ -125,7 +127,7 @@ export default function PlannedPage() {
         </span>
         <Menu>
           <MenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Actions">
+            <Button variant="ghost" size="icon-sm" aria-label={t('Actions')}>
               <MoreHorizontal />
             </Button>
           </MenuTrigger>
@@ -133,27 +135,27 @@ export default function PlannedPage() {
             {p.nextDueDate && (
               <>
                 <MenuItem icon={<Check />} onSelect={() => setPaying(p)}>
-                  Mark next as paid
+                  {t('Mark next as paid')}
                 </MenuItem>
                 <MenuItem
                   icon={<SkipForward />}
                   onSelect={() =>
                     skip.mutate(p.id, {
-                      onSuccess: () => toast.success('Occurrence skipped'),
+                      onSuccess: () => toast.success(t('Occurrence skipped')),
                       onError: (e) => toast.error(errorMessage(e)),
                     })
                   }
                 >
-                  Skip next
+                  {t('Skip next')}
                 </MenuItem>
                 <MenuSeparator />
               </>
             )}
             <MenuItem icon={<Pencil />} onSelect={() => setEditing(p)}>
-              Edit
+              {t('Edit')}
             </MenuItem>
             <MenuItem icon={<Trash2 />} destructive onSelect={() => void onDelete(p)}>
-              Delete
+              {t('Delete')}
             </MenuItem>
           </MenuContent>
         </Menu>
@@ -164,28 +166,30 @@ export default function PlannedPage() {
   return (
     <div>
       <PageHeader
-        title="Planned payments"
-        description="Rent, bills, subscriptions and income you know are coming. Confirm them when they are paid."
+        title={t('Planned payments')}
+        description={t(
+          'Rent, bills, subscriptions and income you know are coming. Confirm them when they are paid.',
+        )}
         actions={
           <Button onClick={() => setEditing('new')}>
-            <Plus /> New planned payment
+            <Plus /> {t('New planned payment')}
           </Button>
         }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Overdue</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Overdue')}</p>
           <p className={cn('mt-1 text-2xl font-semibold', overdue > 0 && 'text-expense')}>
             {overdue}
           </p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Due in 30 days</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Due in 30 days')}</p>
           <p className="mt-1 text-2xl font-semibold">{upcoming.length - overdue}</p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Expected expenses</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Expected expenses')}</p>
           <p className="tabular mt-1 truncate text-xl font-semibold text-expense">
             {joinTotals(
               totals.map(([c, t]) => [c, t.expense] as const),
@@ -194,7 +198,7 @@ export default function PlannedPage() {
           </p>
         </Card>
         <Card className="px-4 py-3.5">
-          <p className="text-xs font-medium text-muted-foreground">Expected income</p>
+          <p className="text-xs font-medium text-muted-foreground">{t('Expected income')}</p>
           <p className="tabular mt-1 truncate text-xl font-semibold text-income">
             {joinTotals(
               totals.map(([c, t]) => [c, t.income] as const),
@@ -206,11 +210,11 @@ export default function PlannedPage() {
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_1.4fr]">
         <Card>
-          <CardHeader title="Next 30 days" description="Including overdue payments" />
+          <CardHeader title={t('Next 30 days')} description={t('Including overdue payments')} />
           <UpcomingList days={30} />
         </Card>
         <Card className="overflow-hidden">
-          <CardHeader title="All planned payments" description={`${active.length} active`} />
+          <CardHeader title={t('All planned payments')} description={`${active.length} active`} />
           {isLoading ? (
             <div className="grid gap-3 p-4">
               {Array.from({ length: 4 }, (_, i) => (
@@ -220,11 +224,13 @@ export default function PlannedPage() {
           ) : !planned?.length ? (
             <EmptyState
               icon={<CalendarClock />}
-              title="No planned payments yet"
-              description="Add recurring bills like rent or your phone plan and never miss a payment again."
+              title={t('No planned payments yet')}
+              description={t(
+                'Add recurring bills like rent or your phone plan and never miss a payment again.',
+              )}
               action={
                 <Button onClick={() => setEditing('new')}>
-                  <Plus /> New planned payment
+                  <Plus /> {t('New planned payment')}
                 </Button>
               }
             />
@@ -234,7 +240,7 @@ export default function PlannedPage() {
               {finished.length > 0 && (
                 <>
                   <p className="bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Finished
+                    {t('Finished')}
                   </p>
                   {finished.map((p) => renderRow(p))}
                 </>

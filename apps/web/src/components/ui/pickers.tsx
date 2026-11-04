@@ -1,6 +1,7 @@
 import { COLOR_PALETTE } from '@slavotax/shared';
 import { Check, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { t } from '@/i18n';
 import { ICON_NAMES } from '@/lib/icon-registry';
 import { cn } from '@/lib/utils';
 import { Icon } from './category-icon';
@@ -14,7 +15,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (c: 
           key={c}
           type="button"
           onClick={() => onChange(c)}
-          aria-label={`Colour ${c}`}
+          aria-label={t('Colour {c}', { c })}
           className="flex size-7 cursor-pointer items-center justify-center rounded-full ring-1 ring-black/10 transition-transform hover:scale-110 dark:ring-white/20"
           style={{
             backgroundColor: c,
@@ -31,7 +32,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (c: 
       ))}
       <label
         className="relative flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-input text-xs text-muted-foreground"
-        title="Custom colour"
+        title={t('Custom colour')}
       >
         +
         <input
@@ -66,7 +67,7 @@ export function IconPicker({
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search icons…"
+          placeholder={t('Search icons…')}
           className="h-9 pl-9"
         />
       </div>

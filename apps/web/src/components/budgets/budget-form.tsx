@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/misc';
 import { ColorPicker } from '@/components/ui/pickers';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 
@@ -66,7 +67,7 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
     setError(null);
     const minor = parseAmountToMinor(amount, user.baseCurrency);
     if (!minor || minor <= 0) {
-      setError('Enter a budget amount greater than zero');
+      setError(t('Enter a budget amount greater than zero'));
       return;
     }
     try {
@@ -74,7 +75,7 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
         id: budget?.id,
         input: { name, amount: minor, period, categoryIds, accountIds, color },
       });
-      toast.success(budget ? 'Budget updated' : 'Budget created');
+      toast.success(budget ? t('Budget updated') : t('Budget created'));
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -83,21 +84,24 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent title={budget ? 'Edit budget' : 'New budget'} size="md">
+      <DialogContent title={budget ? t('Edit budget') : t('New budget')} size="md">
         <form onSubmit={submit} className="grid gap-4">
-          <Field label="Name" htmlFor="b-name">
+          <Field label={t('Name')} htmlFor="b-name">
             <Input
               id="b-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Groceries"
+              placeholder={t('e.g. Groceries')}
               required
               maxLength={60}
               autoFocus
             />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label={`Limit (${user.baseCurrency})`} htmlFor="b-amount">
+            <Field
+              label={t('Limit ({currency})', { currency: user.baseCurrency })}
+              htmlFor="b-amount"
+            >
               <Input
                 id="b-amount"
                 inputMode="decimal"
@@ -107,24 +111,24 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
                 required
               />
             </Field>
-            <Field label="Period" htmlFor="b-period">
+            <Field label={t('Period')} htmlFor="b-period">
               <Select
                 id="b-period"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value as BudgetPeriod)}
               >
-                <option value="week">Weekly</option>
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
+                <option value="week">{t('Weekly')}</option>
+                <option value="month">{t('Monthly')}</option>
+                <option value="year">{t('Yearly')}</option>
               </Select>
             </Field>
           </div>
           <Field
-            label="Categories"
+            label={t('Categories')}
             hint={
               categoryIds.length
-                ? `${categoryIds.length} selected`
-                : 'Nothing selected = all expenses count towards this budget.'
+                ? t('{n} selected', { n: categoryIds.length })
+                : t('Nothing selected = all expenses count towards this budget.')
             }
           >
             <div className="max-h-64 overflow-y-auto rounded-xl border border-border p-1">
@@ -176,11 +180,11 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
             </div>
           </Field>
           <Field
-            label="Accounts"
+            label={t('Accounts')}
             hint={
               accountIds.length
                 ? undefined
-                : 'Nothing selected = all accounts included in statistics.'
+                : t('Nothing selected = all accounts included in statistics.')
             }
           >
             <div className="flex flex-wrap gap-1.5">
@@ -211,16 +215,16 @@ export function BudgetFormDialog({ budget, onClose }: { budget?: Budget; onClose
                 })}
             </div>
           </Field>
-          <Field label="Colour">
+          <Field label={t('Colour')}>
             <ColorPicker value={color} onChange={setColor} />
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {budget ? 'Save changes' : 'Create budget'}
+              {budget ? t('Save changes') : t('Create budget')}
             </Button>
           </DialogFooter>
         </form>

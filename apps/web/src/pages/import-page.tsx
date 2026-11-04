@@ -10,7 +10,6 @@ import {
   toMinor,
 } from '@slavotax/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileUp, Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -26,8 +25,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Field, Select } from '@/components/ui/input';
 import { Badge, Card, Checkbox, PageHeader } from '@/components/ui/misc';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { parseCsv } from '@/lib/csv';
+import { fmt } from '@/lib/date';
 import { money, plural } from '@/lib/format';
 import {
   type ColumnMapping,
@@ -43,11 +44,11 @@ import { cn } from '@/lib/utils';
 
 type Step = 'upload' | 'columns' | 'accounts' | 'categories' | 'review' | 'done';
 const STEPS: { id: Step; label: string }[] = [
-  { id: 'upload', label: 'File' },
-  { id: 'columns', label: 'Columns' },
-  { id: 'accounts', label: 'Accounts' },
-  { id: 'categories', label: 'Categories' },
-  { id: 'review', label: 'Import' },
+  { id: 'upload', label: t('File') },
+  { id: 'columns', label: t('Columns') },
+  { id: 'accounts', label: t('Accounts') },
+  { id: 'categories', label: t('Categories') },
+  { id: 'review', label: t('Import') },
 ];
 const FIXED_ACCOUNT = '__single_account__';
 
@@ -70,24 +71,28 @@ type AccountChoice =
   | { mode: 'create'; name: string; currency: string; type: AccountType };
 
 const FIELDS: { key: keyof ColumnMapping; label: string; required?: boolean; hint?: string }[] = [
-  { key: 'date', label: 'Date', required: true },
+  { key: 'date', label: t('Date'), required: true },
   {
     key: 'amount',
-    label: 'Amount',
+    label: t('Amount'),
     required: true,
-    hint: 'Negative numbers are expenses unless a type column says otherwise.',
+    hint: t('Negative numbers are expenses unless a type column says otherwise.'),
   },
-  { key: 'account', label: 'Account', hint: 'Leave empty to import everything into one account.' },
-  { key: 'currency', label: 'Currency' },
-  { key: 'type', label: 'Type (expense / income)' },
-  { key: 'category', label: 'Category' },
-  { key: 'note', label: 'Note / description' },
-  { key: 'payee', label: 'Payee' },
-  { key: 'labels', label: 'Labels' },
+  {
+    key: 'account',
+    label: t('Account'),
+    hint: t('Leave empty to import everything into one account.'),
+  },
+  { key: 'currency', label: t('Currency') },
+  { key: 'type', label: t('Type (expense / income)') },
+  { key: 'category', label: t('Category') },
+  { key: 'note', label: t('Note / description') },
+  { key: 'payee', label: t('Payee') },
+  { key: 'labels', label: t('Labels') },
   {
     key: 'transfer',
-    label: 'Transfer flag',
-    hint: 'Wallet marks both sides of transfers with “true”.',
+    label: t('Transfer flag'),
+    hint: t('Wallet marks both sides of transfers with “true”.'),
   },
 ];
 
@@ -126,12 +131,12 @@ function buildDrafts(rows: string[][], mapping: ColumnMapping, dateFormat: DateF
   for (const out of transfers) {
     if (used.has(out) || out.type !== 'expense') continue;
     const match = transfers.find(
-      (t) =>
-        !used.has(t) &&
-        t !== out &&
-        t.type === 'income' &&
-        t.accountKey !== out.accountKey &&
-        Math.abs(t.date.getTime() - out.date.getTime()) < 60_000,
+      (cand) =>
+        !used.has(cand) &&
+        cand !== out &&
+        cand.type === 'income' &&
+        cand.accountKey !== out.accountKey &&
+        Math.abs(cand.date.getTime() - out.date.getTime()) < 60_000,
     );
     if (!match) continue;
     used.add(out);
@@ -144,8 +149,9 @@ function buildDrafts(rows: string[][], mapping: ColumnMapping, dateFormat: DateF
       categoryName: '',
     });
   }
-  for (const t of transfers) {
-    if (!used.has(t)) drafts.push({ ...t, categoryName: '', note: t.note || 'Transfer' });
+  for (const leftover of transfers) {
+    if (!used.has(leftover))
+      drafts.push({ ...leftover, categoryName: '', note: leftover.note || t('Transfer') });
   }
   drafts.sort((a, b) => a.date.getTime() - b.date.getTime());
   return { drafts, errors };
@@ -167,10 +173,10 @@ function CategorySelect({
       className="h-9"
       containerClassName="w-full sm:w-72"
     >
-      <option value="">— Uncategorized —</option>
+      <option value="">{t('— Uncategorized —')}</option>
       {(['expense', 'income'] as const).map((kind) =>
         index.topLevel(kind).map((g) => (
-          <optgroup key={g.id} label={`${kind === 'income' ? 'Income · ' : ''}${g.name}`}>
+          <optgroup key={g.id} label={`${kind === 'income' ? `${t('Income')} · ` : ''}${g.name}`}>
             <option value={g.id}>{g.name}</option>
             {index.childrenOf(g.id).map((c) => (
               <option key={c.id} value={c.id}>
@@ -240,7 +246,7 @@ export default function ImportPage() {
     const text = await f.text();
     const rows = parseCsv(text);
     if (rows.length < 2) {
-      setError('The file does not contain any rows.');
+      setError(t('The file does not contain any rows.'));
       return;
     }
     const headers = rows[0]!.map((h) => h.trim());
@@ -329,7 +335,10 @@ export default function ImportPage() {
           ? convertMinor(toMinor(d.amount, d.currency!), d.currency!, currency, rateMap)
           : toMinor(d.amount, currency);
         const note = foreign
-          ? [d.note, `Paid ${money(toMinor(d.amount, d.currency!), d.currency!)}`]
+          ? [
+              d.note,
+              t('Paid {amount}', { amount: money(toMinor(d.amount, d.currency!), d.currency!) }),
+            ]
               .filter(Boolean)
               .join(' · ')
           : d.note;
@@ -389,8 +398,10 @@ export default function ImportPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
-        title="Import records"
-        description="Bring your history from a CSV file – for example an export from Wallet by BudgetBakers or your bank."
+        title={t('Import records')}
+        description={t(
+          'Bring your history from a CSV file – for example an export from Wallet by BudgetBakers or your bank.',
+        )}
       />
 
       {step !== 'done' && (
@@ -428,10 +439,11 @@ export default function ImportPage() {
         <Card className="p-6">
           <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border px-6 py-14 text-center transition-colors hover:border-primary hover:bg-primary-soft/40">
             <FileUp className="size-10 text-muted-foreground" />
-            <span className="font-medium">Choose a CSV file</span>
+            <span className="font-medium">{t('Choose a CSV file')}</span>
             <span className="max-w-md text-sm text-muted-foreground">
-              Comma, semicolon or tab separated. The file is read in your browser – only the records
-              you confirm are sent to your server.
+              {t(
+                'Comma, semicolon or tab separated. The file is read in your browser – only the records you confirm are sent to your server.',
+              )}
             </span>
             <input
               type="file"
@@ -446,17 +458,18 @@ export default function ImportPage() {
           <div className="mt-5 flex gap-3 rounded-xl bg-muted/60 p-4 text-sm text-muted-foreground">
             <Info className="mt-0.5 size-4 shrink-0" />
             <p>
-              <span className="font-medium text-foreground">Coming from Wallet?</span> In the Wallet
-              web app open <em>Records → Export</em> and download your records as CSV. Slavotax
-              recognises the format automatically, matches Wallet's categories and pairs transfers
-              between accounts.{' '}
+              <span className="font-medium text-foreground">{t('Coming from Wallet?')}</span>{' '}
+              {t('In the Wallet web app open')} <em>Records → Export</em>{' '}
+              {t(
+                "and download your records as CSV. Slavotax recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.",
+              )}{' '}
               <a
                 href="https://github.com/MrNechev/slavotax/blob/main/docs/MIGRATING_FROM_WALLET.md"
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-primary hover:underline"
               >
-                Step-by-step guide
+                {t('Step-by-step guide')}
               </a>
             </p>
           </div>
@@ -467,8 +480,8 @@ export default function ImportPage() {
         <Card className="p-5">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="font-medium">{file.name}</span>
-            <Badge>{file.rows.length} rows</Badge>
-            {wallet && <Badge tone="success">Wallet export detected</Badge>}
+            <Badge>{tn(file.rows.length, '{n} row', '{n} rows')}</Badge>
+            {wallet && <Badge tone="success">{t('Wallet export detected')}</Badge>}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {FIELDS.map((f) => (
@@ -477,25 +490,28 @@ export default function ImportPage() {
                   value={mapping[f.key]}
                   onChange={(e) => setMapping({ ...mapping, [f.key]: Number(e.target.value) })}
                 >
-                  <option value={-1}>— not in file —</option>
+                  <option value={-1}>{t('— not in file —')}</option>
                   {file.headers.map((h, i) => (
                     <option key={`${h}-${i}`} value={i}>
-                      {h || `Column ${i + 1}`}{' '}
+                      {h || t('Column {n}', { n: i + 1 })}{' '}
                       {file.rows[0]?.[i] ? `(e.g. ${file.rows[0][i]!.slice(0, 24)})` : ''}
                     </option>
                   ))}
                 </Select>
               </Field>
             ))}
-            <Field label="Date format" hint="Only needed for ambiguous dates like 05/06/2024.">
+            <Field
+              label={t('Date format')}
+              hint={t('Only needed for ambiguous dates like 05/06/2024.')}
+            >
               <Select
                 value={dateFormat}
                 onChange={(e) => setDateFormat(e.target.value as DateFormat)}
               >
-                <option value="auto">Detect automatically</option>
-                <option value="ymd">Year-Month-Day</option>
-                <option value="dmy">Day.Month.Year</option>
-                <option value="mdy">Month/Day/Year</option>
+                <option value="auto">{t('Detect automatically')}</option>
+                <option value="ymd">{t('Year-Month-Day')}</option>
+                <option value="dmy">{t('Day.Month.Year')}</option>
+                <option value="mdy">{t('Month/Day/Year')}</option>
               </Select>
             </Field>
           </div>
@@ -511,7 +527,7 @@ export default function ImportPage() {
           </p>
           <div className="mt-6 flex justify-between">
             <Button variant="outline" onClick={() => setStep('upload')}>
-              <ArrowLeft /> Back
+              <ArrowLeft /> {t('Back')}
             </Button>
             <Button
               onClick={prepareAccounts}
@@ -526,7 +542,7 @@ export default function ImportPage() {
       {step === 'accounts' && (
         <Card className="p-5">
           <p className="mb-4 text-sm text-muted-foreground">
-            Choose where the records of each account in the file should go.
+            {t('Choose where the records of each account in the file should go.')}
           </p>
           <div className="grid gap-3">
             {accountKeys.map(([key, info]) => {
@@ -540,7 +556,7 @@ export default function ImportPage() {
                   className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
                   <div>
-                    <p className="font-medium">{key === FIXED_ACCOUNT ? 'All records' : key}</p>
+                    <p className="font-medium">{key === FIXED_ACCOUNT ? t('All records') : key}</p>
                     <p className="text-xs text-muted-foreground">
                       {plural(info.count, 'record')}
                       {info.currency ? ` · ${info.currency}` : ''}
@@ -553,7 +569,7 @@ export default function ImportPage() {
                         e.target.value === '__new'
                           ? setChoice({
                               mode: 'create',
-                              name: key === FIXED_ACCOUNT ? 'Imported' : key.slice(0, 60),
+                              name: key === FIXED_ACCOUNT ? t('Imported') : key.slice(0, 60),
                               currency: info.currency ?? user.baseCurrency,
                               type: 'checking',
                             })
@@ -562,7 +578,7 @@ export default function ImportPage() {
                       className="h-9"
                       containerClassName="w-56"
                     >
-                      <option value="__new">+ Create new account</option>
+                      <option value="__new">{t('+ Create new account')}</option>
                       {accounts.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.name} ({a.currency})
@@ -579,9 +595,9 @@ export default function ImportPage() {
                           className="h-9"
                           containerClassName="w-40"
                         >
-                          {ACCOUNT_TYPES.map((t) => (
-                            <option key={t} value={t}>
-                              {ACCOUNT_TYPE_LABELS[t]}
+                          {ACCOUNT_TYPES.map((at) => (
+                            <option key={at} value={at}>
+                              {t(ACCOUNT_TYPE_LABELS[at])}
                             </option>
                           ))}
                         </Select>
@@ -606,10 +622,10 @@ export default function ImportPage() {
           </div>
           <div className="mt-6 flex justify-between">
             <Button variant="outline" onClick={() => setStep('columns')}>
-              <ArrowLeft /> Back
+              <ArrowLeft /> {t('Back')}
             </Button>
             <Button onClick={prepareCategories}>
-              Next <ArrowRight />
+              {t('Next')} <ArrowRight />
             </Button>
           </div>
         </Card>
@@ -618,8 +634,9 @@ export default function ImportPage() {
       {step === 'categories' && (
         <Card className="p-5">
           <p className="mb-4 text-sm text-muted-foreground">
-            We matched the categories of your file to Slavotax categories. Check the suggestions and
-            adjust them if needed.
+            {t(
+              'We matched the categories of your file to Slavotax categories. Check the suggestions and adjust them if needed.',
+            )}
           </p>
           <div className="divide-y divide-border rounded-xl border border-border">
             {categoryKeys.map(([key, info]) => (
@@ -630,7 +647,8 @@ export default function ImportPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{info.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {info.kind === 'income' ? 'Income' : 'Expense'} · {plural(info.count, 'record')}
+                    {info.kind === 'income' ? t('Income') : t('Expense')} ·{' '}
+                    {plural(info.count, 'record')}
                   </p>
                 </div>
                 <CategorySelect
@@ -643,10 +661,10 @@ export default function ImportPage() {
           </div>
           <div className="mt-6 flex justify-between">
             <Button variant="outline" onClick={() => setStep('accounts')}>
-              <ArrowLeft /> Back
+              <ArrowLeft /> {t('Back')}
             </Button>
             <Button onClick={() => setStep('review')}>
-              Next <ArrowRight />
+              {t('Next')} <ArrowRight />
             </Button>
           </div>
         </Card>
@@ -656,33 +674,33 @@ export default function ImportPage() {
         <Card className="p-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { label: 'Expenses', value: totals.expense },
-              { label: 'Incomes', value: totals.income },
-              { label: 'Transfers', value: totals.transfers },
+              { label: t('Expenses'), value: totals.expense },
+              { label: t('Incomes'), value: totals.income },
+              { label: t('Transfers'), value: totals.transfers },
               {
-                label: 'New accounts',
+                label: t('New accounts'),
                 value: Object.values(accountChoices).filter((c) => c.mode === 'create').length,
               },
-            ].map((t) => (
-              <div key={t.label} className="rounded-xl bg-muted/60 px-4 py-3">
-                <p className="text-xs text-muted-foreground">{t.label}</p>
-                <p className="text-xl font-semibold">{t.value}</p>
+            ].map((tile) => (
+              <div key={tile.label} className="rounded-xl bg-muted/60 px-4 py-3">
+                <p className="text-xs text-muted-foreground">{tile.label}</p>
+                <p className="text-xl font-semibold">{tile.value}</p>
               </div>
             ))}
           </div>
           {totals.first && totals.last && (
             <p className="mt-3 text-sm text-muted-foreground">
-              From {format(totals.first, 'd MMM yyyy')} to {format(totals.last, 'd MMM yyyy')}
+              From {fmt(totals.first, 'd MMM yyyy')} to {fmt(totals.last, 'd MMM yyyy')}
             </p>
           )}
           <div className="mt-4 overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Date</th>
-                  <th className="px-3 py-2 font-medium">Account</th>
-                  <th className="px-3 py-2 font-medium">Category</th>
-                  <th className="px-3 py-2 text-right font-medium">Amount</th>
+                  <th className="px-3 py-2 font-medium">{t('Date')}</th>
+                  <th className="px-3 py-2 font-medium">{t('Account')}</th>
+                  <th className="px-3 py-2 font-medium">{t('Category')}</th>
+                  <th className="px-3 py-2 text-right font-medium">{t('Amount')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -695,18 +713,18 @@ export default function ImportPage() {
                     return (
                       <tr key={i}>
                         <td className="whitespace-nowrap px-3 py-2">
-                          {format(d.date, 'd MMM yyyy HH:mm')}
+                          {fmt(d.date, 'd MMM yyyy HH:mm')}
                         </td>
                         <td className="px-3 py-2">
-                          {d.accountKey === FIXED_ACCOUNT ? 'Imported' : d.accountKey}
+                          {d.accountKey === FIXED_ACCOUNT ? t('Imported') : d.accountKey}
                           {d.toAccountKey ? ` → ${d.toAccountKey}` : ''}
                         </td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {d.type === 'transfer'
-                            ? 'Transfer'
+                            ? t('Transfer')
                             : catId
                               ? index.pathOf(catId)
-                              : 'Uncategorized'}
+                              : t('Uncategorized')}
                         </td>
                         <td
                           className={cn(
@@ -730,20 +748,20 @@ export default function ImportPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">Showing the 8 newest records.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t('Showing the 8 newest records.')}</p>
           <label className="mt-4 flex items-center gap-2 text-sm">
             <Checkbox
               checked={skipDuplicates}
               onCheckedChange={(v) => setSkipDuplicates(v === true)}
             />
-            Skip records that already exist (same account, time and amount)
+            {t('Skip records that already exist (same account, time and amount)')}
           </label>
           <div className="mt-6 flex justify-between">
             <Button
               variant="outline"
               onClick={() => setStep(categoryKeys.length ? 'categories' : 'accounts')}
             >
-              <ArrowLeft /> Back
+              <ArrowLeft /> {t('Back')}
             </Button>
             <Button onClick={() => runImport.mutate()} loading={runImport.isPending}>
               Import {built.drafts.length} records
@@ -755,28 +773,32 @@ export default function ImportPage() {
       {step === 'done' && result && (
         <Card className="flex flex-col items-center p-10 text-center">
           <CheckCircle2 className="size-14 text-income" />
-          <h2 className="mt-4 text-xl font-semibold">Import finished</h2>
+          <h2 className="mt-4 text-xl font-semibold">{t('Import finished')}</h2>
           <p className="mt-2 text-muted-foreground">
             {[
-              `${plural(result.imported, 'record')} imported`,
-              result.skipped > 0 && `${plural(result.skipped, 'duplicate')} skipped`,
-              result.accountsCreated > 0 && `${plural(result.accountsCreated, 'account')} created`,
-              result.labelsCreated > 0 && `${plural(result.labelsCreated, 'label')} created`,
+              tn(result.imported, '{n} record imported', '{n} records imported'),
+              result.skipped > 0 &&
+                tn(result.skipped, '{n} duplicate skipped', '{n} duplicates skipped'),
+              result.accountsCreated > 0 &&
+                tn(result.accountsCreated, '{n} account created', '{n} accounts created'),
+              result.labelsCreated > 0 &&
+                tn(result.labelsCreated, '{n} label created', '{n} labels created'),
             ]
               .filter(Boolean)
               .join(', ')}
             .
           </p>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            Tip: check the balances of the imported accounts and use “Adjust balance” if they differ
-            from reality.
+            {t(
+              'Tip: check the balances of the imported accounts and use “Adjust balance” if they differ from reality.',
+            )}
           </p>
           <div className="mt-6 flex gap-2">
             <Button asChild variant="outline">
-              <Link to="/accounts">Check accounts</Link>
+              <Link to="/accounts">{t('Check accounts')}</Link>
             </Button>
             <Button asChild>
-              <Link to="/records">View records</Link>
+              <Link to="/records">{t('View records')}</Link>
             </Button>
           </div>
         </Card>

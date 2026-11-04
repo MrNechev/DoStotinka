@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useCategories } from '@/api/queries';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Input } from '@/components/ui/input';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { cn, storage } from '@/lib/utils';
 
@@ -91,7 +92,7 @@ export function CategoryPickerPanel({
             type="button"
             className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
             onClick={() => (group && !search ? setOpenGroup(null) : onBack?.())}
-            aria-label="Back"
+            aria-label={t('Back')}
           >
             <ArrowLeft className="size-5" />
           </button>
@@ -102,7 +103,7 @@ export function CategoryPickerPanel({
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search categories…"
+            placeholder={t('Search categories…')}
             className="pl-9"
           />
         </div>
@@ -112,7 +113,7 @@ export function CategoryPickerPanel({
         <div className="grid gap-0.5">
           {results.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No category matches “{search}”.
+              {t('No category matches “{search}”.', { search })}
             </p>
           )}
           {results.map((c) => renderItem(c, true))}
@@ -130,7 +131,9 @@ export function CategoryPickerPanel({
             <IconBadge icon={group.icon} color={index.colorOf(group.id)} size="md" />
             <span className="flex-1">
               <span className="block text-sm font-semibold">{group.name}</span>
-              <span className="block text-xs text-muted-foreground">Use the whole group</span>
+              <span className="block text-xs text-muted-foreground">
+                {t('Use the whole group')}
+              </span>
             </span>
             {value === group.id && <Check className="size-4 text-primary" />}
           </button>
@@ -145,7 +148,7 @@ export function CategoryPickerPanel({
           {recent.length > 0 && !showOtherKind && (
             <div className="mb-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Recent
+                {t('Recent')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {recent.map((c) => (
@@ -195,7 +198,7 @@ export function CategoryPickerPanel({
               className="text-sm text-muted-foreground hover:text-foreground"
               onClick={() => onSelect(null)}
             >
-              No category
+              {t('No category')}
             </button>
             {allowAllKinds && (
               <button
@@ -204,8 +207,12 @@ export function CategoryPickerPanel({
                 onClick={() => setShowOtherKind((v) => !v)}
               >
                 {showOtherKind
-                  ? `Back to ${kind} categories`
-                  : `Show ${kind === 'expense' ? 'income' : 'expense'} categories`}
+                  ? kind === 'expense'
+                    ? t('Back to expense categories')
+                    : t('Back to income categories')
+                  : kind === 'expense'
+                    ? t('Show income categories')
+                    : t('Show expense categories')}
               </button>
             )}
           </div>
@@ -219,7 +226,7 @@ export function CategoryPickerPanel({
 export function CategoryButton({
   value,
   onClick,
-  placeholder = 'Choose a category',
+  placeholder = t('Choose a category'),
 }: {
   value: string | null;
   onClick: () => void;

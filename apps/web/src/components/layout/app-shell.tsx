@@ -31,29 +31,30 @@ import {
   MenuTrigger,
 } from '@/components/ui/menu';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
+import { t } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { useRecordEditor } from '../records/record-editor';
 import { Logo, LogoMark } from './logo';
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/records', label: 'Records', icon: ArrowLeftRight },
-  { to: '/accounts', label: 'Accounts', icon: Wallet },
-  { to: '/statistics', label: 'Statistics', icon: ChartPie },
-  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/planned', label: 'Planned payments', icon: CalendarClock },
-  { to: '/budgets', label: 'Budgets', icon: Target },
-  { to: '/goals', label: 'Goals', icon: Flag },
-  { to: '/categories', label: 'Categories', icon: FolderTree },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/', label: t('Dashboard'), icon: LayoutDashboard, end: true },
+  { to: '/records', label: t('Records'), icon: ArrowLeftRight },
+  { to: '/accounts', label: t('Accounts'), icon: Wallet },
+  { to: '/statistics', label: t('Statistics'), icon: ChartPie },
+  { to: '/calendar', label: t('Calendar'), icon: CalendarDays },
+  { to: '/planned', label: t('Planned payments'), icon: CalendarClock },
+  { to: '/budgets', label: t('Budgets'), icon: Target },
+  { to: '/goals', label: t('Goals'), icon: Flag },
+  { to: '/categories', label: t('Categories'), icon: FolderTree },
+  { to: '/settings', label: t('Settings'), icon: Settings },
 ];
 
 const MOBILE_NAV = [
-  { to: '/', label: 'Home', icon: LayoutDashboard, end: true },
-  { to: '/records', label: 'Records', icon: ArrowLeftRight },
+  { to: '/', label: t('Home'), icon: LayoutDashboard, end: true },
+  { to: '/records', label: t('Records'), icon: ArrowLeftRight },
   null,
-  { to: '/statistics', label: 'Stats', icon: ChartPie },
-  { to: '/accounts', label: 'Accounts', icon: Wallet },
+  { to: '/statistics', label: t('Stats'), icon: ChartPie },
+  { to: '/accounts', label: t('Accounts'), icon: Wallet },
 ];
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
@@ -61,7 +62,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const { data: upcoming } = useUpcoming(0);
   const overdue = upcoming?.filter((o) => o.overdue).length ?? 0;
   const items = user.isAdmin
-    ? [...NAV, { to: '/admin', label: 'Administration', icon: Shield, end: false }]
+    ? [...NAV, { to: '/admin', label: t('Administration'), icon: Shield, end: false }]
     : NAV;
   return (
     <nav className="grid gap-0.5">
@@ -135,25 +136,25 @@ function UserMenu({ compact }: { compact?: boolean }) {
         side={compact ? 'bottom' : 'top'}
         className="w-56"
       >
-        <MenuLabel>Theme</MenuLabel>
+        <MenuLabel>{t('Theme')}</MenuLabel>
         <MenuItem icon={<Sun />} onSelect={() => setTheme('light')}>
-          Light
+          {t('Light')}
         </MenuItem>
         <MenuItem icon={<Moon />} onSelect={() => setTheme('dark')}>
-          Dark
+          {t('Dark')}
         </MenuItem>
         <MenuItem icon={<Monitor />} onSelect={() => setTheme('system')}>
-          System
+          {t('System')}
         </MenuItem>
         <MenuSeparator />
         <MenuItem icon={<Settings />} onSelect={() => navigate('/settings')}>
-          Settings
+          {t('Settings')}
         </MenuItem>
         <MenuItem
           icon={<LogOut />}
           onSelect={() => logout.mutate(undefined, { onSettled: () => navigate('/login') })}
         >
-          Log out
+          {t('Log out')}
         </MenuItem>
       </MenuContent>
     </Menu>
@@ -196,7 +197,7 @@ export function AppShell() {
         </div>
         <div className="px-3 pb-3">
           <Button className="w-full" onClick={() => openNew()}>
-            <Plus /> Add record
+            <Plus /> {t('Add record')}
           </Button>
         </div>
         <div className="scrollbar-thin flex-1 overflow-y-auto px-3">
@@ -204,8 +205,9 @@ export function AppShell() {
         </div>
         {user.isDemo && (
           <div className="mx-3 mb-2 rounded-xl bg-warning/10 px-3 py-2 text-xs text-warning">
-            You are exploring the shared demo account – others can see what you enter. Data is reset
-            regularly.
+            {t(
+              'You are exploring the shared demo account – others can see what you enter. Data is reset regularly.',
+            )}
           </div>
         )}
         <div className="border-t border-border p-2">
@@ -219,13 +221,13 @@ export function AppShell() {
           type="button"
           className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
           onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
+          aria-label={t('Open menu')}
         >
           <MenuIcon className="size-5" />
         </button>
         <div className="flex items-center gap-2">
           <LogoMark className="size-7" />
-          <span className="font-semibold">Slavotax</span>
+          <span className="font-semibold">{t('Slavotax')}</span>
         </div>
         <UserMenu compact />
       </header>
@@ -235,7 +237,7 @@ export function AppShell() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={t('Close menu')}
             className="animate-overlay-in absolute inset-0 bg-black/40"
             onClick={() => setDrawerOpen(false)}
           />
@@ -246,7 +248,7 @@ export function AppShell() {
                 type="button"
                 className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
                 onClick={() => setDrawerOpen(false)}
-                aria-label="Close menu"
+                aria-label={t('Close menu')}
               >
                 <X className="size-5" />
               </button>
@@ -264,7 +266,7 @@ export function AppShell() {
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">
         {user.isDemo && (
           <div className="mb-4 rounded-xl bg-warning/10 px-3 py-2 text-xs text-warning lg:hidden">
-            Shared demo account – visible to others and reset regularly.
+            {t('Shared demo account – visible to others and reset regularly.')}
           </div>
         )}
         <Outlet />
@@ -294,7 +296,7 @@ export function AppShell() {
                 <button
                   type="button"
                   onClick={() => openNew()}
-                  aria-label="Add record"
+                  aria-label={t('Add record')}
                   className="-mt-6 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95"
                 >
                   <Plus className="size-7" />

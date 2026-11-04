@@ -5,7 +5,6 @@ import {
   type ReminderSettings,
 } from '@slavotax/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
   ArchiveRestore,
   Bell,
@@ -46,6 +45,8 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Badge, Card, CardHeader, PageHeader } from '@/components/ui/misc';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
+import { LANGUAGES, type Language, language, setLanguage, t, tn } from '@/i18n';
+import { ago } from '@/lib/date';
 import { numberFmt, plural } from '@/lib/format';
 import { browserTimeZone, downloadUrl } from '@/lib/utils';
 
@@ -67,7 +68,7 @@ function Section({
 }
 
 const LOCALES = [
-  { value: 'auto', label: 'Automatic (browser)' },
+  { value: 'auto', label: t('Automatic (browser)') },
   { value: 'en-US', label: '1,234.56 (en-US)' },
   { value: 'en-GB', label: '1,234.56 (en-GB)' },
   { value: 'de-DE', label: '1.234,56 (de-DE)' },
@@ -81,7 +82,7 @@ function ProfileSection() {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   return (
-    <Section title="Profile">
+    <Section title={t('Profile')}>
       <fieldset disabled={user.isDemo} className="contents">
         <form
           className="grid gap-4 sm:grid-cols-2"
@@ -90,13 +91,13 @@ function ProfileSection() {
             update.mutate(
               { name, email },
               {
-                onSuccess: () => toast.success('Profile saved'),
+                onSuccess: () => toast.success(t('Profile saved')),
                 onError: (err) => toast.error(errorMessage(err)),
               },
             );
           }}
         >
-          <Field label="Name" htmlFor="s-name">
+          <Field label={t('Name')} htmlFor="s-name">
             <Input
               id="s-name"
               value={name}
@@ -105,7 +106,7 @@ function ProfileSection() {
               maxLength={100}
             />
           </Field>
-          <Field label="E-mail" htmlFor="s-email">
+          <Field label={t('E-mail')} htmlFor="s-email">
             <Input
               id="s-email"
               type="email"
@@ -121,7 +122,7 @@ function ProfileSection() {
               loading={update.isPending}
               disabled={name === user.name && email === user.email}
             >
-              Save profile
+              {t('Save profile')}
             </Button>
           </div>
         </form>
@@ -142,25 +143,38 @@ function PreferencesSection() {
       return [user.timezone];
     }
   }, [user.timezone]);
-  const save = (input: Parameters<typeof update.mutate>[0], msg = 'Preferences saved') =>
+  const save = (input: Parameters<typeof update.mutate>[0], msg = t('Preferences saved')) =>
     update.mutate(input, {
       onSuccess: () => toast.success(msg),
       onError: (err) => toast.error(errorMessage(err)),
     });
   const detected = browserTimeZone();
   return (
-    <Section title="Preferences">
+    <Section title={t('Preferences')}>
+      <Field label={t('Language')} htmlFor="p-lang" className="mb-4 sm:max-w-[calc(50%-0.5rem)]">
+        <Select
+          id="p-lang"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as Language)}
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
       <fieldset disabled={user.isDemo} className="contents">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="Main currency"
+            label={t('Main currency')}
             htmlFor="p-cur"
-            hint="Totals, statistics and budgets are shown in this currency."
+            hint={t('Totals, statistics and budgets are shown in this currency.')}
           >
             <Select
               id="p-cur"
               value={user.baseCurrency}
-              onChange={(e) => save({ baseCurrency: e.target.value }, 'Main currency changed')}
+              onChange={(e) => save({ baseCurrency: e.target.value }, t('Main currency changed'))}
             >
               {CURRENCIES.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -169,7 +183,7 @@ function PreferencesSection() {
               ))}
             </Select>
           </Field>
-          <Field label="Theme" htmlFor="p-theme">
+          <Field label={t('Theme')} htmlFor="p-theme">
             <Select
               id="p-theme"
               value={user.theme}
@@ -178,23 +192,23 @@ function PreferencesSection() {
                 save({ theme: e.target.value as ThemePref });
               }}
             >
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
+              <option value="system">{t('System')}</option>
+              <option value="light">{t('Light')}</option>
+              <option value="dark">{t('Dark')}</option>
             </Select>
           </Field>
-          <Field label="Week starts on" htmlFor="p-week">
+          <Field label={t('Week starts on')} htmlFor="p-week">
             <Select
               id="p-week"
               value={user.weekStartsOn}
               onChange={(e) => save({ weekStartsOn: Number(e.target.value) as 0 | 1 | 6 })}
             >
-              <option value={1}>Monday</option>
-              <option value={0}>Sunday</option>
-              <option value={6}>Saturday</option>
+              <option value={1}>{t('Monday')}</option>
+              <option value={0}>{t('Sunday')}</option>
+              <option value={6}>{t('Saturday')}</option>
             </Select>
           </Field>
-          <Field label="Number format" htmlFor="p-locale">
+          <Field label={t('Number format')} htmlFor="p-locale">
             <Select
               id="p-locale"
               value={user.locale === 'en' ? 'auto' : user.locale}
@@ -208,13 +222,13 @@ function PreferencesSection() {
             </Select>
           </Field>
           <Field
-            label="Time zone"
+            label={t('Time zone')}
             htmlFor="p-tz"
             className="sm:col-span-2"
             hint={
               detected !== user.timezone
-                ? `Your browser reports ${detected}.`
-                : 'Used for background jobs and exports.'
+                ? t('Your browser reports {tz}.', { tz: detected })
+                : t('Used for background jobs and exports.')
             }
           >
             <Select
@@ -265,13 +279,22 @@ function CurrenciesSection() {
 
   return (
     <Section
-      title="Currencies & exchange rates"
-      description={`How much 1 unit of each currency is worth in ${user.baseCurrency}. Used to convert totals and statistics.`}
+      title={t('Currencies & exchange rates')}
+      description={t(
+        'How much 1 unit of each currency is worth in {base}. Used to convert totals and statistics.',
+        {
+          base: user.baseCurrency,
+        },
+      )}
     >
       {!data?.rates.length ? (
         <p className="text-sm text-muted-foreground">
-          All your accounts use {user.baseCurrency}. Add an account in another currency, or track
-          one below.
+          {t(
+            'All your accounts use {base}. Add an account in another currency, or track one below.',
+            {
+              base: user.baseCurrency,
+            },
+          )}
         </p>
       ) : (
         <div className="divide-y divide-border rounded-xl border border-border">
@@ -291,7 +314,7 @@ function CurrenciesSection() {
                 onChange={(e) =>
                   setDrafts({ ...drafts, [r.currency]: e.target.value.replace(',', '.') })
                 }
-                aria-label={`Rate for ${r.currency}`}
+                aria-label={t('Rate for {currency}', { currency: r.currency })}
               />
               <span className="text-sm text-muted-foreground">{user.baseCurrency}</span>
               <span className="ml-auto flex items-center gap-2">
@@ -303,13 +326,13 @@ function CurrenciesSection() {
                   {sourceLabel[r.source]}
                 </Badge>
                 <span className="hidden text-xs text-muted-foreground sm:inline">
-                  {formatDistanceToNow(parseISO(r.updatedAt), { addSuffix: true })}
+                  {ago(r.updatedAt)}
                 </span>
                 {!data.usedCurrencies.includes(r.currency) && (
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Stop tracking ${r.currency}`}
+                    aria-label={t('Stop tracking {currency}', { currency: r.currency })}
                     onClick={() => removeCur.mutate(r.currency)}
                   >
                     <Trash2 />
@@ -334,34 +357,34 @@ function CurrenciesSection() {
                 .map((r) => ({ currency: r.currency, rate: Number(drafts[r.currency]) }))
                 .filter((r) => Number.isFinite(r.rate) && r.rate > 0),
               {
-                onSuccess: () => toast.success('Exchange rates saved'),
+                onSuccess: () => toast.success(t('Exchange rates saved')),
                 onError: (e) => toast.error(errorMessage(e)),
               },
             )
           }
         >
-          Save rates
+          {t('Save rates')}
         </Button>
         <Button
           variant="outline"
           loading={refresh.isPending}
           onClick={() =>
             refresh.mutate(false, {
-              onSuccess: () => toast.success('Rates updated from the European Central Bank'),
+              onSuccess: () => toast.success(t('Rates updated from the European Central Bank')),
               onError: (e) => toast.error(errorMessage(e)),
             })
           }
         >
-          <RefreshCw /> Update from ECB
+          <RefreshCw /> {t('Update from ECB')}
         </Button>
         <div className="ml-auto flex items-center gap-2">
           <Select
             value={newCurrency}
             onChange={(e) => setNewCurrency(e.target.value)}
             containerClassName="w-44"
-            aria-label="Currency to track"
+            aria-label={t('Currency to track')}
           >
-            <option value="">Track currency…</option>
+            <option value="">{t('Track currency…')}</option>
             {CURRENCIES.filter((c) => !tracked.has(c.code)).map((c) => (
               <option key={c.code} value={c.code}>
                 {c.code} – {c.name}
@@ -373,13 +396,14 @@ function CurrenciesSection() {
             disabled={!newCurrency}
             onClick={() => add.mutate(newCurrency, { onSuccess: () => setNewCurrency('') })}
           >
-            Add
+            {t('Add')}
           </Button>
         </div>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Automatic updates use the free daily reference rates of the European Central Bank. Rates you
-        edit by hand are kept until you update them again.
+        {t(
+          'Automatic updates use the free daily reference rates of the European Central Bank. Rates you edit by hand are kept until you update them again.',
+        )}
       </p>
     </Section>
   );
@@ -394,10 +418,10 @@ function SecuritySection() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   return (
-    <Section title="Security">
+    <Section title={t('Security')}>
       {user.isDemo ? (
         <p className="text-sm text-muted-foreground">
-          The password of the demo account cannot be changed.
+          {t('The password of the demo account cannot be changed.')}
         </p>
       ) : (
         <form
@@ -408,7 +432,7 @@ function SecuritySection() {
               { currentPassword: current, newPassword: next },
               {
                 onSuccess: () => {
-                  toast.success('Password changed – other sessions were signed out');
+                  toast.success(t('Password changed – other sessions were signed out'));
                   setCurrent('');
                   setNext('');
                 },
@@ -417,7 +441,7 @@ function SecuritySection() {
             );
           }}
         >
-          <Field label="Current password" htmlFor="pw-cur">
+          <Field label={t('Current password')} htmlFor="pw-cur">
             <Input
               id="pw-cur"
               type="password"
@@ -427,7 +451,7 @@ function SecuritySection() {
               required
             />
           </Field>
-          <Field label="New password" htmlFor="pw-new">
+          <Field label={t('New password')} htmlFor="pw-new">
             <Input
               id="pw-new"
               type="password"
@@ -439,11 +463,11 @@ function SecuritySection() {
             />
           </Field>
           <Button type="submit" loading={change.isPending}>
-            Change password
+            {t('Change password')}
           </Button>
         </form>
       )}
-      <h3 className="mb-2 mt-6 text-sm font-semibold">Active sessions</h3>
+      <h3 className="mb-2 mt-6 text-sm font-semibold">{t('Active sessions')}</h3>
       <ul className="divide-y divide-border rounded-xl border border-border">
         {sessions
           .filter((s) => !s.name)
@@ -454,15 +478,14 @@ function SecuritySection() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm">{describeAgent(s.userAgent)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {s.ip ?? 'unknown IP'} · active{' '}
-                  {formatDistanceToNow(parseISO(s.lastUsedAt), { addSuffix: true })}
+                  {s.ip ?? t('unknown IP')} · {t('active {time}', { time: ago(s.lastUsedAt) })}
                 </p>
               </div>
               {s.current ? (
-                <Badge tone="success">this device</Badge>
+                <Badge tone="success">{t('this device')}</Badge>
               ) : (
                 <Button variant="ghost" size="sm" onClick={() => revoke.mutate(s.id)}>
-                  Sign out
+                  {t('Sign out')}
                 </Button>
               )}
             </li>
@@ -475,8 +498,8 @@ function SecuritySection() {
           onClick={() => setShowAllSessions((v) => !v)}
         >
           {showAllSessions
-            ? 'Show fewer'
-            : `Show all ${sessions.filter((x) => !x.name).length} sessions`}
+            ? t('Show fewer')
+            : t('Show all {n} sessions', { n: sessions.filter((x) => !x.name).length })}
         </button>
       )}
     </Section>
@@ -486,24 +509,24 @@ function SecuritySection() {
 function describeAgent(ua: string | null) {
   if (!ua) return 'Unknown device';
   const browser = /Edg\//.test(ua)
-    ? 'Edge'
+    ? t('Edge')
     : /Firefox\//.test(ua)
-      ? 'Firefox'
+      ? t('Firefox')
       : /Chrome\//.test(ua)
-        ? 'Chrome'
+        ? t('Chrome')
         : /Safari\//.test(ua)
-          ? 'Safari'
-          : 'Browser';
+          ? t('Safari')
+          : t('Browser');
   const os = /Windows/.test(ua)
-    ? 'Windows'
+    ? t('Windows')
     : /Android/.test(ua)
-      ? 'Android'
+      ? t('Android')
       : /iPhone|iPad/.test(ua)
         ? 'iOS'
         : /Mac OS/.test(ua)
           ? 'macOS'
           : /Linux/.test(ua)
-            ? 'Linux'
+            ? t('Linux')
             : '';
   return os ? `${browser} on ${os}` : browser;
 }
@@ -527,16 +550,18 @@ function ApiTokensSection() {
     : '';
   return (
     <Section
-      title="API tokens"
-      description="Let scripts, phone automations (iOS Shortcuts, Tasker) or apps use your data via the API."
+      title={t('API tokens')}
+      description={t(
+        'Let scripts, phone automations (iOS Shortcuts, Tasker) or apps use your data via the API.',
+      )}
     >
       <form
         className="flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           create.mutate(name, {
-            onSuccess: (t) => {
-              setCreated(t);
+            onSuccess: (created) => {
+              setCreated(created);
               setName('');
             },
             onError: (err) => toast.error(errorMessage(err)),
@@ -546,52 +571,54 @@ function ApiTokensSection() {
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Token name, e.g. “iPhone Shortcut”"
+          placeholder={t('Token name, e.g. “iPhone Shortcut”')}
           className="max-w-xs"
           required
           maxLength={60}
         />
         <Button type="submit" variant="outline" loading={create.isPending}>
-          <KeyRound /> Create token
+          <KeyRound /> {t('Create token')}
         </Button>
       </form>
       {tokens.length > 0 && (
         <ul className="mt-4 divide-y divide-border rounded-xl border border-border">
-          {tokens.map((t) => (
-            <li key={t.id} className="flex items-center gap-3 px-3 py-2.5">
+          {tokens.map((tok) => (
+            <li key={tok.id} className="flex items-center gap-3 px-3 py-2.5">
               <KeyRound className="size-5 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{t.name}</p>
+                <p className="truncate text-sm font-medium">{tok.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  Created {formatDistanceToNow(parseISO(t.createdAt), { addSuffix: true })} · last
-                  used {formatDistanceToNow(parseISO(t.lastUsedAt), { addSuffix: true })}
+                  {t('Created {created} · last used {used}', {
+                    created: ago(tok.createdAt),
+                    used: ago(tok.lastUsedAt),
+                  })}
                 </p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => revoke.mutate(t.id)}>
-                Revoke
+              <Button variant="ghost" size="sm" onClick={() => revoke.mutate(tok.id)}>
+                {t('Revoke')}
               </Button>
             </li>
           ))}
         </ul>
       )}
       <p className="mt-3 text-xs text-muted-foreground">
-        See the{' '}
+        {t('See the')}{' '}
         <a
           href="/api/docs"
           target="_blank"
           rel="noreferrer"
           className="font-medium text-primary hover:underline"
         >
-          API documentation
+          {t('API documentation')}
         </a>{' '}
-        for all endpoints. Amounts are in cents (1250 = 12.50).
+        {t('for all endpoints. Amounts are in cents (1250 = 12.50).')}
       </p>
       <Dialog open={!!created} onOpenChange={(o) => !o && setCreated(null)}>
         {created && (
           <DialogContent
             size="lg"
-            title={`Token “${created.name}” created`}
-            description="Copy it now – it will not be shown again."
+            title={t('Token “{name}” created', { name: created.name })}
+            description={t('Copy it now – it will not be shown again.')}
           >
             <div className="grid gap-4">
               <div className="flex gap-2">
@@ -605,21 +632,21 @@ function ApiTokensSection() {
                   variant="outline"
                   onClick={() => {
                     void navigator.clipboard?.writeText(created.token);
-                    toast.success('Token copied');
+                    toast.success(t('Token copied'));
                   }}
                 >
-                  <Copy /> Copy
+                  <Copy /> {t('Copy')}
                 </Button>
               </div>
               <div>
-                <p className="mb-1.5 text-sm font-medium">Example: add an expense</p>
+                <p className="mb-1.5 text-sm font-medium">{t('Example: add an expense')}</p>
                 <pre className="overflow-x-auto rounded-xl bg-muted p-3 text-xs leading-relaxed">
                   {example}
                 </pre>
               </div>
               {accounts.length > 0 && (
                 <div>
-                  <p className="mb-1.5 text-sm font-medium">Your account IDs</p>
+                  <p className="mb-1.5 text-sm font-medium">{t('Your account IDs')}</p>
                   <ul className="grid gap-1 text-xs">
                     {accounts.map((a) => (
                       <li
@@ -645,27 +672,29 @@ const NOTIFY_HELP: Record<string, { label: string; placeholder: string; hint: st
   ntfy: {
     label: 'ntfy',
     placeholder: 'https://ntfy.sh/my-secret-topic',
-    hint: 'Use a hard-to-guess topic on ntfy.sh or your own ntfy server and subscribe to it in the ntfy app.',
+    hint: t(
+      'Use a hard-to-guess topic on ntfy.sh or your own ntfy server and subscribe to it in the ntfy app.',
+    ),
   },
   gotify: {
-    label: 'Gotify',
+    label: t('Gotify'),
     placeholder: 'https://gotify.example.com/message?token=…',
-    hint: 'The message URL of your Gotify server including the application token.',
+    hint: t('The message URL of your Gotify server including the application token.'),
   },
   discord: {
-    label: 'Discord',
+    label: t('Discord'),
     placeholder: 'https://discord.com/api/webhooks/…',
-    hint: 'A channel webhook (Channel settings → Integrations → Webhooks).',
+    hint: t('A channel webhook (Channel settings → Integrations → Webhooks).'),
   },
   slack: {
-    label: 'Slack',
+    label: t('Slack'),
     placeholder: 'https://hooks.slack.com/services/…',
-    hint: 'An incoming webhook URL.',
+    hint: t('An incoming webhook URL.'),
   },
   json: {
-    label: 'Webhook (JSON)',
+    label: t('Webhook (JSON)'),
     placeholder: 'https://example.com/hook',
-    hint: 'Receives a POST with {"title", "message", "lines"} – e.g. for Home Assistant or n8n.',
+    hint: t('Receives a POST with {"title", "message", "lines"} – e.g. for Home Assistant or n8n.'),
   },
 };
 
@@ -694,21 +723,23 @@ function RemindersSection() {
       }),
     onSuccess: (res) => {
       qc.setQueryData(['reminders'], res);
-      toast.success(res.url ? 'Reminders switched on' : 'Reminders switched off');
+      toast.success(res.url ? t('Reminders switched on') : t('Reminders switched off'));
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
   const test = useMutation({
     mutationFn: () => api<{ sent: boolean }>('/me/reminders/test', { method: 'POST' }),
-    onSuccess: () => toast.success('Test reminder sent'),
+    onSuccess: () => toast.success(t('Test reminder sent')),
     onError: (e) => toast.error(errorMessage(e)),
   });
   if (user.isDemo || !config?.notificationsEnabled || !form) return null;
   const help = NOTIFY_HELP[form.format]!;
   return (
     <Section
-      title="Reminders"
-      description="Get a daily message about overdue payments and payments due today or tomorrow."
+      title={t('Reminders')}
+      description={t(
+        'Get a daily message about overdue payments and payments due today or tomorrow.',
+      )}
     >
       <form
         className="grid items-start gap-4 sm:grid-cols-[180px_1fr]"
@@ -717,7 +748,7 @@ function RemindersSection() {
           save.mutate();
         }}
       >
-        <Field label="Service" htmlFor="rem-format">
+        <Field label={t('Service')} htmlFor="rem-format">
           <Select
             id="rem-format"
             value={form.format}
@@ -732,7 +763,7 @@ function RemindersSection() {
             ))}
           </Select>
         </Field>
-        <Field label="URL" htmlFor="rem-url" hint={help.hint}>
+        <Field label={t('URL')} htmlFor="rem-url" hint={help.hint}>
           <Input
             id="rem-url"
             type="url"
@@ -741,7 +772,7 @@ function RemindersSection() {
             placeholder={help.placeholder}
           />
         </Field>
-        <Field label="Send after" htmlFor="rem-hour">
+        <Field label={t('Send after')} htmlFor="rem-hour">
           <Select
             id="rem-hour"
             value={form.hour}
@@ -756,7 +787,7 @@ function RemindersSection() {
         </Field>
         <div className="flex flex-wrap items-end gap-2">
           <Button type="submit" loading={save.isPending}>
-            Save
+            {t('Save')}
           </Button>
           <Button
             variant="outline"
@@ -764,7 +795,7 @@ function RemindersSection() {
             disabled={!data?.url}
             onClick={() => test.mutate()}
           >
-            <Bell /> Send test
+            <Bell /> {t('Send test')}
           </Button>
           {data?.lastSentOn && (
             <span className="text-xs text-muted-foreground">Last checked on {data.lastSentOn}</span>
@@ -787,14 +818,15 @@ function DataSection() {
     try {
       backup = JSON.parse(await file.text());
     } catch {
-      toast.error('This file is not a valid JSON backup');
+      toast.error(t('This file is not a valid JSON backup'));
       return;
     }
     const ok = await confirm({
-      title: 'Restore this backup?',
-      description:
+      title: t('Restore this backup?'),
+      description: t(
         'All your current accounts, records, categories, planned payments, budgets and goals will be replaced by the contents of the backup. This cannot be undone.',
-      confirmLabel: 'Replace my data',
+      ),
+      confirmLabel: t('Replace my data'),
       destructive: true,
     });
     if (!ok) return;
@@ -806,7 +838,10 @@ function DataSection() {
       });
       await qc.invalidateQueries();
       toast.success(
-        `Backup restored: ${plural(res.accounts, 'account')}, ${plural(res.records, 'record')}`,
+        t('Backup restored: {accounts}, {records}', {
+          accounts: tn(res.accounts, '{n} account', '{n} accounts'),
+          records: tn(res.records, '{n} record', '{n} records'),
+        }),
       );
     } catch (err) {
       toast.error(errorMessage(err));
@@ -817,8 +852,10 @@ function DataSection() {
 
   return (
     <Section
-      title="Your data"
-      description="Download everything you have entered, restore a backup or import records from another app. Your data never leaves your server."
+      title={t('Your data')}
+      description={t(
+        'Download everything you have entered, restore a backup or import records from another app. Your data never leaves your server.',
+      )}
     >
       <div className="flex flex-wrap gap-2">
         <Button
@@ -827,20 +864,20 @@ function DataSection() {
             downloadUrl(`/api/export/records.csv?tz=${encodeURIComponent(browserTimeZone())}`)
           }
         >
-          <Download /> Records (CSV)
+          <Download /> {t('Records (CSV)')}
         </Button>
         <Button variant="outline" onClick={() => downloadUrl('/api/export/backup.json')}>
-          <FileJson /> Full backup (JSON)
+          <FileJson /> {t('Full backup (JSON)')}
         </Button>
         <Button variant="outline" asChild>
           <Link to="/import">
-            <FileUp /> Import from CSV
+            <FileUp /> {t('Import from CSV')}
           </Link>
         </Button>
         {!user.isDemo && (
           <>
             <Button variant="outline" loading={restoring} onClick={() => fileRef.current?.click()}>
-              <ArchiveRestore /> Restore backup
+              <ArchiveRestore /> {t('Restore backup')}
             </Button>
             <input
               ref={fileRef}
@@ -870,19 +907,19 @@ function DangerSection() {
   return (
     <Card className="border-destructive/30">
       <CardHeader
-        title="Delete account"
-        description="Permanently delete your user and all of your data."
+        title={t('Delete user account')}
+        description={t('Permanently delete your user and all of your data.')}
       />
       <div className="px-5 pb-5 pt-2">
         <Button variant="destructive" onClick={() => setOpen(true)}>
-          <Trash2 /> Delete my account
+          <Trash2 /> {t('Delete my account')}
         </Button>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           size="sm"
-          title="Delete your account?"
-          description="All accounts, records, budgets and settings will be removed forever."
+          title={t('Delete your account?')}
+          description={t('All accounts, records, budgets and settings will be removed forever.')}
         >
           <form
             onSubmit={(e) => {
@@ -893,7 +930,7 @@ function DangerSection() {
               });
             }}
           >
-            <Field label="Confirm with your password" htmlFor="del-pw">
+            <Field label={t('Confirm with your password')} htmlFor="del-pw">
               <Input
                 id="del-pw"
                 type="password"
@@ -905,10 +942,10 @@ function DangerSection() {
             </Field>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button type="submit" variant="destructive" loading={del.isPending}>
-                Delete everything
+                {t('Delete everything')}
               </Button>
             </DialogFooter>
           </form>
@@ -923,8 +960,9 @@ function DemoNotice() {
   if (!user.isDemo) return null;
   return (
     <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning">
-      You are using the shared demo account: its profile and preferences are read-only, and all data
-      is reset regularly. Create your own account to try everything.
+      {t(
+        'You are using the shared demo account: its profile and preferences are read-only, and all data is reset regularly. Create your own account to try everything.',
+      )}
     </p>
   );
 }
@@ -933,7 +971,7 @@ export default function SettingsPage() {
   const { data: config } = useServerConfig();
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Settings" />
+      <PageHeader title={t('Settings')} />
       <div className="grid gap-6">
         <DemoNotice />
         <ProfileSection />
@@ -952,7 +990,7 @@ export default function SettingsPage() {
             rel="noreferrer"
             className="inline-flex items-center gap-1 hover:text-foreground"
           >
-            <Code className="size-3.5" /> Source code
+            <Code className="size-3.5" /> {t('Source code')}
           </a>
           <a
             href="/api/docs"
@@ -960,7 +998,7 @@ export default function SettingsPage() {
             rel="noreferrer"
             className="inline-flex items-center gap-1 hover:text-foreground"
           >
-            <BookOpen className="size-3.5" /> API documentation
+            <BookOpen className="size-3.5" /> {t('API documentation')}
           </a>
         </p>
       </div>

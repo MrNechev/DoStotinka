@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/misc';
 import { ColorPicker, IconPicker } from '@/components/ui/pickers';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 
 export function CategoryFormDialog({
@@ -61,7 +62,7 @@ export function CategoryFormDialog({
           },
         });
       }
-      toast.success(category ? 'Category updated' : 'Category created');
+      toast.success(category ? t('Category updated') : t('Category created'));
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -74,7 +75,7 @@ export function CategoryFormDialog({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent title={category ? 'Edit category' : 'New category'} size="md">
+      <DialogContent title={category ? t('Edit category') : t('New category')} size="md">
         <form onSubmit={submit} className="grid gap-4">
           {!category && !parentId && (
             <Segmented<'expense' | 'income'>
@@ -82,14 +83,14 @@ export function CategoryFormDialog({
               onChange={setKind}
               className="w-full"
               options={[
-                { value: 'expense', label: 'Expense category' },
-                { value: 'income', label: 'Income category' },
+                { value: 'expense', label: t('Expense category') },
+                { value: 'income', label: t('Income category') },
               ]}
             />
           )}
           <div className="flex items-end gap-3">
             <IconBadge icon={icon} color={displayColor} size="lg" />
-            <Field label="Name" htmlFor="cat-name" className="flex-1">
+            <Field label={t('Name')} htmlFor="cat-name" className="flex-1">
               <Input
                 id="cat-name"
                 value={name}
@@ -101,12 +102,12 @@ export function CategoryFormDialog({
             </Field>
           </div>
           <Field
-            label="Parent category"
+            label={t('Parent category')}
             htmlFor="cat-parent"
             hint={
               hasChildren
-                ? 'Groups that contain subcategories cannot be moved.'
-                : 'Leave empty to create a top-level group.'
+                ? t('Groups that contain subcategories cannot be moved.')
+                : t('Leave empty to create a top-level group.')
             }
           >
             <Select
@@ -115,7 +116,7 @@ export function CategoryFormDialog({
               onChange={(e) => setParentId(e.target.value)}
               disabled={hasChildren}
             >
-              <option value="">— None (top-level group) —</option>
+              <option value="">{t('— None (top-level group) —')}</option>
               {parentOptions.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -123,10 +124,10 @@ export function CategoryFormDialog({
               ))}
             </Select>
           </Field>
-          <Field label="Icon">
+          <Field label={t('Icon')}>
             <IconPicker value={icon} onChange={setIcon} color={displayColor} />
           </Field>
-          <Field label="Colour">
+          <Field label={t('Colour')}>
             {parentId && (
               <label className="mb-2 flex items-center gap-2 text-sm">
                 <input
@@ -134,7 +135,7 @@ export function CategoryFormDialog({
                   checked={!ownColor}
                   onChange={(e) => setOwnColor(!e.target.checked)}
                 />
-                Use the colour of “{parent?.name}”
+                {t('Use the colour of “{name}”', { name: parent?.name ?? '' })}
               </label>
             )}
             {(!parentId || ownColor) && <ColorPicker value={color} onChange={setColor} />}
@@ -142,10 +143,10 @@ export function CategoryFormDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {category ? 'Save changes' : 'Create category'}
+              {category ? t('Save changes') : t('Create category')}
             </Button>
           </DialogFooter>
         </form>

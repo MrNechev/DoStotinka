@@ -9,7 +9,6 @@ import {
   type RecordItem,
   type RecordType,
 } from '@slavotax/shared';
-import { format } from 'date-fns';
 import { ArrowDown, Copy, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
 import {
   createContext,
@@ -45,7 +44,9 @@ import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Field, Input, Select, Textarea } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
+import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 
@@ -131,8 +132,8 @@ function initialState(state: NonNullable<EditorState>, accounts: Account[]): For
     const r = state.record;
     const d = new Date(r.occurredAt);
     const base = {
-      date: format(d, 'yyyy-MM-dd'),
-      time: format(d, 'HH:mm'),
+      date: fmt(d, 'yyyy-MM-dd'),
+      time: fmt(d, 'HH:mm'),
       note: r.note ?? '',
       payee: r.payee ?? '',
       labelIds: r.labelIds,
@@ -182,8 +183,8 @@ function initialState(state: NonNullable<EditorState>, accounts: Account[]): For
       : '',
     toAmountTouched: !!d.toAmount,
     categoryId: d.categoryId ?? null,
-    date: d.date ?? format(now, 'yyyy-MM-dd'),
-    time: format(now, 'HH:mm'),
+    date: d.date ?? fmt(now, 'yyyy-MM-dd'),
+    time: fmt(now, 'HH:mm'),
     note: d.note ?? '',
     payee: d.payee ?? '',
     labelIds: d.labelIds ?? [],
@@ -282,36 +283,40 @@ function RecordEditorDialog({
     setError(null);
     if (foreign && !foreignRateKnown) {
       setError(
-        `There is no exchange rate for ${payCurrency} yet – add it under Settings → Currencies.`,
+        t('There is no exchange rate for {currency} yet – add it under Settings → Currencies.', {
+          currency: payCurrency ?? '',
+        }),
       );
       return;
     }
     const amount = foreign ? parsedAmount : parseAmountToMinor(form.amount, currency);
     const foreignNote =
-      foreign && foreignMinor ? `Paid ${money(foreignMinor, payCurrency!)}` : null;
+      foreign && foreignMinor
+        ? t('Paid {amount}', { amount: money(foreignMinor, payCurrency!) })
+        : null;
     if (amount === null || amount <= 0) {
-      setError('Enter an amount greater than zero');
+      setError(t('Enter an amount greater than zero'));
       amountRef.current?.focus();
       return;
     }
     if (!form.accountId) {
-      setError('Choose an account');
+      setError(t('Choose an account'));
       return;
     }
     const occurredAt = new Date(`${form.date}T${form.time || '12:00'}`);
     if (Number.isNaN(occurredAt.getTime())) {
-      setError('Enter a valid date and time');
+      setError(t('Enter a valid date and time'));
       return;
     }
     let input: RecordInput;
     if (form.type === 'transfer') {
       if (!form.toAccountId || form.toAccountId === form.accountId) {
-        setError('Choose two different accounts');
+        setError(t('Choose two different accounts'));
         return;
       }
       const toAmount = crossCurrency ? parseAmountToMinor(form.toAmount, toCurrency) : amount;
       if (!toAmount || toAmount <= 0) {
-        setError('Enter the amount received by the destination account');
+        setError(t('Enter the amount received by the destination account'));
         return;
       }
       input = {
@@ -343,10 +348,12 @@ function RecordEditorDialog({
       if (form.type !== 'transfer') rememberCategory(form.type, form.categoryId);
       toast.success(
         isEdit
-          ? 'Record updated'
+          ? t('Record updated')
           : form.type === 'transfer'
-            ? 'Transfer saved'
-            : `${form.type === 'expense' ? 'Expense' : 'Income'} saved`,
+            ? t('Transfer saved')
+            : form.type === 'expense'
+              ? t('Expense saved')
+              : t('Income saved'),
       );
       if (addAnother) {
         setForm((f) => ({
@@ -388,18 +395,18 @@ function RecordEditorDialog({
   const onDelete = async () => {
     if (!isEdit) return;
     const ok = await confirm({
-      title: 'Delete this record?',
+      title: t('Delete this record?'),
       description:
         state.record.type === 'transfer'
-          ? 'Both sides of the transfer will be removed. This cannot be undone.'
-          : 'This cannot be undone.',
-      confirmLabel: 'Delete',
+          ? t('Both sides of the transfer will be removed. This cannot be undone.')
+          : t('This cannot be undone.'),
+      confirmLabel: t('Delete'),
       destructive: true,
     });
     if (!ok) return;
     try {
       await remove.mutateAsync(state.record.id);
-      toast.success('Record deleted');
+      toast.success(t('Record deleted'));
       onClose();
     } catch (err) {
       toast.error(errorMessage(err));
@@ -415,10 +422,11 @@ function RecordEditorDialog({
 
   if (accounts.length === 0) {
     return (
-      <DialogContent title="Add record" size="md">
+      <DialogContent title={t('Add record')} size="md">
         <p className="text-sm text-muted-foreground">
-          Create an account first (for example “Cash” or “Bank account”) – records always belong to
-          an account.
+          {t(
+            'Create an account first (for example “Cash” or “Bank account”) – records always belong to an account.',
+          )}
         </p>
         <div className="mt-5 flex justify-end">
           <Button
@@ -427,7 +435,7 @@ function RecordEditorDialog({
               window.location.assign('/accounts?new=1');
             }}
           >
-            Create an account
+            {t('Create an account')}
           </Button>
         </div>
       </DialogContent>
@@ -436,7 +444,7 @@ function RecordEditorDialog({
 
   return (
     <DialogContent
-      title={picking ? 'Choose category' : isEdit ? 'Edit record' : 'Add record'}
+      title={picking ? t('Choose category') : isEdit ? t('Edit record') : t('Add record')}
       size="md"
       onOpenAutoFocus={(e) => {
         e.preventDefault();
@@ -463,7 +471,7 @@ function RecordEditorDialog({
         >
           {!isEdit && !form.amount && suggestions.length > 0 && (
             <div>
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Quick add</p>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('Quick add')}</p>
               <div className="scrollbar-thin -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
                 {suggestions
                   .filter((sg) => accounts.some((a) => a.id === sg.accountId))
@@ -511,7 +519,7 @@ function RecordEditorDialog({
 
           <Segmented<RecordType>
             value={form.type}
-            onChange={(t) => setForm((f) => ({ ...f, type: t }))}
+            onChange={(v) => setForm((f) => ({ ...f, type: v }))}
             className="w-full"
             options={[
               {
@@ -545,7 +553,7 @@ function RecordEditorDialog({
 
           <div className="rounded-2xl bg-muted/60 px-4 py-3">
             <label htmlFor="amount" className="text-xs font-medium text-muted-foreground">
-              {form.type === 'transfer' ? 'Amount sent' : 'Amount'}
+              {form.type === 'transfer' ? t('Amount sent') : t('Amount')}
             </label>
             <div className="flex items-baseline gap-2">
               <span className={cn('text-3xl font-semibold', typeColor)}>
@@ -570,7 +578,7 @@ function RecordEditorDialog({
                 </span>
               ) : (
                 <select
-                  aria-label="Currency paid in"
+                  aria-label={t('Currency paid in')}
                   value={payCurrency ?? currency}
                   onChange={(e) =>
                     setPayCurrency(e.target.value === currency ? null : e.target.value)
@@ -589,8 +597,14 @@ function RecordEditorDialog({
             {foreign && (
               <p className="mt-1 text-xs text-muted-foreground">
                 {foreignRateKnown
-                  ? `Paid in ${payCurrency} · ≈ ${money(parsedAmount ?? 0, currency)} on ${account?.name ?? 'the account'}`
-                  : `No exchange rate for ${payCurrency} yet – add it in Settings.`}
+                  ? t('Paid in {currency} · ≈ {amount} on {account}', {
+                      currency: payCurrency ?? '',
+                      amount: money(parsedAmount ?? 0, currency),
+                      account: account?.name ?? t('the account'),
+                    })
+                  : t('No exchange rate for {currency} yet – add it in Settings.', {
+                      currency: payCurrency ?? '',
+                    })}
               </p>
             )}
             {!foreign && expressionPreview && (
@@ -600,7 +614,7 @@ function RecordEditorDialog({
 
           {form.type === 'transfer' ? (
             <div className="grid gap-3">
-              <Field label="From account" htmlFor="from">
+              <Field label={t('From account')} htmlFor="from">
                 <Select
                   id="from"
                   value={form.accountId}
@@ -618,13 +632,13 @@ function RecordEditorDialog({
                   <ArrowDown className="size-4" />
                 </span>
               </div>
-              <Field label="To account" htmlFor="to">
+              <Field label={t('To account')} htmlFor="to">
                 <Select
                   id="to"
                   value={form.toAccountId}
                   onChange={(e) => set('toAccountId', e.target.value)}
                 >
-                  <option value="">Choose account…</option>
+                  <option value="">{t('Choose account…')}</option>
                   {activeAccounts
                     .filter((a) => a.id !== form.accountId)
                     .map((a) => (
@@ -636,9 +650,11 @@ function RecordEditorDialog({
               </Field>
               {crossCurrency && (
                 <Field
-                  label={`Amount received (${toCurrency})`}
+                  label={t('Amount received ({currency})', { currency: toCurrency })}
                   htmlFor="toAmount"
-                  hint="Suggested from your exchange rates – adjust it to what you actually received."
+                  hint={t(
+                    'Suggested from your exchange rates – adjust it to what you actually received.',
+                  )}
                 >
                   <Input
                     id="toAmount"
@@ -653,7 +669,7 @@ function RecordEditorDialog({
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Account" htmlFor="account" className="sm:col-span-2">
+              <Field label={t('Account')} htmlFor="account" className="sm:col-span-2">
                 <Select
                   id="account"
                   value={form.accountId}
@@ -666,14 +682,14 @@ function RecordEditorDialog({
                   ))}
                 </Select>
               </Field>
-              <Field label="Category" className="sm:col-span-2">
+              <Field label={t('Category')} className="sm:col-span-2">
                 <CategoryButton value={form.categoryId} onClick={() => setPicking(true)} />
               </Field>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Date" htmlFor="date">
+            <Field label={t('Date')} htmlFor="date">
               <Input
                 id="date"
                 type="date"
@@ -682,7 +698,7 @@ function RecordEditorDialog({
                 required
               />
             </Field>
-            <Field label="Time" htmlFor="time">
+            <Field label={t('Time')} htmlFor="time">
               <Input
                 id="time"
                 type="time"
@@ -693,13 +709,15 @@ function RecordEditorDialog({
           </div>
 
           {form.type !== 'transfer' && (
-            <Field label={form.type === 'income' ? 'Payer' : 'Payee'} htmlFor="payee">
+            <Field label={form.type === 'income' ? t('Payer') : t('Payee')} htmlFor="payee">
               <Input
                 id="payee"
                 list="payee-options"
                 value={form.payee}
                 onChange={(e) => set('payee', e.target.value)}
-                placeholder={form.type === 'income' ? 'Who paid you?' : 'Shop, company or person'}
+                placeholder={
+                  form.type === 'income' ? t('Who paid you?') : t('Shop, company or person')
+                }
                 maxLength={120}
               />
               <datalist id="payee-options">
@@ -710,19 +728,19 @@ function RecordEditorDialog({
             </Field>
           )}
 
-          <Field label="Note" htmlFor="note">
+          <Field label={t('Note')} htmlFor="note">
             <Textarea
               id="note"
               value={form.note}
               onChange={(e) => set('note', e.target.value)}
-              placeholder="What was it for?"
+              placeholder={t('What was it for?')}
               maxLength={500}
               rows={2}
             />
           </Field>
 
           {labels.length > 0 && (
-            <Field label="Labels">
+            <Field label={t('Labels')}>
               <div className="flex flex-wrap gap-1.5">
                 {labels.map((l) => {
                   const active = form.labelIds.includes(l.id);
@@ -771,10 +789,10 @@ function RecordEditorDialog({
                   loading={remove.isPending}
                   className="sm:mr-auto"
                 >
-                  <Trash2 /> Delete
+                  <Trash2 /> {t('Delete')}
                 </Button>
                 <Button variant="outline" onClick={duplicate}>
-                  <Copy /> Duplicate
+                  <Copy /> {t('Duplicate')}
                 </Button>
               </>
             )}
@@ -785,11 +803,11 @@ function RecordEditorDialog({
                 disabled={save.isPending}
                 className="sm:mr-auto"
               >
-                Save & add another
+                {t('Save & add another')}
               </Button>
             )}
             <Button type="submit" loading={save.isPending} className="sm:min-w-28">
-              {isEdit ? 'Save changes' : 'Save'}
+              {isEdit ? t('Save changes') : t('Save')}
             </Button>
           </div>
         </form>

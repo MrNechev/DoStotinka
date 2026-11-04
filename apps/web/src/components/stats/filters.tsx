@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 import { Checkbox, Segmented } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import {
   comparisonRange,
   isoDay,
@@ -121,7 +122,7 @@ export function PeriodPicker({
         <Button
           variant="outline"
           size="icon"
-          aria-label="Previous period"
+          aria-label={t('Previous period')}
           onClick={() => setPeriod({ ...period, offset: period.offset - 1 })}
         >
           <ChevronLeft />
@@ -148,11 +149,11 @@ export function PeriodPicker({
               >
                 <span className={cn(period.preset === p.id && 'font-semibold')}>
                   {p.id === 'week'
-                    ? 'This week'
+                    ? t('This week')
                     : p.id === 'month'
-                      ? 'This month'
+                      ? t('This month')
                       : p.id === 'year'
-                        ? 'This year'
+                        ? t('This year')
                         : p.label}
                 </span>
                 {period.preset === p.id && (
@@ -162,7 +163,7 @@ export function PeriodPicker({
             ))}
           </div>
           <div className="border-t border-border p-3">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">Custom range</p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">{t('Custom range')}</p>
             <div className="grid gap-2">
               <Input
                 type="date"
@@ -182,7 +183,7 @@ export function PeriodPicker({
                   setOpen(false);
                 }}
               >
-                Apply range
+                {t('Apply range')}
               </Button>
             </div>
           </div>
@@ -192,7 +193,7 @@ export function PeriodPicker({
         <Button
           variant="outline"
           size="icon"
-          aria-label="Next period"
+          aria-label={t('Next period')}
           disabled={period.offset >= 0}
           onClick={() => setPeriod({ ...period, offset: period.offset + 1 })}
         >
@@ -215,7 +216,7 @@ export function AccountFilter({
   const selected = new Set(accountIds);
   const label =
     accountIds.length === 0
-      ? 'All accounts'
+      ? t('All accounts')
       : accountIds.length === 1
         ? (accounts.find((a) => a.id === accountIds[0])?.name ?? '1 account')
         : `${accountIds.length} accounts`;
@@ -238,7 +239,7 @@ export function AccountFilter({
         <div className="max-h-80 overflow-y-auto p-1">
           <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-sm hover:bg-muted">
             <Checkbox checked={accountIds.length === 0} onCheckedChange={() => setAccountIds([])} />
-            <span className="font-medium">All accounts</span>
+            <span className="font-medium">{t('All accounts')}</span>
           </label>
           <div className="my-1 h-px bg-border" />
           {accounts.map((a) => (
@@ -256,7 +257,7 @@ export function AccountFilter({
               />
               <span className="min-w-0 flex-1 truncate">{a.name}</span>
               {a.excludeFromStats && (
-                <span className="text-[10px] text-muted-foreground">excluded</span>
+                <span className="text-[10px] text-muted-foreground">{t('excluded')}</span>
               )}
               <span className="text-xs text-muted-foreground">{a.currency}</span>
             </label>
@@ -264,7 +265,7 @@ export function AccountFilter({
         </div>
         {accounts.some((a) => a.excludeFromStats) && (
           <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-            “All accounts” leaves out accounts marked as excluded from statistics.
+            {t('“All accounts” leaves out accounts marked as excluded from statistics.')}
           </p>
         )}
       </PopoverContent>
@@ -279,9 +280,9 @@ export function IntervalToggle({ filters }: { filters: StatsFilters }) {
       value={filters.interval}
       onChange={(i) => filters.setInterval(i === filters.resolved.interval ? null : i)}
       options={[
-        { value: 'day', label: 'Day' },
-        { value: 'week', label: 'Week' },
-        { value: 'month', label: 'Month' },
+        { value: 'day', label: t('Day') },
+        { value: 'week', label: t('Week') },
+        { value: 'month', label: t('Month') },
       ]}
     />
   );

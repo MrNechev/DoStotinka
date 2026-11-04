@@ -45,6 +45,21 @@ pnpm dev
 - Keep the UI simple. Slavotax exists because other budget apps are overloaded – new features should
   stay out of the way of the everyday flow (add a record, look at statistics).
 
+## Translations
+
+The web app is translated with a tiny gettext-style helper (`apps/web/src/i18n`): the English text
+is the key, e.g. `t('Add record')`, `t('Due in {n} days', { n })` or
+`tn(n, '{n} record', '{n} records')`. To add a language:
+
+1. Copy `apps/web/src/i18n/bg.ts` to a new file (e.g. `de.ts`) and translate the values – keep the
+   `{placeholders}` unchanged.
+2. Register it in `apps/web/src/i18n/index.ts` (`LANGUAGES`, `dictionaries` and the `date-fns`
+   locale).
+3. Run `pnpm --filter @slavotax/web test` – it fails when a UI string or a default category has no
+   translation, or when placeholders do not match.
+
+When you add UI text, wrap it in `t()` and add the Bulgarian translation to `bg.ts`.
+
 ## Commit messages
 
 Use short, imperative subject lines (“Add CSV import”, “Fix transfer editing”). Reference issues in

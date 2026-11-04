@@ -1,5 +1,5 @@
 import type { PlannedPayment, UpcomingOccurrence } from '@slavotax/shared';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { Check, SkipForward } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -9,6 +9,8 @@ import { useRecordLookups } from '@/components/records/record-list';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Badge, EmptyState, Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { dueLabel, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { PayDialog } from './pay-dialog';
@@ -45,8 +47,8 @@ export function UpcomingList({ days = 14, limit }: { days?: number; limit?: numb
   if (!visible.length) {
     return (
       <EmptyState
-        title="Nothing due soon"
-        description={`No planned payments in the next ${days} days.`}
+        title={t('Nothing due soon')}
+        description={t('No planned payments in the next {days} days.', { days })}
         className="py-8"
       />
     );
@@ -74,7 +76,7 @@ export function UpcomingList({ days = 14, limit }: { days?: number; limit?: numb
                     o.overdue ? 'font-medium text-expense' : 'text-muted-foreground',
                   )}
                 >
-                  {format(parseISO(o.dueDate), 'EEE, d MMM')} · {dueLabel(o.dueDate)}
+                  {fmt(parseISO(o.dueDate), 'EEE, d MMM')} · {dueLabel(o.dueDate)}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -97,10 +99,10 @@ export function UpcomingList({ days = 14, limit }: { days?: number; limit?: numb
                     <Button
                       size="xs"
                       variant="ghost"
-                      title="Skip this occurrence"
+                      title={t('Skip this occurrence')}
                       onClick={() =>
                         skip.mutate(p.id, {
-                          onSuccess: () => toast.success(`Skipped ${p.name}`),
+                          onSuccess: () => toast.success(t('Skipped {name}', { name: p.name })),
                           onError: (e) => toast.error(errorMessage(e)),
                         })
                       }
@@ -112,11 +114,11 @@ export function UpcomingList({ days = 14, limit }: { days?: number; limit?: numb
                       variant={o.overdue ? 'default' : 'secondary'}
                       onClick={() => setPaying({ plan: p, due: o.dueDate })}
                     >
-                      <Check /> Paid
+                      <Check /> {t('Paid')}
                     </Button>
                   </span>
                 ) : (
-                  <Badge>later</Badge>
+                  <Badge>{t('later')}</Badge>
                 )}
               </div>
             </li>

@@ -1,6 +1,5 @@
 import type { AdminSettings, AdminUser } from '@slavotax/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow, parseISO } from 'date-fns';
 import { KeyRound, MoreHorizontal, Shield, ShieldOff, Trash2, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -21,6 +20,8 @@ import {
   Skeleton,
   Switch,
 } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { ago } from '@/lib/date';
 import { plural } from '@/lib/format';
 
 const adminKeys = { users: ['admin', 'users'] as const, settings: ['admin', 'settings'] as const };
@@ -31,7 +32,7 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
   const create = useMutation({
     mutationFn: () => api('/admin/users', { method: 'POST', body: form }),
     onSuccess: () => {
-      toast.success('User created – share the password with them');
+      toast.success(t('User created – share the password with them'));
       void qc.invalidateQueries({ queryKey: adminKeys.users });
       onClose();
     },
@@ -41,8 +42,8 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="sm"
-        title="Add user"
-        description="Create an account for a family member or friend."
+        title={t('Add user')}
+        description={t('Create an account for a family member or friend.')}
       >
         <form
           className="grid gap-4"
@@ -51,7 +52,7 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
             create.mutate();
           }}
         >
-          <Field label="Name" htmlFor="nu-name">
+          <Field label={t('Name')} htmlFor="nu-name">
             <Input
               id="nu-name"
               value={form.name}
@@ -60,7 +61,7 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
               autoFocus
             />
           </Field>
-          <Field label="E-mail" htmlFor="nu-email">
+          <Field label={t('E-mail')} htmlFor="nu-email">
             <Input
               id="nu-email"
               type="email"
@@ -70,9 +71,9 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
             />
           </Field>
           <Field
-            label="Initial password"
+            label={t('Initial password')}
             htmlFor="nu-pw"
-            hint="They can change it in Settings after logging in."
+            hint={t('They can change it in Settings after logging in.')}
           >
             <Input
               id="nu-pw"
@@ -88,14 +89,14 @@ function CreateUserDialog({ onClose }: { onClose: () => void }) {
               checked={form.isAdmin}
               onCheckedChange={(v) => setForm({ ...form, isAdmin: v === true })}
             />
-            Administrator
+            {t('Administrator')}
           </label>
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={create.isPending}>
-              Create user
+              {t('Create user')}
             </Button>
           </DialogFooter>
         </form>
@@ -109,7 +110,7 @@ function ResetPasswordDialog({ user, onClose }: { user: AdminUser; onClose: () =
   const reset = useMutation({
     mutationFn: () => api(`/admin/users/${user.id}`, { method: 'PATCH', body: { password } }),
     onSuccess: () => {
-      toast.success(`Password of ${user.name} changed`);
+      toast.success(t('Password of {name} changed', { name: user.name }));
       onClose();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -118,8 +119,8 @@ function ResetPasswordDialog({ user, onClose }: { user: AdminUser; onClose: () =
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="sm"
-        title={`Reset password of ${user.name}`}
-        description="All their sessions will be signed out."
+        title={t('Reset password of {name}', { name: user.name })}
+        description={t('All their sessions will be signed out.')}
       >
         <form
           className="grid gap-4"
@@ -128,7 +129,7 @@ function ResetPasswordDialog({ user, onClose }: { user: AdminUser; onClose: () =
             reset.mutate();
           }}
         >
-          <Field label="New password" htmlFor="rp-pw">
+          <Field label={t('New password')} htmlFor="rp-pw">
             <Input
               id="rp-pw"
               type="text"
@@ -141,10 +142,10 @@ function ResetPasswordDialog({ user, onClose }: { user: AdminUser; onClose: () =
           </Field>
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={reset.isPending}>
-              Set password
+              {t('Set password')}
             </Button>
           </DialogFooter>
         </form>
@@ -175,7 +176,7 @@ export default function AdminPage() {
     onSuccess: (data) => {
       qc.setQueryData(adminKeys.settings, data);
       void qc.invalidateQueries({ queryKey: qk.config });
-      toast.success(data.registrationEnabled ? 'Sign-ups are open' : 'Sign-ups are closed');
+      toast.success(data.registrationEnabled ? t('Sign-ups are open') : t('Sign-ups are closed'));
     },
   });
   const updateUser = useMutation({
@@ -187,7 +188,7 @@ export default function AdminPage() {
   const deleteUser = useMutation({
     mutationFn: (id: string) => api(`/admin/users/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      toast.success('User deleted');
+      toast.success(t('User deleted'));
       void qc.invalidateQueries({ queryKey: adminKeys.users });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -197,8 +198,8 @@ export default function AdminPage() {
     return (
       <EmptyState
         icon={<Shield />}
-        title="Administrators only"
-        description="Ask the administrator of this server for access."
+        title={t('Administrators only')}
+        description={t('Ask the administrator of this server for access.')}
       />
     );
   }
@@ -206,22 +207,26 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
-        title="Administration"
-        description="Manage the users and settings of this Slavotax server."
+        title={t('Administration')}
+        description={t('Manage the users and settings of this Slavotax server.')}
       />
       <div className="grid gap-6">
         <Card>
           <CardHeader
-            title="Server"
+            title={t('Server')}
             description={settings.data ? `Slavotax ${settings.data.version}` : undefined}
           />
           <div className="grid gap-3 px-5 pb-5 pt-2">
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border p-3">
               <span>
-                <span className="block text-sm font-medium">Allow new sign-ups</span>
+                <span className="block text-sm font-medium">{t('Allow new sign-ups')}</span>
                 <span className="block text-xs text-muted-foreground">
-                  When off, only administrators can create accounts. Default from
-                  ALLOW_REGISTRATION: {settings.data?.registrationDefault ? 'on' : 'off'}.
+                  {t(
+                    'When off, only administrators can create accounts. Default from ALLOW_REGISTRATION: {value}.',
+                    {
+                      value: settings.data?.registrationDefault ? t('on') : t('off'),
+                    },
+                  )}
                 </span>
               </span>
               <Switch
@@ -231,21 +236,22 @@ export default function AdminPage() {
               />
             </label>
             <p className="text-xs text-muted-foreground">
-              Demo account: {settings.data?.demoEnabled ? 'enabled' : 'disabled'} (change with
-              DEMO_ENABLED).
+              {t('Demo account: {value} (change with DEMO_ENABLED).', {
+                value: settings.data?.demoEnabled ? t('enabled') : t('disabled'),
+              })}
             </p>
           </div>
         </Card>
 
         <Card className="overflow-hidden">
           <CardHeader
-            title="Users"
+            title={t('Users')}
             description={
               users.data ? plural(users.data.filter((u) => !u.isDemo).length, 'user') : undefined
             }
             action={
               <Button size="sm" onClick={() => setCreating(true)}>
-                <UserPlus /> Add user
+                <UserPlus /> {t('Add user')}
               </Button>
             }
           />
@@ -264,34 +270,34 @@ export default function AdminPage() {
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2">
                       <span className="truncate font-medium">{u.name}</span>
-                      {u.id === me.id && <Badge tone="success">you</Badge>}
-                      {u.isAdmin && <Badge tone="info">admin</Badge>}
-                      {u.isDemo && <Badge tone="warning">demo</Badge>}
+                      {u.id === me.id && <Badge tone="success">{t('you')}</Badge>}
+                      {u.isAdmin && <Badge tone="info">{t('admin')}</Badge>}
+                      {u.isDemo && <Badge tone="warning">{t('demo')}</Badge>}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {u.email} · {plural(u.accountCount, 'account')} ·{' '}
                       {plural(u.recordCount, 'record')} ·{' '}
                       {u.lastActiveAt
-                        ? `active ${formatDistanceToNow(parseISO(u.lastActiveAt), { addSuffix: true })}`
-                        : 'never logged in'}
+                        ? t('active {time}', { time: ago(u.lastActiveAt) })
+                        : t('never logged in')}
                     </p>
                   </div>
                   {!u.isDemo && u.id !== me.id && (
                     <Menu>
                       <MenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm" aria-label="Actions">
+                        <Button variant="ghost" size="icon-sm" aria-label={t('Actions')}>
                           <MoreHorizontal />
                         </Button>
                       </MenuTrigger>
                       <MenuContent>
                         <MenuItem icon={<KeyRound />} onSelect={() => setResetting(u)}>
-                          Reset password
+                          {t('Reset password')}
                         </MenuItem>
                         <MenuItem
                           icon={u.isAdmin ? <ShieldOff /> : <Shield />}
                           onSelect={() => updateUser.mutate({ id: u.id, isAdmin: !u.isAdmin })}
                         >
-                          {u.isAdmin ? 'Remove admin rights' : 'Make administrator'}
+                          {u.isAdmin ? t('Remove admin rights') : t('Make administrator')}
                         </MenuItem>
                         <MenuSeparator />
                         <MenuItem
@@ -299,15 +305,21 @@ export default function AdminPage() {
                           destructive
                           onSelect={async () => {
                             const ok = await confirm({
-                              title: `Delete ${u.name}?`,
-                              description: `All ${u.recordCount} records, accounts and settings of ${u.email} will be deleted permanently.`,
-                              confirmLabel: 'Delete user',
+                              title: t('Delete {name}?', { name: u.name }),
+                              description: t(
+                                'All {n} records, accounts and settings of {email} will be deleted permanently.',
+                                {
+                                  n: u.recordCount,
+                                  email: u.email,
+                                },
+                              ),
+                              confirmLabel: t('Delete user'),
                               destructive: true,
                             });
                             if (ok) deleteUser.mutate(u.id);
                           }}
                         >
-                          Delete user
+                          {t('Delete user')}
                         </MenuItem>
                       </MenuContent>
                     </Menu>

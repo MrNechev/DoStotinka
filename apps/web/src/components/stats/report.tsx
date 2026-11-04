@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { type StatsScope, useCategories, useTimeseries } from '@/api/queries';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { money } from '@/lib/format';
 import { bucketLabel } from '@/lib/period';
@@ -111,7 +112,7 @@ function Section({
   const max = Math.max(0, ...rows.flatMap((r) => r.values));
   const totals = (data?.points ?? []).map((p) => p.total);
   const grand = totals.reduce((a, b) => a + b, 0);
-  const label = type === 'expense' ? 'Expenses' : 'Income';
+  const label = type === 'expense' ? t('Expenses') : t('Income');
 
   return (
     <>
@@ -157,7 +158,7 @@ function Section({
                     size="xs"
                   />
                   <span className="truncate font-medium">
-                    {r.id === 'uncategorized' ? 'Uncategorized' : index.nameOf(r.id)}
+                    {r.id === 'uncategorized' ? t('Uncategorized') : index.nameOf(r.id)}
                   </span>
                 </button>
               </td>
@@ -245,14 +246,16 @@ export function CategoryReport({ scope, interval }: { scope: StatsScope; interva
       <table className="w-full min-w-max border-collapse">
         <thead>
           <tr className="text-xs text-muted-foreground">
-            <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left font-medium">Category</th>
+            <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left font-medium">
+              {t('Category')}
+            </th>
             {points.map((p) => (
               <th key={p.date} className="whitespace-nowrap px-3 py-2 text-right font-medium">
                 {bucketLabel(p.date, interval)}
               </th>
             ))}
-            <th className="px-3 py-2 text-right font-medium">Total</th>
-            <th className="px-3 py-2 text-right font-medium">Average</th>
+            <th className="px-3 py-2 text-right font-medium">{t('Total')}</th>
+            <th className="px-3 py-2 text-right font-medium">{t('Average')}</th>
           </tr>
         </thead>
         <tbody>
@@ -271,7 +274,7 @@ export function CategoryReport({ scope, interval }: { scope: StatsScope; interva
             data={expenses.data}
           />
           <tr className="border-t-2 border-border bg-muted/40 font-semibold">
-            <td className="sticky left-0 z-10 bg-muted px-3 py-2.5 text-sm">Cash flow</td>
+            <td className="sticky left-0 z-10 bg-muted px-3 py-2.5 text-sm">{t('Cash flow')}</td>
             {net.map((v, i) => (
               <td
                 key={i}

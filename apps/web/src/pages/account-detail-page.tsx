@@ -21,6 +21,7 @@ import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, CardHeader, EmptyState, Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -40,10 +41,10 @@ export default function AccountDetailPage() {
   if (!account) {
     return (
       <EmptyState
-        title="Account not found"
+        title={t('Account not found')}
         action={
           <Button asChild variant="outline">
-            <Link to="/accounts">Back to accounts</Link>
+            <Link to="/accounts">{t('Back to accounts')}</Link>
           </Button>
         }
       />
@@ -52,15 +53,18 @@ export default function AccountDetailPage() {
 
   const onDelete = async () => {
     const ok = await confirm({
-      title: `Delete “${account.name}”?`,
-      description: `This permanently deletes the account and its ${account.recordCount} records. Transfers to other accounts keep their other side. Consider archiving instead.`,
-      confirmLabel: 'Delete account',
+      title: t('Delete “{name}”?', { name: account.name }),
+      description: t(
+        'This permanently deletes the account and its {n} records. Transfers to other accounts keep their other side. Consider archiving instead.',
+        { n: account.recordCount },
+      ),
+      confirmLabel: t('Delete account'),
       destructive: true,
     });
     if (!ok) return;
     try {
       await remove.mutateAsync(account.id);
-      toast.success('Account deleted');
+      toast.success(t('Account deleted'));
       navigate('/accounts');
     } catch (err) {
       toast.error(errorMessage(err));
@@ -76,7 +80,7 @@ export default function AccountDetailPage() {
           to="/accounts"
           className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-4" /> Accounts
+          <ArrowLeft className="size-4" /> {t('Accounts')}
         </Link>
         <Card className="overflow-hidden">
           <div className="h-1.5" style={{ backgroundColor: account.color }} />
@@ -85,16 +89,16 @@ export default function AccountDetailPage() {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="truncate text-xl font-semibold">{account.name}</h1>
-                {account.archived && <Badge>archived</Badge>}
-                {account.excludeFromStats && <Badge>excluded from statistics</Badge>}
+                {account.archived && <Badge>{t('archived')}</Badge>}
+                {account.excludeFromStats && <Badge>{t('excluded from statistics')}</Badge>}
               </div>
               <p className="text-sm text-muted-foreground">
-                {ACCOUNT_TYPE_LABELS[account.type]} · {account.currency}
+                {t(ACCOUNT_TYPE_LABELS[account.type])} · {account.currency}
                 {account.note ? ` · ${account.note}` : ''}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Current balance</p>
+              <p className="text-xs text-muted-foreground">{t('Current balance')}</p>
               <p
                 className={cn(
                   'tabular text-2xl font-semibold',
@@ -109,24 +113,24 @@ export default function AccountDetailPage() {
                 className="flex-1 sm:flex-none"
                 onClick={() => openNew({ accountId: account.id })}
               >
-                <Plus /> Add record
+                <Plus /> {t('Add record')}
               </Button>
               <Menu>
                 <MenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="More actions">
+                  <Button variant="outline" size="icon" aria-label={t('More actions')}>
                     <MoreHorizontal />
                   </Button>
                 </MenuTrigger>
                 <MenuContent>
                   <MenuItem icon={<Pencil />} onSelect={() => setDialog('edit')}>
-                    Edit account
+                    {t('Edit account')}
                   </MenuItem>
                   <MenuItem icon={<Scale />} onSelect={() => setDialog('adjust')}>
-                    Adjust balance
+                    {t('Adjust balance')}
                   </MenuItem>
                   <MenuSeparator />
                   <MenuItem icon={<Trash2 />} destructive onSelect={onDelete}>
-                    Delete account
+                    {t('Delete account')}
                   </MenuItem>
                 </MenuContent>
               </Menu>
@@ -144,13 +148,13 @@ export default function AccountDetailPage() {
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
         <Card>
-          <CardHeader title="Balance" description={filters.resolved.label} />
+          <CardHeader title={t('Balance')} description={filters.resolved.label} />
           <div className="px-3 pb-4">
             <BalanceChart scope={filters.scope} interval={filters.interval} color={account.color} />
           </div>
         </Card>
         <Card>
-          <CardHeader title="Cash flow" description={filters.resolved.label} />
+          <CardHeader title={t('Cash flow')} description={filters.resolved.label} />
           <div className="px-3 pb-4">
             <CashflowChart scope={filters.scope} interval={filters.interval} height={260} />
           </div>
@@ -163,7 +167,7 @@ export default function AccountDetailPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <CardHeader title="Records" description={filters.resolved.label} />
+        <CardHeader title={t('Records')} description={filters.resolved.label} />
         <RecordList
           records={items}
           isLoading={records.isLoading}
@@ -171,7 +175,7 @@ export default function AccountDetailPage() {
           loadingMore={records.isFetchingNextPage}
           onLoadMore={() => void records.fetchNextPage()}
           showAccount={false}
-          emptyTitle="No records in this period"
+          emptyTitle={t('No records in this period')}
         />
       </Card>
 

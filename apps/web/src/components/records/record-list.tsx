@@ -1,12 +1,14 @@
 import type { Account, Label, RecordItem } from '@slavotax/shared';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { CalendarClock, Check, Inbox } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useAccounts, useCategories, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
+import { fmt } from '@/lib/date';
 import { dayLabel, money, timeLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useRecordEditor } from './record-editor';
@@ -58,8 +60,8 @@ export function RecordRow({
   const cat = lookups.categories;
   const title = isTransfer
     ? record.amount < 0
-      ? `Transfer to ${counterpart?.name ?? 'deleted account'}`
-      : `Transfer from ${counterpart?.name ?? 'deleted account'}`
+      ? t('Transfer to {name}', { name: counterpart?.name ?? t('deleted account') })
+      : t('Transfer from {name}', { name: counterpart?.name ?? t('deleted account') })
     : cat.nameOf(record.categoryId);
   const parentName =
     !isTransfer && record.categoryId ? cat.parentOf(record.categoryId)?.name : undefined;
@@ -108,7 +110,7 @@ export function RecordRow({
           {record.plannedPaymentId && (
             <CalendarClock
               className="size-3.5 shrink-0 text-muted-foreground"
-              aria-label="From a planned payment"
+              aria-label={t('From a planned payment')}
             />
           )}
         </span>
@@ -146,7 +148,7 @@ export function RecordRow({
           {money(record.amount, record.currency, { sign: isTransfer ? 'auto' : 'exceptZero' })}
         </span>
         <span className="block text-xs text-muted-foreground">
-          {showDate ? format(parseISO(record.occurredAt), 'd MMM') : timeLabel(record.occurredAt)}
+          {showDate ? fmt(parseISO(record.occurredAt), 'd MMM') : timeLabel(record.occurredAt)}
         </span>
       </span>
     </button>
@@ -161,7 +163,7 @@ export function RecordList({
   onLoadMore,
   loadingMore,
   showAccount = true,
-  emptyTitle = 'No records yet',
+  emptyTitle = t('No records yet'),
   emptyDescription,
   emptyAction,
   selection,
@@ -181,7 +183,7 @@ export function RecordList({
   const groups = useMemo(() => {
     const map = new Map<string, RecordItem[]>();
     for (const r of records) {
-      const day = format(parseISO(r.occurredAt), 'yyyy-MM-dd');
+      const day = fmt(parseISO(r.occurredAt), 'yyyy-MM-dd');
       const list = map.get(day) ?? [];
       list.push(r);
       map.set(day, list);
@@ -281,7 +283,7 @@ function LoadMore({ onLoadMore, loading }: { onLoadMore?: () => void; loading?: 
   return (
     <div ref={ref} className="flex justify-center p-3">
       <Button variant="outline" onClick={onLoadMore} loading={loading}>
-        Load more
+        {t('Load more')}
       </Button>
     </div>
   );

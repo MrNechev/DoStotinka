@@ -27,6 +27,7 @@ import {
 } from '@/api/queries';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, Skeleton } from '@/components/ui/misc';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex, shades, UNCATEGORIZED_COLOR } from '@/lib/categories';
 import { changeRatio, money, moneyAxis, percent, plural } from '@/lib/format';
 import { bucketLabel } from '@/lib/period';
@@ -155,7 +156,9 @@ function Delta({
 }) {
   const ratio = changeRatio(current, previous);
   if (ratio === null || !Number.isFinite(ratio)) {
-    return <span className="text-xs text-muted-foreground">No data for the previous period</span>;
+    return (
+      <span className="text-xs text-muted-foreground">{t('No data for the previous period')}</span>
+    );
   }
   const up = ratio >= 0;
   const good = up === upIsGood;
@@ -169,7 +172,7 @@ function Delta({
       {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
       {percent(Math.abs(ratio))}
       <span className="ml-1 hidden font-normal text-muted-foreground sm:inline">
-        vs previous period
+        {t('vs previous period')}
       </span>
     </span>
   );
@@ -180,29 +183,31 @@ export function KpiTiles({ scope, className }: { scope: StatsScope; className?: 
   const tiles = data
     ? [
         {
-          label: 'Income',
+          label: t('Income'),
           value: money(data.income, data.currency),
           tone: 'text-income',
           delta: <Delta current={data.income} previous={data.previous.income} upIsGood />,
         },
         {
-          label: 'Expenses',
+          label: t('Expenses'),
           value: money(data.expense, data.currency),
           tone: 'text-expense',
           delta: <Delta current={data.expense} previous={data.previous.expense} upIsGood={false} />,
         },
         {
-          label: 'Cash flow',
+          label: t('Cash flow'),
           value: money(data.net, data.currency, { sign: 'exceptZero' }),
           tone: data.net >= 0 ? 'text-foreground' : 'text-expense',
           delta: (
             <span className="text-xs text-muted-foreground">
-              Previous: {money(data.previous.net, data.currency, { sign: 'exceptZero' })}
+              {t('Previous: {amount}', {
+                amount: money(data.previous.net, data.currency, { sign: 'exceptZero' }),
+              })}
             </span>
           ),
         },
         {
-          label: 'Average spending per day',
+          label: t('Average spending per day'),
           value: money(data.avgDailyExpense, data.currency),
           tone: 'text-foreground',
           delta: (
@@ -220,13 +225,15 @@ export function KpiTiles({ scope, className }: { scope: StatsScope; className?: 
         ? Array.from({ length: 4 }, (_, i) => (
             <Skeleton key={i} className="h-[104px] rounded-2xl" />
           ))
-        : tiles.map((t) => (
-            <Card key={t.label} className="px-4 py-3.5">
-              <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
-              <p className={cn('tabular mt-1 truncate text-xl font-semibold sm:text-2xl', t.tone)}>
-                {t.value}
+        : tiles.map((tile) => (
+            <Card key={tile.label} className="px-4 py-3.5">
+              <p className="text-xs font-medium text-muted-foreground">{tile.label}</p>
+              <p
+                className={cn('tabular mt-1 truncate text-xl font-semibold sm:text-2xl', tile.tone)}
+              >
+                {tile.value}
               </p>
-              <div className="mt-1 truncate">{t.delta}</div>
+              <div className="mt-1 truncate">{tile.delta}</div>
             </Card>
           ))}
     </div>
@@ -284,7 +291,9 @@ export function CategoryBreakdown({
         return {
           id: i.categoryId ?? 'uncategorized',
           categoryId: i.categoryId,
-          name: isParentItself ? `${c?.name ?? ''} (general)` : (c?.name ?? 'Uncategorized'),
+          name: isParentItself
+            ? t('{name} (general)', { name: c?.name ?? '' })
+            : (c?.name ?? t('Uncategorized')),
           icon: c?.icon ?? 'circle-help',
           color: parent
             ? (childShades[n] ?? OTHER_COLOR)
@@ -309,7 +318,7 @@ export function CategoryBreakdown({
       {
         id: '__other',
         categoryId: null,
-        name: `Other (${rest.length})`,
+        name: t('Other ({n})', { n: rest.length }),
         icon: 'shapes',
         color: OTHER_COLOR,
         amount: rest.reduce((a, s) => a + s.amount, 0),
@@ -340,18 +349,20 @@ export function CategoryBreakdown({
                 type="button"
                 onClick={() => setParentId(null)}
                 className="-ml-1 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Back to all categories"
+                aria-label={t('Back to all categories')}
               >
                 <ArrowLeft className="size-4" />
               </button>
               {parent.name}
             </span>
           ) : (
-            (title ?? (type === 'expense' ? 'Spending by category' : 'Income by category'))
+            (title ?? (type === 'expense' ? t('Spending by category') : t('Income by category')))
           )
         }
         description={
-          parent ? 'Subcategories' : (description ?? 'Click a category to see its subcategories')
+          parent
+            ? t('Subcategories')
+            : (description ?? t('Click a category to see its subcategories'))
         }
       />
       {isLoading ? (
@@ -361,7 +372,9 @@ export function CategoryBreakdown({
       ) : slices.length === 0 ? (
         <EmptyState
           icon={<ChartColumn />}
-          title={type === 'expense' ? 'No expenses in this period' : 'No income in this period'}
+          title={
+            type === 'expense' ? t('No expenses in this period') : t('No income in this period')
+          }
           className="py-10"
         />
       ) : (
@@ -411,8 +424,8 @@ export function CategoryBreakdown({
                 {activeSlice
                   ? activeSlice.name
                   : type === 'expense'
-                    ? 'Total spent'
-                    : 'Total received'}
+                    ? t('Total spent')
+                    : t('Total received')}
               </span>
               <span className="tabular text-lg font-semibold">
                 {money(activeSlice ? activeSlice.amount : total, currency)}
@@ -453,13 +466,12 @@ export function CategoryBreakdown({
                     </span>
                     {!compact && (
                       <span className="mt-0.5 flex justify-between text-[11px] text-muted-foreground">
-                        <span>
-                          {s.count} {s.count === 1 ? 'record' : 'records'}
-                        </span>
+                        <span>{tn(s.count, '{n} record', '{n} records')}</span>
                         {ratio !== null && Number.isFinite(ratio) && (
                           <span>
-                            {ratio >= 0 ? '+' : '−'}
-                            {percent(Math.abs(ratio))} vs previous
+                            {t('{change} vs previous', {
+                              change: `${ratio >= 0 ? '+' : '−'}${percent(Math.abs(ratio))}`,
+                            })}
                           </span>
                         )}
                       </span>
@@ -502,7 +514,7 @@ export function CategoryBreakdown({
                   onClick={() => setShowAll((v) => !v)}
                   className="w-full rounded-lg px-2 py-2 text-left text-sm font-medium text-primary hover:bg-muted"
                 >
-                  {showAll ? 'Show less' : `Show all ${slices.length} categories`}
+                  {showAll ? t('Show less') : t('Show all {n} categories', { n: slices.length })}
                 </button>
               </li>
             )}
@@ -554,7 +566,7 @@ export function CategoryTimeChart({
     // Colour follows the entity: keep the category's own colour (shades only inside one group).
     const s = head.map((k, i) => ({
       key: k,
-      name: k === 'uncategorized' ? 'Uncategorized' : index.nameOf(k),
+      name: k === 'uncategorized' ? t('Uncategorized') : index.nameOf(k),
       color:
         k === 'uncategorized'
           ? UNCATEGORIZED_COLOR
@@ -562,7 +574,7 @@ export function CategoryTimeChart({
             ? subShades[i]!
             : index.colorOf(k),
     }));
-    if (hasOther) s.push({ key: '__other', name: 'Other', color: OTHER_COLOR });
+    if (hasOther) s.push({ key: '__other', name: t('Other'), color: OTHER_COLOR });
     const order = s.map((x) => x.key);
     const r = data.points.map((p) => {
       const row: Record<string, number | string> = { date: p.date, total: p.total };
@@ -592,7 +604,7 @@ export function CategoryTimeChart({
     return (
       <EmptyState
         icon={<ChartColumn />}
-        title={type === 'expense' ? 'No spending in this period' : 'No income in this period'}
+        title={type === 'expense' ? t('No spending in this period') : t('No income in this period')}
         className="py-10"
       />
     );
@@ -644,7 +656,7 @@ export function CategoryTimeChart({
                     }))}
                     footer={
                       <span className="flex justify-between gap-3">
-                        <span className="text-muted-foreground">Total</span>
+                        <span className="text-muted-foreground">{t('Total')}</span>
                         <span className="tabular font-semibold">
                           {money(Number(row.total ?? 0), currency)}
                         </span>
@@ -747,20 +759,20 @@ export function CashflowChart({
                     rows={[
                       {
                         key: 'i',
-                        label: 'Income',
+                        label: t('Income'),
                         value: money(p.income, currency),
                         color: incomeColor,
                       },
                       {
                         key: 'e',
-                        label: 'Expenses',
+                        label: t('Expenses'),
                         value: money(p.expense, currency),
                         color: expenseColor,
                       },
                     ]}
                     footer={
                       <span className="flex justify-between gap-3">
-                        <span className="text-muted-foreground">Cash flow</span>
+                        <span className="text-muted-foreground">{t('Cash flow')}</span>
                         <span className={cn('tabular font-semibold', p.net < 0 && 'text-expense')}>
                           {money(p.net, currency, { sign: 'exceptZero' })}
                         </span>
@@ -788,8 +800,8 @@ export function CashflowChart({
         </ResponsiveContainer>
       </ChartFrame>
       <div className="mt-3 flex gap-4">
-        <LegendItem color={incomeColor} label="Income" />
-        <LegendItem color={expenseColor} label="Expenses" />
+        <LegendItem color={incomeColor} label={t('Income')} />
+        <LegendItem color={expenseColor} label={t('Expenses')} />
       </div>
     </div>
   );
@@ -849,7 +861,7 @@ export function BalanceChart({
               return (
                 <TooltipBox
                   title={bucketLabel(String(label), interval, true)}
-                  rows={[{ key: 'b', label: 'Balance', value: money(v, currency), color }]}
+                  rows={[{ key: 'b', label: t('Balance'), value: money(v, currency), color }]}
                 />
               );
             }}

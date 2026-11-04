@@ -1,4 +1,4 @@
-import { addDays, addMonths, format, parseISO } from 'date-fns';
+import { addDays, addMonths, parseISO } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useCategories } from '@/api/queries';
@@ -18,7 +18,9 @@ import {
 import { CategoryReport } from '@/components/stats/report';
 import { Select } from '@/components/ui/input';
 import { Card, CardHeader, PageHeader, Segmented } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
+import { fmt } from '@/lib/date';
 
 export default function StatisticsPage() {
   const filters = useStatsFilters('statistics', { preset: '30d', offset: 0 });
@@ -50,8 +52,8 @@ export default function StatisticsPage() {
   return (
     <div>
       <PageHeader
-        title="Statistics"
-        description="Understand where your money comes from and where it goes."
+        title={t('Statistics')}
+        description={t('Understand where your money comes from and where it goes.')}
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -65,19 +67,24 @@ export default function StatisticsPage() {
 
         <Card>
           <CardHeader
-            title={type === 'expense' ? 'Spending over time' : 'Income over time'}
-            description={`${filters.resolved.label} · per ${filters.interval}${categoryId ? ` · ${index.nameOf(categoryId)}` : ' · by category'} · click a bar to see its records`}
+            title={type === 'expense' ? t('Spending over time') : t('Income over time')}
+            description={[
+              filters.resolved.label,
+              t(`per ${filters.interval}`),
+              categoryId ? index.nameOf(categoryId) : t('by category'),
+              t('click a bar to see its records'),
+            ].join(' · ')}
             action={
               <Segmented<'expense' | 'income'>
                 size="sm"
                 value={type}
-                onChange={(t) => {
-                  setType(t);
+                onChange={(next) => {
+                  setType(next);
                   setCategoryId('');
                 }}
                 options={[
-                  { value: 'expense', label: 'Expenses' },
-                  { value: 'income', label: 'Income' },
+                  { value: 'expense', label: t('Expenses') },
+                  { value: 'income', label: t('Income') },
                 ]}
               />
             }
@@ -88,9 +95,9 @@ export default function StatisticsPage() {
               onChange={(e) => setCategoryId(e.target.value)}
               className="h-9"
               containerClassName="w-full sm:w-72"
-              aria-label="Category filter"
+              aria-label={t('Category filter')}
             >
-              <option value="">All categories</option>
+              <option value="">{t('All categories')}</option>
               {groups.map((g) => (
                 <optgroup key={g.id} label={g.name}>
                   <option value={g.id}>{g.name} – all</option>
@@ -123,8 +130,8 @@ export default function StatisticsPage() {
                       : addDays(addMonths(start, 1), -1);
                 const p = new URLSearchParams({
                   period: 'custom',
-                  from: format(start, 'yyyy-MM-dd'),
-                  to: format(end, 'yyyy-MM-dd'),
+                  from: fmt(start, 'yyyy-MM-dd'),
+                  to: fmt(end, 'yyyy-MM-dd'),
                   types: type,
                 });
                 if (filters.accountIds.length) p.set('accounts', filters.accountIds.join(','));
@@ -142,15 +149,15 @@ export default function StatisticsPage() {
 
         <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
           <Card>
-            <CardHeader title="Cash flow" description="Income vs expenses" />
+            <CardHeader title={t('Cash flow')} description={t('Income vs expenses')} />
             <div className="px-3 pb-4">
               <CashflowChart scope={filters.scope} interval={filters.interval} />
             </div>
           </Card>
           <Card>
             <CardHeader
-              title="Balance trend"
-              description="Total balance of the selected accounts"
+              title={t('Balance trend')}
+              description={t('Total balance of the selected accounts')}
             />
             <div className="px-3 pb-4">
               <BalanceChart scope={filters.scope} interval={filters.interval} height={280} />
@@ -159,8 +166,11 @@ export default function StatisticsPage() {
         </div>
         <Card className="overflow-hidden">
           <CardHeader
-            title="Report"
-            description={`Income and expenses per category and ${reportInterval} – click a category to see its subcategories`}
+            title={t('Report')}
+            description={t(
+              'Income and expenses per category and {interval} – click a category to see its subcategories',
+              { interval: t(reportInterval) },
+            )}
           />
           <CategoryReport scope={filters.scope} interval={reportInterval} />
         </Card>

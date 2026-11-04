@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { useAccounts, useBudgets, usePlanned, useRecords } from '@/api/queries';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { Card, CardHeader } from '@/components/ui/misc';
+import { t } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 function Step({
@@ -56,49 +57,52 @@ export function GettingStarted() {
   return (
     <Card>
       <CardHeader
-        title="Getting started"
-        description={`${steps.filter(Boolean).length} of ${steps.length} done – a few minutes to set up your budget`}
+        title={t('Getting started')}
+        description={t('{done} of {total} done – a few minutes to set up your budget', {
+          done: steps.filter(Boolean).length,
+          total: steps.length,
+        })}
       />
       <ul className="grid gap-0.5 px-2 pb-3">
         <Step
           done={steps[0]!}
           icon={<Wallet />}
-          title="Create your accounts"
-          text="Cash, bank account, savings … with their current balance."
-          action={<Link to="/accounts?new=1">Add account</Link>}
+          title={t('Create your accounts')}
+          text={t('Cash, bank account, savings … with their current balance.')}
+          action={<Link to="/accounts?new=1">{t('Add account')}</Link>}
         />
         <Step
           done={steps[1]!}
           icon={<Plus />}
-          title="Log your first expense"
-          text="Press “Add record” (or N on the keyboard) whenever you spend money."
+          title={t('Log your first expense')}
+          text={t('Press “Add record” (or N on the keyboard) whenever you spend money.')}
           action={
             <button type="button" onClick={() => openNew()} className="cursor-pointer">
-              Add record
+              {t('Add record')}
             </button>
           }
         />
         <Step
           done={steps[2]!}
           icon={<CalendarClock />}
-          title="Plan regular payments"
-          text="Rent, bills and subscriptions – never miss one again."
-          action={<Link to="/planned">Plan payment</Link>}
+          title={t('Plan regular payments')}
+          text={t('Rent, bills and subscriptions – never miss one again.')}
+          action={<Link to="/planned">{t('Plan payment')}</Link>}
         />
         <Step
           done={steps[3]!}
           icon={<Target />}
-          title="Set a budget"
-          text="For example 400 € a month for groceries."
-          action={<Link to="/budgets">Create budget</Link>}
+          title={t('Set a budget')}
+          text={t('For example 400 € a month for groceries.')}
+          action={<Link to="/budgets">{t('Create budget')}</Link>}
         />
         {!hasRecords && (
           <Step
             done={false}
             icon={<FileUp />}
-            title="Coming from another app?"
-            text="Import your history from a CSV export, e.g. from Wallet by BudgetBakers."
-            action={<Link to="/import">Import</Link>}
+            title={t('Coming from another app?')}
+            text={t('Import your history from a CSV export, e.g. from Wallet by BudgetBakers.')}
+            action={<Link to="/import">{t('Import')}</Link>}
           />
         )}
       </ul>

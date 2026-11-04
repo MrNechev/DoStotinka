@@ -5,6 +5,7 @@ import { ApiError, errorMessage } from '@/api/client';
 import { useRegister, useServerConfig } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/input';
+import { t } from '@/i18n';
 import { AuthLayout } from './auth-layout';
 
 export function RegisterPage() {
@@ -33,12 +34,12 @@ export function RegisterPage() {
   if (config && !config.registrationEnabled) {
     return (
       <AuthLayout>
-        <h2 className="text-2xl font-semibold tracking-tight">Registration is closed</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t('Registration is closed')}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The administrator of this server has disabled sign-ups.
+          {t('The administrator of this server has disabled sign-ups.')}
         </p>
         <Button asChild className="mt-6">
-          <Link to="/login">Back to login</Link>
+          <Link to="/login">{t('Back to login')}</Link>
         </Button>
       </AuthLayout>
     );
@@ -46,10 +47,12 @@ export function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h2 className="text-2xl font-semibold tracking-tight">Create your account</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Start tracking your money in a minute.</p>
+      <h2 className="text-2xl font-semibold tracking-tight">{t('Create your account')}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t('Start tracking your money in a minute.')}
+      </p>
       <form onSubmit={submit} className="mt-8 grid gap-4">
-        <Field label="Name" htmlFor="name" error={fieldErrors.name}>
+        <Field label={t('Name')} htmlFor="name" error={fieldErrors.name}>
           <Input
             id="name"
             autoComplete="name"
@@ -59,7 +62,7 @@ export function RegisterPage() {
             autoFocus
           />
         </Field>
-        <Field label="E-mail" htmlFor="email" error={fieldErrors.email}>
+        <Field label={t('E-mail')} htmlFor="email" error={fieldErrors.email}>
           <Input
             id="email"
             type="email"
@@ -70,10 +73,10 @@ export function RegisterPage() {
           />
         </Field>
         <Field
-          label="Password"
+          label={t('Password')}
           htmlFor="password"
           error={fieldErrors.password}
-          hint="At least 8 characters."
+          hint={t('At least 8 characters.')}
         >
           <Input
             id="password"
@@ -86,9 +89,9 @@ export function RegisterPage() {
           />
         </Field>
         <Field
-          label="Main currency"
+          label={t('Main currency')}
           htmlFor="currency"
-          hint="Statistics and totals are shown in this currency. You can change it later."
+          hint={t('Statistics and totals are shown in this currency. You can change it later.')}
         >
           <Select
             id="currency"
@@ -106,13 +109,13 @@ export function RegisterPage() {
           <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
         )}
         <Button type="submit" size="lg" loading={register.isPending} className="mt-2">
-          Create account
+          {t('Sign up')}
         </Button>
       </form>
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
+        {t('Already have an account?')}{' '}
         <Link to="/login" className="font-medium text-primary hover:underline">
-          Log in
+          {t('Log in')}
         </Link>
       </p>
     </AuthLayout>

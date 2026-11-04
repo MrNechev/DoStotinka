@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { Dialog as D } from 'radix-ui';
 import type { ReactNode } from 'react';
+import { t } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 export const Dialog = D.Root;
@@ -51,14 +52,14 @@ export function DialogContent({
               </D.Description>
             ) : (
               <D.Description className="sr-only">
-                {typeof title === 'string' ? title : 'Dialog'}
+                {typeof title === 'string' ? title : t('Dialog')}
               </D.Description>
             )}
           </div>
           {!hideClose && (
             <D.Close
               className="-mr-1 -mt-1 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Close"
+              aria-label={t('Close')}
             >
               <X className="size-5" />
             </D.Close>

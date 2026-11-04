@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useCallback, useContext, useRef, useState } from 'react';
+import { t } from '@/i18n';
 import { Button } from './button';
 import { Dialog, DialogContent, DialogFooter } from './dialog';
 
@@ -36,14 +37,14 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           <DialogContent size="sm" title={opts.title} description={opts.description}>
             <DialogFooter className="mt-2">
               <Button variant="outline" onClick={() => close(false)}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button
                 variant={opts.destructive ? 'destructive' : 'default'}
                 onClick={() => close(true)}
                 autoFocus
               >
-                {opts.confirmLabel ?? 'Confirm'}
+                {opts.confirmLabel ?? t('Confirm')}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -3,6 +3,7 @@ import { lazy, type ReactNode, Suspense, useEffect } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { Toaster } from 'sonner';
+import { t } from '@/i18n';
 import { ApiError, setUnauthorizedHandler } from './api/client';
 import { qk, useMe } from './api/queries';
 import { AppShell } from './components/layout/app-shell';
@@ -71,7 +72,7 @@ function RequireAuth() {
   if (isError) {
     return (
       <div className="flex min-h-dvh items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        Cannot reach the Slavotax server. Please check your connection and reload the page.
+        {t('Cannot reach the Slavotax server. Please check your connection and reload the page.')}
       </div>
     );
   }

@@ -5,7 +5,7 @@ import {
   minorToInputString,
   parseAmountToMinor,
 } from '@slavotax/shared';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { Flag, Minus, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -26,6 +26,8 @@ import { Field, Input, Select, Textarea } from '@/components/ui/input';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, EmptyState, PageHeader, Segmented, Skeleton } from '@/components/ui/misc';
 import { ColorPicker, IconPicker } from '@/components/ui/pickers';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { money, percent } from '@/lib/format';
 
 function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
@@ -62,12 +64,12 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
     setError(null);
     const targetAmount = parseAmountToMinor(target, currency);
     if (!targetAmount || targetAmount <= 0) {
-      setError('Enter the amount you want to save');
+      setError(t('Enter the amount you want to save'));
       return;
     }
     const savedAmount = saved.trim() ? parseAmountToMinor(saved, currency) : 0;
     if (savedAmount === null) {
-      setError('The saved amount is not a valid number');
+      setError(t('The saved amount is not a valid number'));
       return;
     }
     try {
@@ -85,7 +87,7 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
           note: note || null,
         },
       });
-      toast.success(goal ? 'Goal updated' : 'Goal created');
+      toast.success(goal ? t('Goal updated') : t('Goal created'));
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -94,16 +96,16 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent title={goal ? 'Edit goal' : 'New savings goal'} size="md">
+      <DialogContent title={goal ? t('Edit goal') : t('New savings goal')} size="md">
         <form onSubmit={submit} className="grid gap-4">
           <div className="flex items-end gap-3">
             <IconBadge icon={icon} color={color} size="lg" />
-            <Field label="Name" htmlFor="goal-name" className="flex-1">
+            <Field label={t('Name')} htmlFor="goal-name" className="flex-1">
               <Input
                 id="goal-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Summer vacation"
+                placeholder={t('e.g. Summer vacation')}
                 required
                 maxLength={60}
                 autoFocus
@@ -111,7 +113,7 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
             </Field>
           </div>
           <div className="grid grid-cols-[1fr_auto] gap-3">
-            <Field label="Target amount" htmlFor="goal-target">
+            <Field label={t('Target amount')} htmlFor="goal-target">
               <Input
                 id="goal-target"
                 inputMode="decimal"
@@ -121,7 +123,7 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
                 required
               />
             </Field>
-            <Field label="Currency" htmlFor="goal-cur">
+            <Field label={t('Currency')} htmlFor="goal-cur">
               <Select
                 id="goal-cur"
                 value={currency}
@@ -137,9 +139,9 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
             </Field>
           </div>
           <Field
-            label="Target date (optional)"
+            label={t('Target date (optional)')}
             htmlFor="goal-date"
-            hint="Slavotax tells you how much to put aside every month."
+            hint={t('Slavotax tells you how much to put aside every month.')}
           >
             <Input
               id="goal-date"
@@ -148,19 +150,22 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
               onChange={(e) => setDate(e.target.value)}
             />
           </Field>
-          <Field label="Track progress">
+          <Field label={t('Track progress')}>
             <Segmented<'manual' | 'account'>
               value={source}
               onChange={setSource}
               className="w-full"
               options={[
-                { value: 'manual', label: 'Manually' },
-                { value: 'account', label: 'Balance of an account' },
+                { value: 'manual', label: t('Manually') },
+                { value: 'account', label: t('Balance of an account') },
               ]}
             />
           </Field>
           {source === 'manual' ? (
-            <Field label={`Already saved (${getCurrency(currency).code})`} htmlFor="goal-saved">
+            <Field
+              label={t('Already saved ({currency})', { currency: getCurrency(currency).code })}
+              htmlFor="goal-saved"
+            >
               <Input
                 id="goal-saved"
                 inputMode="decimal"
@@ -171,9 +176,9 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
             </Field>
           ) : (
             <Field
-              label="Account"
+              label={t('Account')}
               htmlFor="goal-acc"
-              hint="The goal follows the current balance of this account."
+              hint={t('The goal follows the current balance of this account.')}
             >
               <Select
                 id="goal-acc"
@@ -188,13 +193,13 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
               </Select>
             </Field>
           )}
-          <Field label="Icon">
+          <Field label={t('Icon')}>
             <IconPicker value={icon} onChange={setIcon} color={color} />
           </Field>
-          <Field label="Colour">
+          <Field label={t('Colour')}>
             <ColorPicker value={color} onChange={setColor} />
           </Field>
-          <Field label="Note" htmlFor="goal-note">
+          <Field label={t('Note')} htmlFor="goal-note">
             <Textarea
               id="goal-note"
               rows={2}
@@ -206,10 +211,10 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {goal ? 'Save changes' : 'Create goal'}
+              {goal ? t('Save changes') : t('Create goal')}
             </Button>
           </DialogFooter>
         </form>
@@ -233,7 +238,11 @@ function ContributeDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="sm"
-        title={direction === 1 ? `Add to “${goal.name}”` : `Take from “${goal.name}”`}
+        title={
+          direction === 1
+            ? t('Add to “{name}”', { name: goal.name })
+            : t('Take from “{name}”', { name: goal.name })
+        }
       >
         <form
           className="grid gap-4"
@@ -243,14 +252,14 @@ function ContributeDialog({
             if (!minor || minor <= 0) return;
             try {
               const res = await contribute.mutateAsync({ id: goal.id, amount: direction * minor });
-              toast.success(res.progress >= 1 ? 'Goal reached – congratulations! 🎉' : 'Saved');
+              toast.success(res.progress >= 1 ? 'Goal reached – congratulations! 🎉' : t('Saved'));
               onClose();
             } catch (err) {
               toast.error(errorMessage(err));
             }
           }}
         >
-          <Field label={`Amount (${goal.currency})`} htmlFor="contrib">
+          <Field label={t('Amount ({currency})', { currency: goal.currency })} htmlFor="contrib">
             <Input
               id="contrib"
               inputMode="decimal"
@@ -261,10 +270,10 @@ function ContributeDialog({
           </Field>
           <DialogFooter className="mt-0">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={contribute.isPending}>
-              {direction === 1 ? 'Add' : 'Take out'}
+              {direction === 1 ? t('Add') : t('Take out')}
             </Button>
           </DialogFooter>
         </form>
@@ -296,20 +305,20 @@ function GoalCard({
           <p className="truncate font-semibold">{goal.name}</p>
           <p className="text-xs text-muted-foreground">
             {goal.targetDate
-              ? `by ${format(parseISO(goal.targetDate), 'd MMMM yyyy')}`
-              : 'No deadline'}
+              ? t('by {date}', { date: fmt(parseISO(goal.targetDate), 'd MMMM yyyy') })
+              : t('No deadline')}
             {account && ` · ${account.name}`}
           </p>
         </div>
         <Menu>
           <MenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Actions">
+            <Button variant="ghost" size="icon-sm" aria-label={t('Actions')}>
               <MoreHorizontal />
             </Button>
           </MenuTrigger>
           <MenuContent>
             <MenuItem icon={<Pencil />} onSelect={onEdit}>
-              Edit
+              {t('Edit')}
             </MenuItem>
             <MenuSeparator />
             <MenuItem
@@ -318,8 +327,8 @@ function GoalCard({
               onSelect={async () => {
                 if (
                   await confirm({
-                    title: `Delete “${goal.name}”?`,
-                    confirmLabel: 'Delete',
+                    title: t('Delete “{name}”?', { name: goal.name }),
+                    confirmLabel: t('Delete'),
                     destructive: true,
                   })
                 ) {
@@ -327,7 +336,7 @@ function GoalCard({
                 }
               }}
             >
-              Delete
+              {t('Delete')}
             </MenuItem>
           </MenuContent>
         </Menu>
@@ -350,7 +359,7 @@ function GoalCard({
       <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
         <span>{percent(pct)}</span>
         {reached ? (
-          <Badge tone="success">Goal reached 🎉</Badge>
+          <Badge tone="success">{t('Goal reached 🎉')}</Badge>
         ) : (
           <span>
             {money(Math.max(0, goal.targetAmount - goal.currentAmount), goal.currency)} to go
@@ -368,13 +377,13 @@ function GoalCard({
       {!goal.accountId && (
         <div className="mt-auto flex gap-2 pt-4">
           <Button size="sm" className="flex-1" onClick={() => onContribute(1)}>
-            <Plus /> Add money
+            <Plus /> {t('Add money')}
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => onContribute(-1)}
-            aria-label="Take money out"
+            aria-label={t('Take money out')}
           >
             <Minus />
           </Button>
@@ -392,11 +401,13 @@ export default function GoalsPage() {
   return (
     <div>
       <PageHeader
-        title="Savings goals"
-        description="Save up for the things that matter – a holiday, a new laptop or an emergency fund."
+        title={t('Savings goals')}
+        description={t(
+          'Save up for the things that matter – a holiday, a new laptop or an emergency fund.',
+        )}
         actions={
           <Button onClick={() => setEditing('new')}>
-            <Plus /> New goal
+            <Plus /> {t('New goal')}
           </Button>
         }
       />
@@ -410,11 +421,11 @@ export default function GoalsPage() {
         <Card>
           <EmptyState
             icon={<Flag />}
-            title="No goals yet"
-            description="Create a goal and see how much you need to put aside every month."
+            title={t('No goals yet')}
+            description={t('Create a goal and see how much you need to put aside every month.')}
             action={
               <Button onClick={() => setEditing('new')}>
-                <Plus /> New goal
+                <Plus /> {t('New goal')}
               </Button>
             }
           />

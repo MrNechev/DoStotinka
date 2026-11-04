@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Bulgarian translation of the whole interface, the default categories and dates; the language
+  follows the browser and can be changed in Settings or on the login page.
 - Daily reminders for overdue and upcoming planned payments via ntfy, Gotify, Discord, Slack or a
   JSON webhook (Settings → Reminders; disable server-wide with `NOTIFICATIONS_ENABLED=false`).
 

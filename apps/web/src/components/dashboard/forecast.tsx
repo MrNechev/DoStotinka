@@ -1,8 +1,10 @@
 import { convertMinor, type PlannedPayment } from '@slavotax/shared';
-import { endOfMonth, format } from 'date-fns';
+import { endOfMonth } from 'date-fns';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAccounts, useCurrencies, usePlanned, useUpcoming, useUser } from '@/api/queries';
 import { Card } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +32,7 @@ export function MonthEndForecast() {
 
   const balance = [...included.values()].reduce((s, a) => s + toBase(a.balance, a.currency), 0);
   const byId = new Map<string, PlannedPayment>(planned.map((p) => [p.id, p]));
-  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
+  const monthEnd = fmt(endOfMonth(now), 'yyyy-MM-dd');
   let incoming = 0;
   let outgoing = 0;
   for (const o of upcoming) {
@@ -54,7 +56,7 @@ export function MonthEndForecast() {
   return (
     <Card className="px-4 py-3.5">
       <p className="text-xs font-medium text-muted-foreground">
-        Expected at the end of {format(now, 'MMMM')}
+        {t('Expected at the end of {month}', { month: fmt(now, 'MMMM') })}
       </p>
       <p className="tabular mt-1 text-2xl font-semibold">{money(forecast, user.baseCurrency)}</p>
       <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
@@ -68,8 +70,10 @@ export function MonthEndForecast() {
           {money(forecast - balance, user.baseCurrency, { sign: 'exceptZero' })}
         </span>
         <span>
-          {money(incoming, user.baseCurrency)} planned in · {money(outgoing, user.baseCurrency)}{' '}
-          planned out
+          {t('{incoming} planned in · {outgoing} planned out', {
+            incoming: money(incoming, user.baseCurrency),
+            outgoing: money(outgoing, user.baseCurrency),
+          })}
         </span>
       </p>
     </Card>

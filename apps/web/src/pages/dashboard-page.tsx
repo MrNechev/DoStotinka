@@ -1,5 +1,5 @@
 import { convertMinor } from '@slavotax/shared';
-import { addMonths, format, startOfHour, startOfMonth, subDays } from 'date-fns';
+import { addMonths, startOfHour, startOfMonth, subDays } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
@@ -26,14 +26,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, ProgressBar, Skeleton } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { money, percent } from '@/lib/format';
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 5) return 'Good night';
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 5) return t('Good night');
+  if (h < 12) return t('Good morning');
+  if (h < 18) return t('Good afternoon');
+  return t('Good evening');
 }
 
 export default function DashboardPage() {
@@ -81,13 +83,13 @@ export default function DashboardPage() {
     <div className="grid grid-cols-1 gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">{format(now, 'EEEE, d MMMM yyyy')}</p>
+          <p className="text-sm text-muted-foreground">{fmt(now, 'EEEE, d MMMM yyyy')}</p>
           <h1 className="text-2xl font-semibold tracking-tight">
             {greeting()}, {user.name.split(' ')[0]}
           </h1>
         </div>
         <Button onClick={() => openNew()} className="hidden sm:inline-flex">
-          <Plus /> Add record
+          <Plus /> {t('Add record')}
         </Button>
       </div>
 
@@ -97,10 +99,10 @@ export default function DashboardPage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold">Accounts</h2>
+            <h2 className="text-sm font-semibold">{t('Accounts')}</h2>
             {netWorth !== null && (
               <p className="text-xs text-muted-foreground">
-                Total balance{' '}
+                {t('Total balance')}{' '}
                 <span className="tabular font-semibold text-foreground">
                   {money(netWorth, user.baseCurrency)}
                 </span>
@@ -111,7 +113,7 @@ export default function DashboardPage() {
             to="/accounts"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Manage <ArrowRight className="size-4" />
+            {t('Manage')} <ArrowRight className="size-4" />
           </Link>
         </div>
         {accountsLoading ? (
@@ -123,12 +125,14 @@ export default function DashboardPage() {
         ) : visibleAccounts.length === 0 ? (
           <Card>
             <EmptyState
-              title="Create your first account"
-              description="Accounts hold your money – for example Cash, a bank account or a savings account."
+              title={t('Create your first account')}
+              description={t(
+                'Accounts hold your money – for example Cash, a bank account or a savings account.',
+              )}
               action={
                 <Button asChild>
                   <Link to="/accounts?new=1">
-                    <Plus /> Add account
+                    <Plus /> {t('Add account')}
                   </Link>
                 </Button>
               }
@@ -144,7 +148,7 @@ export default function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold">This month</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t('This month')}</h2>
         <KpiTiles scope={month} />
       </section>
 
@@ -153,17 +157,20 @@ export default function DashboardPage() {
           <CategoryBreakdown
             scope={month}
             type="expense"
-            title="Spending this month"
+            title={t('Spending this month')}
             recordsLink={(id) => `/records?period=month${id ? `&categories=${id}` : ''}`}
           />
           <Card>
-            <CardHeader title="Balance trend" description="All accounts · last 30 days" />
+            <CardHeader title={t('Balance trend')} description={t('All accounts · last 30 days')} />
             <div className="px-3 pb-4">
               <BalanceChart scope={last30} interval="day" height={220} />
             </div>
           </Card>
           <Card>
-            <CardHeader title="Cash flow" description="Income vs expenses · last 6 months" />
+            <CardHeader
+              title={t('Cash flow')}
+              description={t('Income vs expenses · last 6 months')}
+            />
             <div className="px-3 pb-4">
               <CashflowChart scope={last6m} interval="month" height={240} />
             </div>
@@ -174,11 +181,11 @@ export default function DashboardPage() {
           <MonthEndForecast />
           <Card>
             <CardHeader
-              title="Upcoming payments"
-              description="Overdue and due in the next 14 days"
+              title={t('Upcoming payments')}
+              description={t('Overdue and due in the next 14 days')}
               action={
                 <Link to="/planned" className="text-sm font-medium text-primary hover:underline">
-                  All
+                  {t('All')}
                 </Link>
               }
             />
@@ -188,10 +195,10 @@ export default function DashboardPage() {
           {budgets && budgets.length > 0 && (
             <Card>
               <CardHeader
-                title="Budgets"
+                title={t('Budgets')}
                 action={
                   <Link to="/budgets" className="text-sm font-medium text-primary hover:underline">
-                    All
+                    {t('All')}
                   </Link>
                 }
               />
@@ -225,8 +232,11 @@ export default function DashboardPage() {
                     />
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       {b.ratio > 1
-                        ? `Over by ${money(-b.remaining, b.currency)}`
-                        : `${money(b.remaining, b.currency)} left · ${percent(b.ratio)} used`}
+                        ? t('Over by {amount}', { amount: money(-b.remaining, b.currency) })
+                        : t('{amount} left · {percent} used', {
+                            amount: money(b.remaining, b.currency),
+                            percent: percent(b.ratio),
+                          })}
                     </p>
                   </li>
                 ))}
@@ -237,10 +247,10 @@ export default function DashboardPage() {
           {goals && goals.length > 0 && (
             <Card>
               <CardHeader
-                title="Savings goals"
+                title={t('Savings goals')}
                 action={
                   <Link to="/goals" className="text-sm font-medium text-primary hover:underline">
-                    All
+                    {t('All')}
                   </Link>
                 }
               />
@@ -265,10 +275,10 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader
-              title="Recent records"
+              title={t('Recent records')}
               action={
                 <Link to="/records" className="text-sm font-medium text-primary hover:underline">
-                  All
+                  {t('All')}
                 </Link>
               }
             />
@@ -281,8 +291,8 @@ export default function DashboardPage() {
                 </div>
               ) : records.length === 0 ? (
                 <EmptyState
-                  title="No records yet"
-                  description="Press “Add record” to log your first expense."
+                  title={t('No records yet')}
+                  description={t('Press “Add record” to log your first expense.')}
                   className="py-8"
                 />
               ) : (

@@ -5,6 +5,7 @@ import { errorMessage } from '@/api/client';
 import { useDemoLogin, useLogin, useServerConfig } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
+import { t } from '@/i18n';
 import { AuthLayout } from './auth-layout';
 
 export function LoginPage() {
@@ -39,10 +40,12 @@ export function LoginPage() {
 
   return (
     <AuthLayout>
-      <h2 className="text-2xl font-semibold tracking-tight">Welcome back</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Log in to continue to your budget.</p>
+      <h2 className="text-2xl font-semibold tracking-tight">{t('Welcome back')}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t('Log in to continue to your budget.')}
+      </p>
       <form onSubmit={submit} className="mt-8 grid gap-4">
-        <Field label="E-mail" htmlFor="email">
+        <Field label={t('E-mail')} htmlFor="email">
           <Input
             id="email"
             type="email"
@@ -53,7 +56,7 @@ export function LoginPage() {
             autoFocus
           />
         </Field>
-        <Field label="Password" htmlFor="password">
+        <Field label={t('Password')} htmlFor="password">
           <Input
             id="password"
             type="password"
@@ -67,14 +70,15 @@ export function LoginPage() {
           <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
         )}
         <Button type="submit" size="lg" loading={login.isPending} className="mt-2">
-          Log in
+          {t('Log in')}
         </Button>
       </form>
 
       {config?.demo.enabled && (
         <>
           <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+            <div className="h-px flex-1 bg-border" /> {t('or')}{' '}
+            <div className="h-px flex-1 bg-border" />
           </div>
           <Button
             variant="outline"
@@ -83,19 +87,19 @@ export function LoginPage() {
             onClick={tryDemo}
             loading={demo.isPending}
           >
-            <Sparkles /> Explore the demo account
+            <Sparkles /> {t('Explore the demo account')}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Pre-filled with a year of example data. No sign-up needed.
+            {t('Pre-filled with a year of example data. No sign-up needed.')}
           </p>
         </>
       )}
 
       {config?.registrationEnabled !== false && (
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          New to Slavotax?{' '}
+          {t('New to Slavotax?')}{' '}
           <Link to="/register" className="font-medium text-primary hover:underline">
-            Create an account
+            {t('Sign up')}
           </Link>
         </p>
       )}

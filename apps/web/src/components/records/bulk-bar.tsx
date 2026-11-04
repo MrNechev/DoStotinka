@@ -7,6 +7,7 @@ import { CategoryPickerPanel } from '@/components/categories/category-picker';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
+import { t, tn } from '@/i18n';
 import { plural } from '@/lib/format';
 
 /** Floating toolbar for actions on the selected records. */
@@ -43,27 +44,27 @@ export function BulkBar({
         <span className="px-2 text-sm font-medium">{plural(count, 'record')} selected</span>
         {count < totalLoaded && (
           <Button size="sm" variant="ghost" onClick={onSelectAll}>
-            Select all {totalLoaded}
+            {t('Select all {n}', { n: totalLoaded })}
           </Button>
         )}
         <Popover open={open === 'category'} onOpenChange={(o) => setOpen(o ? 'category' : null)}>
           <PopoverTrigger asChild>
             <Button size="sm" variant="outline" disabled={!count}>
-              <FolderTree /> Category
+              <FolderTree /> {t('Category')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[min(92vw,420px)] p-3" side="top">
             <CategoryPickerPanel
               kind="expense"
               value={null}
-              onSelect={(categoryId) => apply({ ids: selected, categoryId }, 'Category changed')}
+              onSelect={(categoryId) => apply({ ids: selected, categoryId }, t('Category changed'))}
             />
           </PopoverContent>
         </Popover>
         <Popover open={open === 'account'} onOpenChange={(o) => setOpen(o ? 'account' : null)}>
           <PopoverTrigger asChild>
             <Button size="sm" variant="outline" disabled={!count}>
-              <Wallet /> Account
+              <Wallet /> {t('Account')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-60 p-1" side="top">
@@ -73,7 +74,12 @@ export function BulkBar({
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => apply({ ids: selected, accountId: a.id }, `Moved to ${a.name}`)}
+                  onClick={() =>
+                    apply(
+                      { ids: selected, accountId: a.id },
+                      t('Moved to {name}', { name: a.name }),
+                    )
+                  }
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
                 >
                   <span className="size-2.5 rounded-full" style={{ backgroundColor: a.color }} />
@@ -82,7 +88,7 @@ export function BulkBar({
                 </button>
               ))}
             <p className="px-2.5 py-1.5 text-[11px] text-muted-foreground">
-              Transfers are not moved.
+              {t('Transfers are not moved.')}
             </p>
           </PopoverContent>
         </Popover>
@@ -90,7 +96,7 @@ export function BulkBar({
           <Popover open={open === 'label'} onOpenChange={(o) => setOpen(o ? 'label' : null)}>
             <PopoverTrigger asChild>
               <Button size="sm" variant="outline" disabled={!count}>
-                <Tag /> Label
+                <Tag /> {t('Label')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-1" side="top">
@@ -105,19 +111,25 @@ export function BulkBar({
                     size="xs"
                     variant="ghost"
                     onClick={() =>
-                      apply({ ids: selected, addLabelIds: [l.id] }, `Label “${l.name}” added`)
+                      apply(
+                        { ids: selected, addLabelIds: [l.id] },
+                        t('Label “{name}” added', { name: l.name }),
+                      )
                     }
                   >
-                    Add
+                    {t('Add')}
                   </Button>
                   <Button
                     size="xs"
                     variant="ghost"
                     onClick={() =>
-                      apply({ ids: selected, removeLabelIds: [l.id] }, `Label “${l.name}” removed`)
+                      apply(
+                        { ids: selected, removeLabelIds: [l.id] },
+                        t('Label “{name}” removed', { name: l.name }),
+                      )
                     }
                   >
-                    Remove
+                    {t('Remove')}
                   </Button>
                 </div>
               ))}
@@ -131,10 +143,11 @@ export function BulkBar({
           loading={remove.isPending}
           onClick={async () => {
             const ok = await confirm({
-              title: `Delete ${plural(count, 'record')}?`,
-              description:
+              title: tn(count, t('Delete {n} record?'), t('Delete {n} records?')),
+              description: t(
                 'Transfers are deleted together with their other side. This cannot be undone.',
-              confirmLabel: 'Delete',
+              ),
+              confirmLabel: t('Delete'),
               destructive: true,
             });
             if (!ok) return;
@@ -147,9 +160,9 @@ export function BulkBar({
             });
           }}
         >
-          <Trash2 /> Delete
+          <Trash2 /> {t('Delete')}
         </Button>
-        <Button size="icon-sm" variant="ghost" onClick={onClear} aria-label="Cancel selection">
+        <Button size="icon-sm" variant="ghost" onClick={onClear} aria-label={t('Cancel selection')}>
           <X />
         </Button>
       </div>

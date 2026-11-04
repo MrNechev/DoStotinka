@@ -1,5 +1,4 @@
 import { minorToInputString, type PlannedPayment, parseAmountToMinor } from '@slavotax/shared';
-import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
@@ -7,6 +6,8 @@ import { useAccounts, usePayPlanned } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { longDate } from '@/lib/format';
 
 /** Confirms a planned payment occurrence – creates the real record. */
@@ -23,7 +24,7 @@ export function PayDialog({
   const pay = usePayPlanned();
   const [amount, setAmount] = useState(minorToInputString(plan.amount, plan.currency));
   const [accountId, setAccountId] = useState(plan.accountId);
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [date, setDate] = useState(fmt(new Date(), 'yyyy-MM-dd'));
   const [error, setError] = useState<string | null>(null);
   const account = accounts.find((a) => a.id === accountId);
   const currency = account?.currency ?? plan.currency;
@@ -32,11 +33,11 @@ export function PayDialog({
     e.preventDefault();
     const minor = parseAmountToMinor(amount, currency);
     if (!minor || minor <= 0) {
-      setError('Enter a valid amount');
+      setError(t('Enter a valid amount'));
       return;
     }
     const now = new Date();
-    const occurredAt = new Date(`${date}T${format(now, 'HH:mm')}`);
+    const occurredAt = new Date(`${date}T${fmt(now, 'HH:mm')}`);
     try {
       await pay.mutateAsync({
         id: plan.id,
@@ -45,7 +46,7 @@ export function PayDialog({
         accountId,
         occurredAt: occurredAt.toISOString(),
       });
-      toast.success(`${plan.name} marked as paid`);
+      toast.success(t('{name} marked as paid', { name: plan.name }));
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -56,11 +57,13 @@ export function PayDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="sm"
-        title={`Confirm “${plan.name}”`}
-        description={`Due on ${longDate(dueDate)}. A record will be created in your account.`}
+        title={t('Confirm “{name}”', { name: plan.name })}
+        description={t('Due on {date}. A record will be created in your account.', {
+          date: longDate(dueDate),
+        })}
       >
         <form onSubmit={submit} className="grid gap-4">
-          <Field label={`Amount (${currency})`} htmlFor="pay-amount">
+          <Field label={t('Amount ({currency})', { currency })} htmlFor="pay-amount">
             <Input
               id="pay-amount"
               inputMode="decimal"
@@ -70,7 +73,7 @@ export function PayDialog({
             />
           </Field>
           <Field
-            label={plan.type === 'transfer' ? 'From account' : 'Account'}
+            label={plan.type === 'transfer' ? t('From account') : t('Account')}
             htmlFor="pay-account"
           >
             <Select
@@ -87,7 +90,7 @@ export function PayDialog({
                 ))}
             </Select>
           </Field>
-          <Field label="Paid on" htmlFor="pay-date">
+          <Field label={t('Paid on')} htmlFor="pay-date">
             <Input
               id="pay-date"
               type="date"
@@ -98,10 +101,10 @@ export function PayDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="mt-1">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" loading={pay.isPending}>
-              Mark as paid
+              {t('Mark as paid')}
             </Button>
           </DialogFooter>
         </form>

@@ -3,7 +3,6 @@ import {
   addDays,
   addMonths,
   endOfMonth,
-  format,
   isSameMonth,
   isToday,
   parseISO,
@@ -19,6 +18,8 @@ import { RecordRow, useRecordLookups } from '@/components/records/record-list';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, PageHeader } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
 import { longDate, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +28,7 @@ export default function CalendarPage() {
   const { openNew } = useRecordEditor();
   const lookups = useRecordLookups();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
-  const [selected, setSelected] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  const [selected, setSelected] = useState(() => fmt(new Date(), 'yyyy-MM-dd'));
 
   const gridStart = startOfWeek(month, { weekStartsOn: user.weekStartsOn });
   const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));
@@ -38,8 +39,8 @@ export default function CalendarPage() {
     from: visibleDays[0]!.toISOString(),
     to: addDays(visibleDays[visibleDays.length - 1]!, 1).toISOString(),
   };
-  const rangeFrom = format(visibleDays[0]!, 'yyyy-MM-dd');
-  const rangeTo = format(visibleDays[visibleDays.length - 1]!, 'yyyy-MM-dd');
+  const rangeFrom = fmt(visibleDays[0]!, 'yyyy-MM-dd');
+  const rangeTo = fmt(visibleDays[visibleDays.length - 1]!, 'yyyy-MM-dd');
   const expenses = useTimeseries(scope, 'day', 'expense');
   const income = useTimeseries(scope, 'day', 'income');
   const { data: planned = [] } = usePlanned();
@@ -85,36 +86,36 @@ export default function CalendarPage() {
   );
   const selectedRecords = dayRecords.data?.pages.flatMap((p) => p.items) ?? [];
   const selectedDue = dueBy.get(selected) ?? [];
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = fmt(new Date(), 'yyyy-MM-dd');
 
   const monthExpense = [...expenseBy.entries()]
-    .filter(([d]) => d.startsWith(format(month, 'yyyy-MM')))
+    .filter(([d]) => d.startsWith(fmt(month, 'yyyy-MM')))
     .reduce((s, [, v]) => s + v, 0);
   const monthIncome = [...incomeBy.entries()]
-    .filter(([d]) => d.startsWith(format(month, 'yyyy-MM')))
+    .filter(([d]) => d.startsWith(fmt(month, 'yyyy-MM')))
     .reduce((s, [, v]) => s + v, 0);
 
   return (
     <div>
       <PageHeader
-        title="Calendar"
-        description="Your spending day by day, together with upcoming planned payments."
+        title={t('Calendar')}
+        description={t('Your spending day by day, together with upcoming planned payments.')}
         actions={
           <div className="flex items-center gap-1">
             <Button
               variant="outline"
               size="icon"
               onClick={() => setMonth(addMonths(month, -1))}
-              aria-label="Previous month"
+              aria-label={t('Previous month')}
             >
               <ChevronLeft />
             </Button>
-            <span className="min-w-36 text-center font-semibold">{format(month, 'MMMM yyyy')}</span>
+            <span className="min-w-36 text-center font-semibold">{fmt(month, 'MMMM yyyy')}</span>
             <Button
               variant="outline"
               size="icon"
               onClick={() => setMonth(addMonths(month, 1))}
-              aria-label="Next month"
+              aria-label={t('Next month')}
             >
               <ChevronRight />
             </Button>
@@ -125,7 +126,7 @@ export default function CalendarPage() {
                 setSelected(today);
               }}
             >
-              Today
+              {t('Today')}
             </Button>
           </div>
         }
@@ -134,13 +135,13 @@ export default function CalendarPage() {
         <Card className="overflow-hidden">
           <div className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border px-4 py-3 text-sm">
             <span>
-              <span className="text-muted-foreground">Spent </span>
+              <span className="text-muted-foreground">{t('Spent')} </span>
               <span className="tabular font-semibold text-expense">
                 {money(monthExpense, currency)}
               </span>
             </span>
             <span>
-              <span className="text-muted-foreground">Received </span>
+              <span className="text-muted-foreground">{t('Received')} </span>
               <span className="tabular font-semibold text-income">
                 {money(monthIncome, currency)}
               </span>
@@ -152,7 +153,7 @@ export default function CalendarPage() {
                 key={d.toISOString()}
                 className="py-2 text-center text-xs font-medium text-muted-foreground"
               >
-                {format(d, 'EEE')}
+                {fmt(d, 'EEE')}
               </div>
             ))}
           </div>
@@ -163,7 +164,7 @@ export default function CalendarPage() {
             )}
           >
             {visibleDays.map((d) => {
-              const key = format(d, 'yyyy-MM-dd');
+              const key = fmt(d, 'yyyy-MM-dd');
               const exp = expenseBy.get(key) ?? 0;
               const inc = incomeBy.get(key) ?? 0;
               const due = dueBy.get(key) ?? [];
@@ -193,7 +194,7 @@ export default function CalendarPage() {
                       isToday(d) && 'bg-primary text-primary-foreground',
                     )}
                   >
-                    {format(d, 'd')}
+                    {fmt(d, 'd')}
                   </span>
                   {exp > 0 && (
                     <span className="tabular truncate text-[10px] font-semibold text-expense sm:text-xs">
@@ -225,14 +226,14 @@ export default function CalendarPage() {
             description={`${selectedRecords.length} records`}
             action={
               <Button size="sm" variant="outline" onClick={() => openNew({ date: selected })}>
-                <Plus /> Add
+                <Plus /> {t('Add')}
               </Button>
             }
           />
           {selectedDue.length > 0 && (
             <div className="mx-3 mb-2 rounded-xl border border-dashed border-border p-2">
               <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
-                {selected < today ? 'Overdue planned payments' : 'Planned payments due'}
+                {selected < today ? t('Overdue planned payments') : t('Planned payments due')}
               </p>
               {selectedDue.map((p) => {
                 const { icon, color } = plannedIcon(p, lookups);
@@ -252,7 +253,7 @@ export default function CalendarPage() {
           )}
           <div className="px-1 pb-3">
             {selectedRecords.length === 0 ? (
-              <EmptyState title="Nothing recorded on this day" className="py-8" />
+              <EmptyState title={t('Nothing recorded on this day')} className="py-8" />
             ) : (
               selectedRecords.map((r) => <RecordRow key={r.id} record={r} lookups={lookups} />)
             )}

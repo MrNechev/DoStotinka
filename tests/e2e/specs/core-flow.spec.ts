@@ -10,7 +10,7 @@ test('a new user can register, create an account and log an expense', async ({ p
   await page.getByLabel('Name').fill('E2E Tester');
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Create account' }).click();
+  await page.getByRole('button', { name: 'Sign up' }).click();
 
   await expect(page.getByRole('heading', { name: /E2E/ })).toBeVisible();
   await expect(page.getByText('Getting started')).toBeVisible();

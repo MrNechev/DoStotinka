@@ -1,5 +1,4 @@
 import {
-  describeRecurrence,
   FREQUENCIES,
   type Frequency,
   getCurrency,
@@ -8,7 +7,6 @@ import {
   parseAmountToMinor,
   type RecordType,
 } from '@slavotax/shared';
-import { format } from 'date-fns';
 import { Minus, Plus, Repeat } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -19,13 +17,16 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select, Textarea } from '@/components/ui/input';
 import { Segmented, Switch } from '@/components/ui/misc';
+import { t } from '@/i18n';
+import { fmt } from '@/lib/date';
+import { recurrenceLabel } from '@/lib/format';
 
 const FREQ_LABELS: Record<Frequency, string> = {
-  once: 'Once',
-  daily: 'Daily',
-  weekly: 'Weekly',
-  monthly: 'Monthly',
-  yearly: 'Yearly',
+  once: t('Once'),
+  daily: t('Daily'),
+  weekly: t('Weekly'),
+  monthly: t('Monthly'),
+  yearly: t('Yearly'),
 };
 const UNIT: Record<Frequency, string> = {
   once: '',
@@ -56,7 +57,7 @@ export function PlannedFormDialog({
     categoryId: plan?.categoryId ?? null,
     frequency: (plan?.frequency ?? 'monthly') as Frequency,
     interval: String(plan?.interval ?? 1),
-    startDate: plan?.startDate ?? format(new Date(), 'yyyy-MM-dd'),
+    startDate: plan?.startDate ?? fmt(new Date(), 'yyyy-MM-dd'),
     endDate: plan?.endDate ?? '',
     payee: plan?.payee ?? '',
     note: plan?.note ?? '',
@@ -78,7 +79,7 @@ export function PlannedFormDialog({
     setError(null);
     const amount = parseAmountToMinor(form.amount, currency);
     if (!amount || amount <= 0) {
-      setError('Enter an amount greater than zero');
+      setError(t('Enter an amount greater than zero'));
       return;
     }
     try {
@@ -100,7 +101,7 @@ export function PlannedFormDialog({
           autoConfirm: form.autoConfirm,
         },
       });
-      toast.success(plan ? 'Planned payment updated' : 'Planned payment created');
+      toast.success(plan ? t('Planned payment updated') : t('Planned payment created'));
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -110,7 +111,13 @@ export function PlannedFormDialog({
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        title={picking ? 'Choose category' : plan ? 'Edit planned payment' : 'New planned payment'}
+        title={
+          picking
+            ? t('Choose category')
+            : plan
+              ? t('Edit planned payment')
+              : t('New planned payment')
+        }
         size="md"
       >
         {picking ? (
@@ -127,7 +134,7 @@ export function PlannedFormDialog({
           <form onSubmit={submit} className="grid gap-4">
             <Segmented<RecordType>
               value={form.type}
-              onChange={(t) => set('type', t)}
+              onChange={(v) => set('type', v)}
               className="w-full"
               options={[
                 {
@@ -158,19 +165,22 @@ export function PlannedFormDialog({
                 },
               ]}
             />
-            <Field label="Name" htmlFor="pp-name">
+            <Field label={t('Name')} htmlFor="pp-name">
               <Input
                 id="pp-name"
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
-                placeholder="e.g. Rent, Electricity, Car insurance"
+                placeholder={t('e.g. Rent, Electricity, Car insurance')}
                 required
                 maxLength={80}
                 autoFocus
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={`Amount (${getCurrency(currency).code})`} htmlFor="pp-amount">
+              <Field
+                label={t('Amount ({currency})', { currency: getCurrency(currency).code })}
+                htmlFor="pp-amount"
+              >
                 <Input
                   id="pp-amount"
                   inputMode="decimal"
@@ -181,7 +191,7 @@ export function PlannedFormDialog({
                 />
               </Field>
               <Field
-                label={form.type === 'transfer' ? 'From account' : 'Account'}
+                label={form.type === 'transfer' ? t('From account') : t('Account')}
                 htmlFor="pp-account"
               >
                 <Select
@@ -198,14 +208,14 @@ export function PlannedFormDialog({
               </Field>
             </div>
             {form.type === 'transfer' ? (
-              <Field label="To account" htmlFor="pp-to">
+              <Field label={t('To account')} htmlFor="pp-to">
                 <Select
                   id="pp-to"
                   value={form.toAccountId}
                   onChange={(e) => set('toAccountId', e.target.value)}
                   required
                 >
-                  <option value="">Choose account…</option>
+                  <option value="">{t('Choose account…')}</option>
                   {active
                     .filter((a) => a.id !== form.accountId)
                     .map((a) => (
@@ -216,12 +226,12 @@ export function PlannedFormDialog({
                 </Select>
               </Field>
             ) : (
-              <Field label="Category">
+              <Field label={t('Category')}>
                 <CategoryButton value={form.categoryId} onClick={() => setPicking(true)} />
               </Field>
             )}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Repeats" htmlFor="pp-freq">
+              <Field label={t('Repeats')} htmlFor="pp-freq">
                 <Select
                   id="pp-freq"
                   value={form.frequency}
@@ -236,9 +246,9 @@ export function PlannedFormDialog({
               </Field>
               {form.frequency !== 'once' && (
                 <Field
-                  label="Every"
+                  label={t('Every')}
                   htmlFor="pp-int"
-                  hint={describeRecurrence({
+                  hint={recurrenceLabel({
                     frequency: form.frequency,
                     interval: Number(form.interval) || 1,
                   })}
@@ -260,7 +270,7 @@ export function PlannedFormDialog({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
-                label={form.frequency === 'once' ? 'Due date' : 'First due date'}
+                label={form.frequency === 'once' ? t('Due date') : t('First due date')}
                 htmlFor="pp-start"
               >
                 <Input
@@ -272,7 +282,7 @@ export function PlannedFormDialog({
                 />
               </Field>
               {form.frequency !== 'once' && (
-                <Field label="Ends (optional)" htmlFor="pp-end">
+                <Field label={t('Ends (optional)')} htmlFor="pp-end">
                   <Input
                     id="pp-end"
                     type="date"
@@ -284,7 +294,7 @@ export function PlannedFormDialog({
               )}
             </div>
             {form.type !== 'transfer' && (
-              <Field label={form.type === 'income' ? 'Payer' : 'Payee'} htmlFor="pp-payee">
+              <Field label={form.type === 'income' ? t('Payer') : t('Payee')} htmlFor="pp-payee">
                 <Input
                   id="pp-payee"
                   value={form.payee}
@@ -293,7 +303,7 @@ export function PlannedFormDialog({
                 />
               </Field>
             )}
-            <Field label="Note" htmlFor="pp-note">
+            <Field label={t('Note')} htmlFor="pp-note">
               <Textarea
                 id="pp-note"
                 rows={2}
@@ -304,10 +314,11 @@ export function PlannedFormDialog({
             </Field>
             <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border p-3">
               <span>
-                <span className="block text-sm font-medium">Record automatically</span>
+                <span className="block text-sm font-medium">{t('Record automatically')}</span>
                 <span className="block text-xs text-muted-foreground">
-                  Creates the record on the due date without asking – ideal for subscriptions and
-                  salary.
+                  {t(
+                    'Creates the record on the due date without asking – ideal for subscriptions and salary.',
+                  )}
                 </span>
               </span>
               <Switch checked={form.autoConfirm} onCheckedChange={(v) => set('autoConfirm', v)} />
@@ -315,10 +326,10 @@ export function PlannedFormDialog({
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter className="mt-1">
               <Button variant="outline" onClick={onClose}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button type="submit" loading={save.isPending}>
-                {plan ? 'Save changes' : 'Create'}
+                {plan ? t('Save changes') : t('Create')}
               </Button>
             </DialogFooter>
           </form>
