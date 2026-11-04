@@ -11,6 +11,7 @@ import type { Database } from '../db';
 import { accounts, categories, records } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
+import { sweepOrphanAttachments } from '../services/attachments';
 import { toAccount } from '../services/dto';
 import { ensureRate } from '../services/rates';
 import { createRecord } from '../services/records';
@@ -129,7 +130,10 @@ export const accountRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req, reply) => {
       const user = currentUser(req);
       const existing = await getOwned(db, user.id, req.params.id);
-      await db.delete(accounts).where(eq(accounts.id, existing.id));
+      await db.transaction(async (tx) => {
+        await tx.delete(accounts).where(eq(accounts.id, existing.id));
+        await sweepOrphanAttachments(tx, user.id);
+      });
       return reply.status(204).send();
     },
   );

@@ -125,8 +125,21 @@ export interface RecordItem {
   /** Signed amount of the other side of a transfer (in its own currency). */
   counterpartAmount: number | null;
   plannedPaymentId: string | null;
+  /** Number of attached files (receipts, invoices). */
+  attachmentCount: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/** A file attached to a record. Download it from `/api/attachments/{id}`. */
+export interface Attachment {
+  id: string;
+  recordId: string;
+  fileName: string;
+  contentType: string;
+  /** Size in bytes. */
+  size: number;
+  createdAt: string;
 }
 
 export interface RecordPage {

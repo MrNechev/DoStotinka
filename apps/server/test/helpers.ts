@@ -54,7 +54,7 @@ export async function registerUser(app: FastifyInstance, overrides: Record<strin
     });
     return { status: r.statusCode, body: (r.body ? safeJson(r.body) : null) as T, raw: r };
   };
-  return { email, user: res.json().user, call };
+  return { email, user: res.json().user, call, cookie: cookie.value };
 }
 
 function safeJson(body: string) {

@@ -1306,3 +1306,139 @@ describe('localized reminders', () => {
     expect(message.lines[0]).toContain('днес');
   });
 });
+
+describe('attachments', () => {
+  // Smallest valid PNG: 1×1 transparent pixel.
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64',
+  );
+  const upload = (cookie: string, recordId: string, body: Buffer, type: string, name?: string) =>
+    ctx.app.inject({
+      method: 'POST',
+      url: `/api/records/${recordId}/attachments${name ? `?name=${encodeURIComponent(name)}` : ''}`,
+      headers: { 'content-type': type },
+      payload: body,
+      cookies: { slavotax_session: cookie },
+    });
+
+  it('stores, serves and cleans up files attached to records', async () => {
+    const { call, cookie } = await registerUser(ctx.app);
+    const bank = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const cash = (
+      await call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const expense = {
+      type: 'expense',
+      accountId: bank.id,
+      amount: 1299,
+      occurredAt: iso('2026-05-02T10:00:00Z'),
+    };
+    const rec = (await call<any[]>('POST', '/api/records', expense)).body[0];
+    expect(rec.attachmentCount).toBe(0);
+
+    const up = await upload(cookie, rec.id, png, 'image/png', 'Receipt "Lidl".png');
+    expect(up.statusCode).toBe(201);
+    const file = up.json();
+    expect(file).toMatchObject({ recordId: rec.id, contentType: 'image/png', size: png.length });
+    expect(file.fileName).toBe('Receipt Lidl.png');
+
+    // Wrong or disguised types are refused.
+    expect((await upload(cookie, rec.id, Buffer.from('<p>hi</p>'), 'text/html')).statusCode).toBe(
+      400,
+    );
+    expect((await upload(cookie, rec.id, Buffer.from('<svg/>'), 'image/png')).statusCode).toBe(400);
+
+    const dl = await ctx.app.inject({
+      method: 'GET',
+      url: `/api/attachments/${file.id}`,
+      cookies: { slavotax_session: cookie },
+    });
+    expect(dl.statusCode).toBe(200);
+    expect(dl.headers['content-type']).toBe('image/png');
+    expect(dl.headers['content-security-policy']).toContain('sandbox');
+    expect(dl.rawPayload.equals(png)).toBe(true);
+
+    // Other users can neither see nor delete it.
+    const other = await registerUser(ctx.app);
+    expect((await other.call('GET', `/api/attachments/${file.id}`)).status).toBe(404);
+    expect((await other.call('GET', `/api/records/${rec.id}/attachments`)).status).toBe(404);
+    expect((await other.call('DELETE', `/api/attachments/${file.id}`)).status).toBe(404);
+    expect((await upload(other.cookie, rec.id, png, 'image/png')).statusCode).toBe(404);
+
+    // Editing the record keeps its files.
+    await call('PUT', `/api/records/${rec.id}`, { ...expense, amount: 1399 });
+    expect((await call('GET', `/api/records/${rec.id}`)).body.attachmentCount).toBe(1);
+    const page = (await call('GET', `/api/records?accountIds=${bank.id}`)).body;
+    expect(page.items[0].attachmentCount).toBe(1);
+
+    // Both sides of a transfer share the files, also after it becomes an expense.
+    const tr = (
+      await call<any[]>('POST', '/api/records', {
+        type: 'transfer',
+        accountId: bank.id,
+        toAccountId: cash.id,
+        amount: 5000,
+        occurredAt: iso('2026-05-03T10:00:00Z'),
+      })
+    ).body;
+    const incoming = tr.find((r: any) => r.amount > 0);
+    const outgoing = tr.find((r: any) => r.amount < 0);
+    expect((await upload(cookie, incoming.id, png, 'image/png')).statusCode).toBe(201);
+    expect((await call('GET', `/api/records/${outgoing.id}`)).body.attachmentCount).toBe(1);
+    expect((await call('GET', `/api/records/${incoming.id}/attachments`)).body).toHaveLength(1);
+    await call('PUT', `/api/records/${incoming.id}`, {
+      type: 'expense',
+      accountId: cash.id,
+      amount: 5000,
+      occurredAt: iso('2026-05-03T10:00:00Z'),
+    });
+    const remaining = (await call('GET', `/api/records?accountIds=${cash.id}`)).body.items;
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].attachmentCount).toBe(1);
+
+    // Deleting a record deletes its files; deleting an account sweeps the rest.
+    expect((await call('DELETE', `/api/records/${rec.id}`)).status).toBe(204);
+    expect((await call('GET', `/api/attachments/${file.id}`)).status).toBe(404);
+    const left = (await call<any[]>('GET', `/api/records/${remaining[0].id}/attachments`)).body;
+    expect(left).toHaveLength(1);
+    expect((await call('DELETE', `/api/accounts/${cash.id}`)).status).toBe(204);
+    expect((await call('GET', `/api/attachments/${left[0].id}`)).status).toBe(404);
+  });
+
+  it('limits the number of files per record', async () => {
+    const { call, cookie } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const rec = (
+      await call<any[]>('POST', '/api/records', {
+        type: 'expense',
+        accountId: acc.id,
+        amount: 100,
+        occurredAt: new Date().toISOString(),
+      })
+    ).body[0];
+    for (let i = 0; i < 10; i++) {
+      expect((await upload(cookie, rec.id, png, 'image/png')).statusCode).toBe(201);
+    }
+    expect((await upload(cookie, rec.id, png, 'image/png')).statusCode).toBe(400);
+  });
+});

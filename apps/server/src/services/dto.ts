@@ -73,7 +73,7 @@ export function toLabel(l: LabelRow): Label {
 
 export function toRecord(
   r: RecordRow,
-  extra: { labelIds?: string[]; counterpartAmount?: number | null } = {},
+  extra: { labelIds?: string[]; counterpartAmount?: number | null; attachmentCount?: number } = {},
 ): RecordItem {
   return {
     id: r.id,
@@ -90,6 +90,7 @@ export function toRecord(
     counterpartAccountId: r.counterpartAccountId,
     counterpartAmount: extra.counterpartAmount ?? null,
     plannedPaymentId: r.plannedPaymentId,
+    attachmentCount: extra.attachmentCount ?? 0,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

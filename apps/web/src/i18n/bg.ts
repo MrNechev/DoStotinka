@@ -363,6 +363,8 @@ export const bg: Record<string, string> = {
   year: 'година',
 
   // ─── Plurals ───
+  '{n} attachment': '{n} прикачен файл',
+  '{n} attachments': '{n} прикачени файла',
   '{n} account': '{n} сметка',
   '{n} accounts': '{n} сметки',
   '{n} day overdue': 'Просрочено с {n} ден',
@@ -454,6 +456,25 @@ export const bg: Record<string, string> = {
   'Who paid you?': 'Кой ви плати?',
   'the account': 'сметката',
 
+  // ─── Attachments ───
+  'Receipts & files': 'Касови бележки и файлове',
+  'Add file': 'Добави файл',
+  'Remove {name}': 'Премахни {name}',
+  'Delete {name}': 'Изтрий {name}',
+  'Delete this attachment?': 'Да се изтрие ли този файл?',
+  'A record can have at most 10 attachments': 'Един запис може да има най-много 10 файла',
+  'The record was saved, but a file could not be attached: {error}':
+    'Записът е запазен, но файлът не можа да бъде прикачен: {error}',
+  'The file is larger than 10 MB': 'Файлът е по-голям от 10 MB',
+  'Only images (JPEG, PNG, WebP, GIF) and PDF files can be attached':
+    'Могат да се прикачват само изображения (JPEG, PNG, WebP, GIF) и PDF файлове',
+  'This image could not be read': 'Изображението не може да бъде прочетено',
+  'The file is empty': 'Файлът е празен',
+  'The file content does not match its type': 'Съдържанието на файла не отговаря на типа му',
+  'Attachments are not available for the demo account':
+    'Прикачените файлове не са достъпни в демо профила',
+  'Attachment not found': 'Файлът не е намерен',
+  'Request body is too large': 'Файлът е твърде голям',
   // ─── Accounts ───
   'Cannot be changed once the account has records.':
     'Не може да се променя, след като сметката има записи.',

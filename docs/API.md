@@ -62,6 +62,18 @@ curl -X POST https://money.example.com/api/records \
   -d '{"type":"transfer","accountId":"<from>","toAccountId":"<to>","amount":10000,"occurredAt":"2026-11-04T09:00:00Z"}'
 ```
 
+Attach a photo of the receipt to a record (the body is the raw file; JPEG, PNG, WebP, GIF or PDF
+up to 10 MB):
+
+```bash
+curl -X POST "https://money.example.com/api/records/<record id>/attachments?name=receipt.jpg" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: image/jpeg" \
+  --data-binary @receipt.jpg
+```
+
+Download it again with `GET /api/attachments/<attachment id>` (add `?download=true` to get it as a
+download); `GET /api/records/<record id>/attachments` lists the files of a record.
+
 Spending per category for October:
 
 ```bash

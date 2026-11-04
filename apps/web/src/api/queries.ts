@@ -2,6 +2,7 @@ import type {
   Account,
   AccountInput,
   AccountUpdateInput,
+  Attachment,
   AuthResponse,
   BalanceResponse,
   Budget,
@@ -45,6 +46,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { language, t } from '@/i18n';
+import { prepareUpload } from '@/lib/attachments';
 import { browserTimeZone } from '@/lib/utils';
 import { ApiError, api } from './client';
 
@@ -460,6 +462,51 @@ export function useDeleteRecord() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/records/${id}`, { method: 'DELETE' }),
     onSuccess: () => invalidateFinancialData(qc),
+  });
+}
+
+export function useAttachments(recordId: string | undefined) {
+  return useQuery({
+    queryKey: ['attachments', recordId],
+    queryFn: () => api<Attachment[]>(`/records/${recordId}/attachments`),
+    enabled: !!recordId,
+  });
+}
+
+/** Uploads files one after another. Returns the uploaded attachments. */
+export function useUploadAttachments() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ recordId, files }: { recordId: string; files: File[] }) => {
+      const done: Attachment[] = [];
+      for (const file of files) {
+        const upload = await prepareUpload(file);
+        done.push(
+          await api<Attachment>(`/records/${recordId}/attachments`, {
+            method: 'POST',
+            file: upload.blob,
+            query: { name: upload.name },
+          }),
+        );
+      }
+      return done;
+    },
+    onSettled: (_data, _err, { recordId }) => {
+      void qc.invalidateQueries({ queryKey: ['attachments', recordId] });
+      void qc.invalidateQueries({ queryKey: qk.records });
+    },
+  });
+}
+
+export function useDeleteAttachment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (attachment: Attachment) =>
+      api<void>(`/attachments/${attachment.id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['attachments'] });
+      void qc.invalidateQueries({ queryKey: qk.records });
+    },
   });
 }
 

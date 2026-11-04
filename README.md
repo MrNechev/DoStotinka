@@ -34,6 +34,9 @@ leaves it.
   balance and currency. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
+- **Receipts & files** – attach photos of receipts or PDF invoices to any record. Photos are
+  scaled down in the browser before uploading; files are stored in the database (so they are part
+  of the database backup).
 - **Transfers** between accounts, including between different currencies.
 - **A really detailed category tree** – 30 groups with ~240 subcategories for expenses *and* income
   (salary, freelance, dividends, refunds, benefits, gifts …). Fully customisable: add, rename,
@@ -223,7 +226,8 @@ docker exec slavotax_postgres pg_dump -U slavotax slavotax | gzip > slavotax-$(d
 Restore into a fresh installation with
 `gunzip -c backup.sql.gz | docker exec -i slavotax_postgres psql -U slavotax slavotax`.
 Every user can additionally download their own data (CSV / JSON) in **Settings → Your data** and
-restore such a JSON backup there – also on a different Slavotax server.
+restore such a JSON backup there – also on a different Slavotax server. The JSON backup does not
+contain attached receipts; the database backup does.
 
 ## Development
 
@@ -292,8 +296,9 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 - [ ] More languages (contributions welcome)
 - [ ] Mobile app that connects to your own server
 - [ ] Shared accounts / households
-- [ ] Attachments (receipts) and record templates
-- [ ] Notifications for upcoming payments
+- [x] Attachments (receipts)
+- [x] Notifications for upcoming payments
+- [ ] Record templates
 
 Ideas and pull requests are welcome – see [CONTRIBUTING.md](CONTRIBUTING.md).
 

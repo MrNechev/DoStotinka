@@ -31,6 +31,7 @@ import {
   usePayees,
   useRecordSuggestions,
   useSaveRecord,
+  useUploadAttachments,
   useUser,
 } from '@/api/queries';
 import {
@@ -49,6 +50,7 @@ import { buildCategoryIndex } from '@/lib/categories';
 import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
+import { AttachmentsField } from './attachments-field';
 
 export interface RecordDefaults {
   type?: RecordType;
@@ -209,6 +211,8 @@ function RecordEditorDialog({
   const categoryIndex = useMemo(() => buildCategoryIndex(categories), [categories]);
   const { data: currencies } = useCurrencies();
   const save = useSaveRecord();
+  const uploadFiles = useUploadAttachments();
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const remove = useDeleteRecord();
   const confirm = useConfirm();
   const [form, setForm] = useState<FormState>(() => initialState(state, accounts));
@@ -343,7 +347,19 @@ function RecordEditorDialog({
       };
     }
     try {
-      await save.mutateAsync({ id: isEdit ? state.record.id : undefined, input });
+      const saved = await save.mutateAsync({ id: isEdit ? state.record.id : undefined, input });
+      if (!isEdit && pendingFiles.length && saved[0]) {
+        try {
+          await uploadFiles.mutateAsync({ recordId: saved[0].id, files: pendingFiles });
+        } catch (err) {
+          toast.error(
+            t('The record was saved, but a file could not be attached: {error}', {
+              error: errorMessage(err),
+            }),
+          );
+        }
+        setPendingFiles([]);
+      }
       lastAccount.set(form.accountId);
       if (form.type !== 'transfer') rememberCategory(form.type, form.categoryId);
       toast.success(
@@ -526,7 +542,7 @@ function RecordEditorDialog({
                 value: 'expense',
                 label: (
                   <>
-                    <Minus /> Expense
+                    <Minus /> {t('Expense')}
                   </>
                 ),
                 className: 'text-expense',
@@ -535,7 +551,7 @@ function RecordEditorDialog({
                 value: 'income',
                 label: (
                   <>
-                    <Plus /> Income
+                    <Plus /> {t('Income')}
                   </>
                 ),
                 className: 'text-income',
@@ -544,7 +560,7 @@ function RecordEditorDialog({
                 value: 'transfer',
                 label: (
                   <>
-                    <Repeat /> Transfer
+                    <Repeat /> {t('Transfer')}
                   </>
                 ),
               },
@@ -739,6 +755,16 @@ function RecordEditorDialog({
             />
           </Field>
 
+          {!user.isDemo && (
+            <Field label={t('Receipts & files')}>
+              <AttachmentsField
+                recordId={isEdit ? state.record.id : undefined}
+                pending={pendingFiles}
+                onPendingChange={setPendingFiles}
+              />
+            </Field>
+          )}
+
           {labels.length > 0 && (
             <Field label={t('Labels')}>
               <div className="flex flex-wrap gap-1.5">
@@ -800,13 +826,17 @@ function RecordEditorDialog({
               <Button
                 variant="outline"
                 onClick={() => void submit(true)}
-                disabled={save.isPending}
+                disabled={save.isPending || uploadFiles.isPending}
                 className="sm:mr-auto"
               >
                 {t('Save & add another')}
               </Button>
             )}
-            <Button type="submit" loading={save.isPending} className="sm:min-w-28">
+            <Button
+              type="submit"
+              loading={save.isPending || uploadFiles.isPending}
+              className="sm:min-w-28"
+            >
               {isEdit ? t('Save changes') : t('Save')}
             </Button>
           </div>

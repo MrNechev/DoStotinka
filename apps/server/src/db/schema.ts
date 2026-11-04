@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
+  customType,
   date,
   foreignKey,
   index,
@@ -28,6 +29,10 @@ const timestamps = {
 };
 
 const money = (name: string) => bigint(name, { mode: 'number' });
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});
 
 export const accountTypeEnum = pgEnum('account_type', [
   'cash',
@@ -300,6 +305,31 @@ export const exchangeRates = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.currency] })],
 );
 
+/**
+ * Files (receipts, invoices) attached to records. There is deliberately no foreign key to
+ * `records`: editing a record replaces its rows (keeping their ids), which would cascade. Orphans
+ * are removed when records are deleted and by a periodic sweep.
+ */
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    recordId: uuid('record_id').notNull(),
+    fileName: text('file_name').notNull(),
+    contentType: varchar('content_type', { length: 100 }).notNull(),
+    size: integer('size').notNull(),
+    data: bytea('data').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('attachments_record_idx').on(t.recordId),
+    index('attachments_user_idx').on(t.userId),
+  ],
+);
+
 /** Server-wide settings changed by administrators (key → JSON value). */
 export const appSettings = pgTable('app_settings', {
   key: text('key').primaryKey(),
@@ -324,3 +354,4 @@ export type PlannedPaymentRow = typeof plannedPayments.$inferSelect;
 export type BudgetRow = typeof budgets.$inferSelect;
 export type LabelRow = typeof labels.$inferSelect;
 export type GoalRow = typeof goals.$inferSelect;
+export type AttachmentRow = typeof attachments.$inferSelect;

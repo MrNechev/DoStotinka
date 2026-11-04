@@ -11,6 +11,7 @@ import { z } from 'zod';
 import type { Database } from '../db';
 import {
   accounts,
+  attachments,
   budgets,
   categories,
   exchangeRates,
@@ -186,7 +187,9 @@ export async function restoreBackup(
   backup: Backup,
 ): Promise<RestoreResult> {
   return db.transaction(async (tx) => {
+    // Attachments are not part of a JSON backup; they belong to records that are replaced.
     for (const table of [
+      attachments,
       records,
       plannedPayments,
       budgets,

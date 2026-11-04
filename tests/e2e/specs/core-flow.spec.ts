@@ -32,6 +32,15 @@ test('a new user can register, create an account and log an expense', async ({ p
   await dialog.getByPlaceholder('Search categories…').fill('Groceries');
   await dialog.getByRole('button', { name: /^Groceries/ }).click();
   await dialog.getByLabel('Payee').fill('Corner shop');
+  await dialog.locator('input[type=file]').setInputFiles({
+    name: 'receipt.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
+  await expect(dialog.getByRole('img', { name: 'receipt.png' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Expense saved')).toBeVisible();
 
@@ -42,6 +51,7 @@ test('a new user can register, create an account and log an expense', async ({ p
   await expect(page.getByRole('button', { name: /Food & Drinks\s*€12\.50/ })).toBeVisible();
   await page.goto('/records?q=Corner');
   await expect(page.getByText('Corner shop')).toBeVisible();
+  await expect(page.getByLabel('1 attachment')).toBeVisible();
 });
 
 test('the user can log out and back in', async ({ page }) => {

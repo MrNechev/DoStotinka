@@ -4,6 +4,7 @@ import type { Config } from './config';
 import type { Database } from './db';
 import { exchangeRates, sessions, users } from './db/schema';
 import { ensureDemo } from './demo/seed';
+import { sweepOrphanAttachments } from './services/attachments';
 import { processAutoConfirm } from './services/planned';
 import { applyReferenceRates, refreshReferenceRates } from './services/rates';
 import { processReminders } from './services/reminders';
@@ -32,8 +33,10 @@ export function startJobs(db: Database, config: Config, log: FastifyBaseLogger):
   const cleanupSessions = async () => {
     try {
       await db.delete(sessions).where(and(lt(sessions.expiresAt, new Date())));
+      const files = await sweepOrphanAttachments(db);
+      if (files) log.info({ files }, 'Removed attachments of deleted records');
     } catch (err) {
-      log.warn({ err }, 'Session cleanup failed');
+      log.warn({ err }, 'Cleanup failed');
     }
   };
   timers.push(setInterval(cleanupSessions, 12 * HOUR));

@@ -36,12 +36,23 @@ export function buildQuery(query?: Query): string {
 
 export async function api<T>(
   path: string,
-  options: { method?: string; body?: unknown; query?: Query; signal?: AbortSignal } = {},
+  options: {
+    method?: string;
+    body?: unknown;
+    /** Sent as is with its own content type (file uploads). */
+    file?: Blob;
+    query?: Query;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<T> {
   const res = await fetch(`/api${path}${buildQuery(options.query)}`, {
     method: options.method ?? 'GET',
-    headers: options.body !== undefined ? { 'content-type': 'application/json' } : undefined,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    headers: options.file
+      ? { 'content-type': options.file.type || 'application/octet-stream' }
+      : options.body !== undefined
+        ? { 'content-type': 'application/json' }
+        : undefined,
+    body: options.file ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     credentials: 'same-origin',
     signal: options.signal,
   });

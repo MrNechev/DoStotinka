@@ -1,12 +1,12 @@
 import type { Account, Label, RecordItem } from '@slavotax/shared';
 import { parseISO } from 'date-fns';
-import { CalendarClock, Check, Inbox } from 'lucide-react';
+import { CalendarClock, Check, Inbox, Paperclip } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useAccounts, useCategories, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { fmt } from '@/lib/date';
 import { dayLabel, money, timeLabel } from '@/lib/format';
@@ -111,6 +111,12 @@ export function RecordRow({
             <CalendarClock
               className="size-3.5 shrink-0 text-muted-foreground"
               aria-label={t('From a planned payment')}
+            />
+          )}
+          {record.attachmentCount > 0 && (
+            <Paperclip
+              className="size-3.5 shrink-0 text-muted-foreground"
+              aria-label={tn(record.attachmentCount, '{n} attachment', '{n} attachments')}
             />
           )}
         </span>

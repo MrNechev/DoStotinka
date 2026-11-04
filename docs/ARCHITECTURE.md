@@ -35,6 +35,7 @@ All tables (except the shared `reference_rates` cache) carry a `user_id`; every 
 | `categories` | Two-level tree (`parent_id`). `kind` is `expense` or `income`. `system_key` links rows to the default template (e.g. `food.groceries`). Subcategories usually inherit the parent colour (`color = null`). |
 | `records` | One row per account movement. `amount` is **signed** (negative = money out) in the account currency. A transfer is two rows sharing `transfer_group_id`, each pointing at the other account via `counterpart_account_id`. |
 | `labels`, `record_labels` | Free tags for records. |
+| `attachments` | Files of a record (receipts, invoices) stored as `bytea`. No foreign key to `records` because editing a record re-creates its rows with the same ids; files are deleted with their record and orphans are swept periodically. Both sides of a transfer share the files of the outgoing row. |
 | `planned_payments` | Recurrence rule (`frequency`, `interval`, `start_date`, `end_date`) plus `next_due_date` – the next unpaid occurrence. Paying creates a record linked via `planned_payment_id` and advances `next_due_date`; skipping only advances it. |
 | `budgets` | Limit per week/month/year for a set of categories (parents include their subcategories) and accounts (empty = all). |
 | `goals` | Savings goals: target amount/date and either a manually saved amount or a linked account whose balance is the progress. |
@@ -59,7 +60,10 @@ excluded from statistics; an explicit account selection always includes the chos
   SameSite=Lax, Secure on HTTPS). With `"issueToken": true` the raw token is also returned for API
   clients, which send it as `Authorization: Bearer <token>`.
 - Passwords are hashed with Argon2id. Auth endpoints are rate limited.
-- The API only accepts JSON bodies, which together with SameSite cookies prevents CSRF.
+- The API only accepts JSON bodies (and raw image/PDF bodies for attachments), which need a CORS
+  preflight from other origins. Together with SameSite cookies this prevents CSRF.
+- Attachments are checked against their file signature on upload and served with `nosniff` and a
+  sandboxing CSP for images, so an uploaded file can never run as a page of the app.
 
 ## Background jobs
 
@@ -70,7 +74,7 @@ excluded from statistics; an explicit account selection always includes the chos
 | Exchange rates | 6 h | Download ECB rates and apply them to non-manual user rates. |
 | Automatic planned payments | 15 min | Record due occurrences of plans with `auto_confirm`. |
 | Reminders | 15 min | Send the daily ntfy/Gotify/Discord/Slack/webhook message once the user's hour has passed. |
-| Session cleanup | 12 h | Delete expired sessions. |
+| Cleanup | 12 h | Delete expired sessions and files of deleted records. |
 | Demo reset | `DEMO_RESET_HOURS` | Regenerate the demo data. |
 
 Confirming or skipping a planned occurrence is a compare-and-set on `next_due_date`, so a double

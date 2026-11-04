@@ -25,6 +25,7 @@ import type { z } from 'zod';
 import type { Database } from '../db';
 import {
   accounts,
+  attachments,
   categories,
   labels,
   type RecordRow,
@@ -33,6 +34,7 @@ import {
   type UserRow,
 } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
+import { attachmentCounts } from './attachments';
 import { toRecord } from './dto';
 import { getRateMap } from './rates';
 
@@ -210,12 +212,21 @@ export async function updateRecord(
         group.map((r) => r.id),
       ),
     );
-    return insertRecordRows(tx, user, input, {
+    const inserted = await insertRecordRows(tx, user, input, {
       ids: { main: main.id, counterpart: other?.id },
       createdAt: main.createdAt,
       plannedPaymentId: main.plannedPaymentId,
       plannedDueDate: main.plannedDueDate,
     });
+    // A transfer that became an expense/income loses its second row – keep its files.
+    const gone = group.map((r) => r.id).filter((rid) => !inserted.some((r) => r.id === rid));
+    if (gone.length) {
+      await tx
+        .update(attachments)
+        .set({ recordId: main.id })
+        .where(and(eq(attachments.userId, user.id), inArray(attachments.recordId, gone)));
+    }
+    return inserted;
   });
   return decorate(db, rows);
 }
@@ -223,12 +234,9 @@ export async function updateRecord(
 export async function deleteRecord(db: Database, userId: string, id: string): Promise<void> {
   await db.transaction(async (tx) => {
     const group = await getRecordGroup(tx, userId, id);
-    await tx.delete(records).where(
-      inArray(
-        records.id,
-        group.map((r) => r.id),
-      ),
-    );
+    const groupIds = group.map((r) => r.id);
+    await tx.delete(records).where(inArray(records.id, groupIds));
+    await tx.delete(attachments).where(inArray(attachments.recordId, groupIds));
   });
 }
 
@@ -252,6 +260,14 @@ export async function deleteRecords(db: Database, userId: string, ids: string[])
       .delete(records)
       .where(and(eq(records.userId, userId), or(...conditions)))
       .returning({ id: records.id });
+    if (deleted.length) {
+      await tx.delete(attachments).where(
+        inArray(
+          attachments.recordId,
+          deleted.map((r) => r.id),
+        ),
+      );
+    }
     return deleted.length;
   });
 }
@@ -270,6 +286,7 @@ export async function decorate(db: Tx, rows: RecordRow[]): Promise<RecordItem[]>
 
   const groups = [...new Set(rows.map((r) => r.transferGroupId).filter((g): g is string => !!g))];
   const counterpart = new Map<string, number>();
+  const siblingOf = new Map<string, string>();
   if (groups.length) {
     const siblings = await db
       .select({ id: records.id, group: records.transferGroupId, amount: records.amount })
@@ -278,13 +295,23 @@ export async function decorate(db: Tx, rows: RecordRow[]): Promise<RecordItem[]>
     for (const r of rows) {
       if (!r.transferGroupId) continue;
       const sib = siblings.find((s) => s.group === r.transferGroupId && s.id !== r.id);
-      if (sib) counterpart.set(r.id, sib.amount);
+      if (sib) {
+        counterpart.set(r.id, sib.amount);
+        siblingOf.set(r.id, sib.id);
+      }
     }
   }
+  // Both sides of a transfer show the attachments of the group.
+  const counts = await attachmentCounts(db, [...ids, ...siblingOf.values()]);
+  const countOf = (id: string) => {
+    const sib = siblingOf.get(id);
+    return (counts.get(id) ?? 0) + (sib ? (counts.get(sib) ?? 0) : 0);
+  };
   return rows.map((r) =>
     toRecord(r, {
       labelIds: labelMap.get(r.id) ?? [],
       counterpartAmount: counterpart.get(r.id) ?? null,
+      attachmentCount: countOf(r.id),
     }),
   );
 }

@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- Attach receipts and other files (photos, PDFs) to records. Photos are scaled down in the browser
+  before uploading; a paperclip in the record list marks records with files.
+
+### Fixed
+- The record type switch (Expense / Income / Transfer) was not translated.
+
 ## [0.3.0] – 2026-11-04
 
 ### Added

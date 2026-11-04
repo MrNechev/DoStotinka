@@ -141,7 +141,7 @@ export function PlannedFormDialog({
                   value: 'expense',
                   label: (
                     <>
-                      <Minus /> Expense
+                      <Minus /> {t('Expense')}
                     </>
                   ),
                   className: 'text-expense',
@@ -150,7 +150,7 @@ export function PlannedFormDialog({
                   value: 'income',
                   label: (
                     <>
-                      <Plus /> Income
+                      <Plus /> {t('Income')}
                     </>
                   ),
                   className: 'text-income',
@@ -159,7 +159,7 @@ export function PlannedFormDialog({
                   value: 'transfer',
                   label: (
                     <>
-                      <Repeat /> Transfer
+                      <Repeat /> {t('Transfer')}
                     </>
                   ),
                 },
