@@ -1,4 +1,4 @@
-import type { Interval, TimeseriesResponse } from '@slavotax/shared';
+import type { Interval, TimeseriesResponse } from '@dostotinka/shared';
 import { ChevronRight } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { type StatsScope, useCategories, useTimeseries } from '@/api/queries';

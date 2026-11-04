@@ -6,4 +6,4 @@ export * from './recurrence';
 export * from './schemas';
 export * from './types';
 
-export const APP_NAME = 'Slavotax';
+export const APP_NAME = 'DoStotinka';

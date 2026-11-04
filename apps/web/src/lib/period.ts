@@ -1,4 +1,4 @@
-import type { Interval } from '@slavotax/shared';
+import type { Interval } from '@dostotinka/shared';
 import {
   addDays,
   addMonths,

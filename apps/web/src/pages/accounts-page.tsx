@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPE_LABELS, type Account, convertMinor } from '@slavotax/shared';
+import { ACCOUNT_TYPE_LABELS, type Account, convertMinor } from '@dostotinka/shared';
 import { ArrowDown, ArrowUp, Plus, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';

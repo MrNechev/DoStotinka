@@ -28,7 +28,7 @@ jobs:
             echo "### Docker image"
             echo
             echo '```'
-            echo "ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/slavotax:${version}"
+            echo "ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/dostotinka:${version}"
             echo '```'
             echo
             echo "Installation and upgrade instructions: see the [README](https://github.com/${GITHUB_REPOSITORY}#installation)."
@@ -37,4 +37,4 @@ jobs:
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "Slavotax ${GITHUB_REF_NAME#v}" --notes-file notes.md --verify-tag
+        run: gh release create "$GITHUB_REF_NAME" --title "DoStotinka ${GITHUB_REF_NAME#v}" --notes-file notes.md --verify-tag

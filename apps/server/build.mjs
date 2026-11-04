@@ -1,4 +1,4 @@
-// Bundles the server (including the workspace `@slavotax/shared` package) into dist/index.js.
+// Bundles the server (including the workspace `@dostotinka/shared` package) into dist/index.js.
 // Runtime dependencies from package.json stay external and are installed in the image.
 import { readFileSync } from 'node:fs';
 import { build } from 'esbuild';
@@ -16,7 +16,7 @@ await build({
   sourcemap: true,
   external: Object.keys(pkg.dependencies ?? {}),
   banner: {
-    js: "import { createRequire as __slvCreateRequire } from 'node:module'; const require = __slvCreateRequire(import.meta.url);",
+    js: "import { createRequire as __dsCreateRequire } from 'node:module'; const require = __dsCreateRequire(import.meta.url);",
   },
   logLevel: 'info',
 });

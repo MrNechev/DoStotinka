@@ -1,4 +1,4 @@
-import { convertMinor, type Goal, goalContributionInput, goalInput } from '@slavotax/shared';
+import { convertMinor, type Goal, goalContributionInput, goalInput } from '@dostotinka/shared';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

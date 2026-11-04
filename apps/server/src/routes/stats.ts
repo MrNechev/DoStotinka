@@ -4,7 +4,7 @@ import {
   categoryStatsQuery,
   statsQuery,
   timeseriesQuery,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { eq, max, min } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { records } from '../db/schema';

@@ -6,7 +6,7 @@ import {
   type PlannedPayment,
   parseAmountToMinor,
   type RecordType,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { Minus, Plus, Repeat } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

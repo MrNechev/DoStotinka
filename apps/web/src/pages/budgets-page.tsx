@@ -1,4 +1,4 @@
-import type { BudgetStatus } from '@slavotax/shared';
+import type { BudgetStatus } from '@dostotinka/shared';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import {
   ChevronLeft,

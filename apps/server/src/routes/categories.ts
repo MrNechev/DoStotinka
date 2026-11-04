@@ -1,4 +1,4 @@
-import { categoryInput, categoryUpdateInput, reorderInput } from '@slavotax/shared';
+import { categoryInput, categoryUpdateInput, reorderInput } from '@dostotinka/shared';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

@@ -1,4 +1,4 @@
-import { importInput } from '@slavotax/shared';
+import { importInput } from '@dostotinka/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { currentUser } from '../plugins/auth';
 import { importRecords } from '../services/import';

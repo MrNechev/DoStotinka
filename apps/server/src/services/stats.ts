@@ -9,7 +9,7 @@ import {
   type RateMap,
   type StatsSummary,
   type TimeseriesResponse,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db';
 import type { UserRow } from '../db/schema';

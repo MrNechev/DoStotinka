@@ -4,7 +4,7 @@ import {
   type debtInput,
   type debtMovementInput,
   type debtUpdateInput,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';

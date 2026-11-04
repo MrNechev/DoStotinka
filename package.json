@@ -1,6 +1,6 @@
 {
-  "name": "slavotax",
-  "version": "0.5.0",
+  "name": "dostotinka",
+  "version": "0.5.1",
   "private": true,
   "description": "Self-hosted personal budget & money manager",
   "license": "AGPL-3.0-only",
@@ -10,18 +10,18 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @slavotax/server --filter @slavotax/web dev",
-    "dev:server": "pnpm --filter @slavotax/server dev",
-    "dev:web": "pnpm --filter @slavotax/web dev",
-    "build": "pnpm --filter @slavotax/web build && pnpm --filter @slavotax/server build",
-    "start": "pnpm --filter @slavotax/server start",
+    "dev": "pnpm --parallel --filter @dostotinka/server --filter @dostotinka/web dev",
+    "dev:server": "pnpm --filter @dostotinka/server dev",
+    "dev:web": "pnpm --filter @dostotinka/web dev",
+    "build": "pnpm --filter @dostotinka/web build && pnpm --filter @dostotinka/server build",
+    "start": "pnpm --filter @dostotinka/server start",
     "typecheck": "pnpm -r typecheck",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "test": "pnpm -r test",
-    "db:generate": "pnpm --filter @slavotax/server db:generate",
-    "db:migrate": "pnpm --filter @slavotax/server db:migrate"
+    "db:generate": "pnpm --filter @dostotinka/server db:generate",
+    "db:migrate": "pnpm --filter @dostotinka/server db:migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",

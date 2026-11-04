@@ -1,18 +1,18 @@
 # Security policy
 
-Slavotax stores personal financial data, so security reports are taken seriously.
+DoStotinka stores personal financial data, so security reports are taken seriously.
 
 ## Reporting a vulnerability
 
 Please **do not open a public issue** for security problems. Instead use GitHub's
-[private vulnerability reporting](https://github.com/MrNechev/slavotax/security/advisories/new)
+[private vulnerability reporting](https://github.com/MrNechev/DoStotinka/security/advisories/new)
 for this repository. Include a description of the issue, steps to reproduce and the affected
 version. You will get a response as soon as possible, and a fix will be released before details are
 made public.
 
 ## Supported versions
 
-Slavotax is in alpha; only the latest release receives security fixes.
+DoStotinka is in alpha; only the latest release receives security fixes.
 
 ## Hardening checklist for operators
 

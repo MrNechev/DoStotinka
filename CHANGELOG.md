@@ -6,6 +6,25 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.5.1] – 2026-11-04
+
+### Changed
+- **Slavotax is now called DoStotinka** (Bulgarian for “to the last cent”). Nothing else changed in
+  this release. The repository moved to `MrNechev/DoStotinka` (old links redirect) and the Docker
+  image to `ghcr.io/mrnechev/dostotinka`; `ghcr.io/mrnechev/slavotax` stays at 0.5.0.
+
+  **Upgrading an existing installation:**
+  1. `docker compose down` in your installation folder.
+  2. Download the new `docker-compose.yml` (see the README).
+  3. In your `.env`, rename `SLAVOTAX_PORT` to `DOSTOTINKA_PORT` and `SLAVOTAX_VERSION` to
+     `DOSTOTINKA_VERSION`. Keep `DB_USERNAME` and `DB_DATABASE_NAME` as they are – if your `.env`
+     does not set them, add `DB_USERNAME=slavotax` and `DB_DATABASE_NAME=slavotax` (the old defaults).
+  4. `docker compose up -d`. Your data stays where it is.
+
+  Everybody has to log in once more (the session cookie was renamed). Two-factor entries in
+  authenticator apps keep working, backups made with Slavotax can still be restored, and the demo
+  account moves to `demo@dostotinka.app`.
+
 ## [0.5.0] – 2026-11-04
 
 ### Changed
@@ -159,7 +178,10 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/slavotax/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/MrNechev/slavotax/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/MrNechev/slavotax/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/MrNechev/slavotax/releases/tag/v0.1.0
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/MrNechev/DoStotinka/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/MrNechev/DoStotinka/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/MrNechev/DoStotinka/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/MrNechev/DoStotinka/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/MrNechev/DoStotinka/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/MrNechev/DoStotinka/releases/tag/v0.1.0

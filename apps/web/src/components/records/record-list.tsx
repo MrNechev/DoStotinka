@@ -1,4 +1,4 @@
-import type { Account, Debt, Label, RecordItem } from '@slavotax/shared';
+import type { Account, Debt, Label, RecordItem } from '@dostotinka/shared';
 import { parseISO } from 'date-fns';
 import { CalendarClock, Check, Inbox, Paperclip } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';

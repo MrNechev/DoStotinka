@@ -1,4 +1,4 @@
-import type { Interval } from '@slavotax/shared';
+import type { Interval } from '@dostotinka/shared';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';

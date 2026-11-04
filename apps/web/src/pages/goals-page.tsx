@@ -4,7 +4,7 @@ import {
   getCurrency,
   minorToInputString,
   parseAmountToMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { parseISO } from 'date-fns';
 import { Flag, Minus, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -141,7 +141,7 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
           <Field
             label={t('Target date (optional)')}
             htmlFor="goal-date"
-            hint={t('Slavotax tells you how much to put aside every month.')}
+            hint={t('DoStotinka tells you how much to put aside every month.')}
           >
             <Input
               id="goal-date"

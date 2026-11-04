@@ -1,4 +1,4 @@
-import { labelInput } from '@slavotax/shared';
+import { labelInput } from '@dostotinka/shared';
 import { and, asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

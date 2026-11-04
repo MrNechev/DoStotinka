@@ -1,4 +1,4 @@
-import { CURRENCIES } from '@slavotax/shared';
+import { CURRENCIES } from '@dostotinka/shared';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ApiError, errorMessage } from '@/api/client';

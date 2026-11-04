@@ -6,7 +6,7 @@ import type {
   PlannedPayment,
   RecordItem,
   User,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import type {
   AccountRow,
   BudgetRow,

@@ -5,7 +5,7 @@ import {
   CATEGORY_KINDS,
   FREQUENCIES,
   RECORD_TYPES,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '../db';
@@ -37,7 +37,8 @@ const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 /** Shape of `GET /api/export/backup.json` (version 1). Unknown fields are ignored. */
 export const backupSchema = z.object({
-  format: z.literal('slavotax-backup'),
+  // `slavotax-backup`: backups made before the project was renamed (0.5.0 and older).
+  format: z.enum(['dostotinka-backup', 'slavotax-backup']),
   version: z.literal(1),
   user: z
     .object({

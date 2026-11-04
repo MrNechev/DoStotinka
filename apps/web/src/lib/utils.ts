@@ -17,7 +17,7 @@ export function storage<T>(key: string, fallback: T) {
   return {
     get(): T {
       try {
-        const raw = localStorage.getItem(`slavotax.${key}`);
+        const raw = localStorage.getItem(`dostotinka.${key}`);
         return raw === null ? fallback : (JSON.parse(raw) as T);
       } catch {
         return fallback;
@@ -25,7 +25,7 @@ export function storage<T>(key: string, fallback: T) {
     },
     set(value: T) {
       try {
-        localStorage.setItem(`slavotax.${key}`, JSON.stringify(value));
+        localStorage.setItem(`dostotinka.${key}`, JSON.stringify(value));
       } catch {
         /* storage unavailable */
       }

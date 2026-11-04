@@ -17,16 +17,16 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm --filter @slavotax/web build \
- && pnpm --filter @slavotax/server build \
- && pnpm --filter @slavotax/server deploy --prod --legacy /out
+RUN pnpm --filter @dostotinka/web build \
+ && pnpm --filter @dostotinka/server build \
+ && pnpm --filter @dostotinka/server deploy --prod --legacy /out
 
 # ─────────────────────────────── Runtime ───────────────────────────────
 FROM node:24-alpine AS runtime
 ARG APP_VERSION=dev
-LABEL org.opencontainers.image.title="Slavotax" \
+LABEL org.opencontainers.image.title="DoStotinka" \
       org.opencontainers.image.description="Self-hosted personal budget & money manager" \
-      org.opencontainers.image.source="https://github.com/MrNechev/slavotax" \
+      org.opencontainers.image.source="https://github.com/MrNechev/DoStotinka" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.version="${APP_VERSION}"
 

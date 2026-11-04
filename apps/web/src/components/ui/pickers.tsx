@@ -1,4 +1,4 @@
-import { COLOR_PALETTE } from '@slavotax/shared';
+import { COLOR_PALETTE } from '@dostotinka/shared';
 import { Check, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { t } from '@/i18n';

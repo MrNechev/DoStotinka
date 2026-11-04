@@ -1,4 +1,4 @@
-import { formatMoney as fm, getCurrency } from '@slavotax/shared';
+import { formatMoney as fm, getCurrency } from '@dostotinka/shared';
 import { format, isThisYear, isToday, isYesterday, parseISO } from 'date-fns';
 import { t, tn } from '@/i18n';
 import { fmt, fmtCap } from './date';

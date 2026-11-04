@@ -4,7 +4,7 @@ import {
   type BudgetPeriod,
   type BudgetStatus,
   convertMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db';
 import type { BudgetRow, UserRow } from '../db/schema';

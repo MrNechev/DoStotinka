@@ -1,4 +1,4 @@
-import { bulkUpdateInput, recordInput, recordListQuery } from '@slavotax/shared';
+import { bulkUpdateInput, recordInput, recordListQuery } from '@dostotinka/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { currentUser } from '../plugins/auth';

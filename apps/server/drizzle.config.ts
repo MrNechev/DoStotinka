@@ -6,6 +6,6 @@ export default defineConfig({
   out: './drizzle',
   casing: 'snake_case',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'postgres://slavotax:slavotax@localhost:54329/slavotax',
+    url: process.env.DATABASE_URL ?? 'postgres://dostotinka:dostotinka@localhost:54329/dostotinka',
   },
 });

@@ -1,6 +1,6 @@
 # Architecture
 
-This document explains how Slavotax is put together. It is meant for contributors – users only need
+This document explains how DoStotinka is put together. It is meant for contributors – users only need
 the [README](../README.md).
 
 ## Overview
@@ -58,7 +58,7 @@ excluded from statistics; an explicit account selection always includes the chos
 
 ## Authentication
 
-- `POST /api/auth/login` creates a session and sets the `slavotax_session` cookie (HttpOnly,
+- `POST /api/auth/login` creates a session and sets the `dostotinka_session` cookie (HttpOnly,
   SameSite=Lax, Secure on HTTPS). With `"issueToken": true` the raw token is also returned for API
   clients, which send it as `Authorization: Bearer <token>`.
 - Passwords are hashed with Argon2id. Auth endpoints are rate limited.

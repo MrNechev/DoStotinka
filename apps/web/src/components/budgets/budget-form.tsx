@@ -3,7 +3,7 @@ import {
   type BudgetPeriod,
   minorToInputString,
   parseAmountToMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';

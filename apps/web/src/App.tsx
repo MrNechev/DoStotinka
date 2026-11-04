@@ -80,7 +80,7 @@ function RequireAuth() {
   if (isError) {
     return (
       <div className="flex min-h-dvh items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        {t('Cannot reach the Slavotax server. Please check your connection and reload the page.')}
+        {t('Cannot reach the DoStotinka server. Please check your connection and reload the page.')}
       </div>
     );
   }

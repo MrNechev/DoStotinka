@@ -48,7 +48,7 @@ describe('totp', () => {
 
   it('builds otpauth links and recovery codes', () => {
     expect(otpauthUrl('ABC', 'me@example.com')).toBe(
-      'otpauth://totp/Slavotax%3Ame%40example.com?secret=ABC&issuer=Slavotax&algorithm=SHA1&digits=6&period=30',
+      'otpauth://totp/DoStotinka%3Ame%40example.com?secret=ABC&issuer=DoStotinka&algorithm=SHA1&digits=6&period=30',
     );
     const codes = generateRecoveryCodes();
     expect(codes).toHaveLength(10);

@@ -1,4 +1,4 @@
-import { evaluateAmountExpression } from '@slavotax/shared';
+import { evaluateAmountExpression } from '@dostotinka/shared';
 import type { CategoryIndex } from './categories';
 
 export const normalize = (s: string) =>
@@ -11,7 +11,7 @@ export const normalize = (s: string) =>
     .trim();
 
 /**
- * Default categories of Wallet by BudgetBakers → Slavotax system keys.
+ * Default categories of Wallet by BudgetBakers → DoStotinka system keys.
  * `[expenseKey, incomeKey]` – the second one is used for income records.
  */
 const WALLET: Record<string, [string, string?]> = {

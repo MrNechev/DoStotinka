@@ -1,6 +1,6 @@
 # User guide
 
-This guide explains how Slavotax works from a user's point of view. For installation see the
+This guide explains how DoStotinka works from a user's point of view. For installation see the
 [README](../README.md); for scripts and automations see the [API guide](API.md).
 
 - [First steps](#first-steps)
@@ -35,7 +35,7 @@ An account has a name, a type (cash, checking, savings, credit card, deposit, in
 other), a currency and a colour. Its **balance** is the starting balance plus all records of the
 account.
 
-- **Adjust balance** sets the balance to what your bank shows – Slavotax adds a correction record
+- **Adjust balance** sets the balance to what your bank shows – DoStotinka adds a correction record
   for the difference.
 - **Exclude from statistics** for accounts that should not influence charts (e.g. an investment
   depot). An explicit account selection in the statistics still includes them.
@@ -69,7 +69,7 @@ once. **Export CSV** exports exactly the filtered records.
 
 ## Categories and labels
 
-Slavotax comes with a detailed two-level category tree (groups such as *Food & Drinks* with
+DoStotinka comes with a detailed two-level category tree (groups such as *Food & Drinks* with
 subcategories such as *Groceries* or *Café & coffee*) for expenses and income. You can rename,
 recolour, reorder, archive or delete categories and add your own. Deleting a category moves its
 records to the parent group (or leaves them uncategorized).
@@ -124,7 +124,7 @@ periods, and the history shows every past period.
 
 Save towards a target amount, optionally by a date. Progress comes either from the balance of a
 linked account (e.g. your savings account) or from amounts you add by hand. With a target date
-Slavotax tells you how much to put aside every month.
+DoStotinka tells you how much to put aside every month.
 
 ## Debts
 
@@ -132,7 +132,7 @@ Track money you lent to someone or borrowed from someone:
 
 - **New debt** – choose *I lent money* or *I borrowed money*, the person and the amount. With an
   account, a record moves the money (out of the account when you lend, in when you borrow). For a
-  debt from before you started using Slavotax choose *No account* – then only the amount owed is
+  debt from before you started using DoStotinka choose *No account* – then only the amount owed is
   tracked.
 - **Record a repayment / Pay back** records the money coming back or going out; **Lend more /
   Borrow more** increases the debt.
@@ -157,7 +157,7 @@ rates by hand (Settings → Currencies) – manual rates are kept until you upda
   duplicates are skipped.
 - **Export CSV** on the Records page exports the filtered records.
 - **Backup** (Settings → Your data) downloads all your data as JSON, which you can **restore** –
-  also on another Slavotax server. Attached files are not part of this backup (they are part of
+  also on another DoStotinka server. Attached files are not part of this backup (they are part of
   the database backup the administrator makes).
 
 ## Settings and security
@@ -180,5 +180,5 @@ two-factor login for a user who lost their phone, grant administrator rights and
 
 - <kbd>N</kbd> – add a record (anywhere outside text fields).
 - <kbd>Enter</kbd> in the record editor saves; **Save & add another** keeps the dialog open.
-- Slavotax can be installed as an app on phones and desktops (browser menu → *Install* / *Add to
+- DoStotinka can be installed as an app on phones and desktops (browser menu → *Install* / *Add to
   home screen*).

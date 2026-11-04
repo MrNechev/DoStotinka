@@ -1,4 +1,4 @@
-import { loginInput, registerInput } from '@slavotax/shared';
+import { loginInput, registerInput } from '@dostotinka/shared';
 import { eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { sessions, users } from '../db/schema';
@@ -70,7 +70,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       const { email, password, issueToken } = req.body;
       const [user] = await app.db.select().from(users).where(eq(users.email, email));
       if (!user) {
-        dummyHash ??= hashPassword('slavotax-timing-protection');
+        dummyHash ??= hashPassword('dostotinka-timing-protection');
         await verifyPassword(await dummyHash, password);
         throw unauthorized('Invalid e-mail or password');
       }

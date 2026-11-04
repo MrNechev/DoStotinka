@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPE_LABELS, type Account } from '@slavotax/shared';
+import { ACCOUNT_TYPE_LABELS, type Account } from '@dostotinka/shared';
 import { Link } from 'react-router';
 import { IconBadge } from '@/components/ui/category-icon';
 import { t } from '@/i18n';

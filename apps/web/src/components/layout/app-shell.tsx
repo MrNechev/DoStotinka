@@ -231,7 +231,7 @@ export function AppShell() {
         </button>
         <div className="flex items-center gap-2">
           <LogoMark className="size-7" />
-          <span className="font-semibold">{t('Slavotax')}</span>
+          <span className="font-semibold">{t('DoStotinka')}</span>
         </div>
         <UserMenu compact />
       </header>

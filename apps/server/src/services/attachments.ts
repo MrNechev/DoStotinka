@@ -1,4 +1,4 @@
-import type { Attachment } from '@slavotax/shared';
+import type { Attachment } from '@dostotinka/shared';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../db';
 import { type AttachmentRow, attachments, records } from '../db/schema';

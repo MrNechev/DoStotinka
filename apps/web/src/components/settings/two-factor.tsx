@@ -1,4 +1,4 @@
-import type { TwoFactorSetup } from '@slavotax/shared';
+import type { TwoFactorSetup } from '@dostotinka/shared';
 import { Check, Copy, Download, KeyRound, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -57,7 +57,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
             const url = URL.createObjectURL(new Blob([`${text}\n`], { type: 'text/plain' }));
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'slavotax-recovery-codes.txt';
+            a.download = 'dostotinka-recovery-codes.txt';
             a.click();
             URL.revokeObjectURL(url);
           }}
@@ -326,7 +326,7 @@ export function SsoSettings() {
     if (!linked && !failed) return;
     if (linked) toast.success(t('Single sign-on is connected'));
     else if (failed === 'already_linked')
-      toast.error(t('This login is already connected to another Slavotax account.'));
+      toast.error(t('This login is already connected to another DoStotinka account.'));
     else toast.error(t('Single sign-on failed. Please try again.'));
     setParams({}, { replace: true });
   }, [params, setParams]);

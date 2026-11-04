@@ -6,7 +6,7 @@ import {
   type RecordPage,
   type recordInput,
   type recordListQuery,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import {
   and,
   desc,

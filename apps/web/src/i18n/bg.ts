@@ -308,7 +308,7 @@ export const bg: Record<string, string> = {
   'Skip next': 'Пропусни следващото',
   'Skip this occurrence': 'Пропусни това плащане',
   'Skipped {name}': '„{name}“ е пропуснато',
-  Slavotax: 'Slavotax',
+  DoStotinka: 'DoStotinka',
   'Spending by category': 'Разходи по категории',
   'Spending over time': 'Разходи във времето',
   'Spending this month': 'Разходи този месец',
@@ -643,8 +643,8 @@ export const bg: Record<string, string> = {
   'Debt not found': 'Дългът не е намерен',
   'The due date cannot be before the date': 'Крайният срок не може да е преди датата',
   // ─── Single sign-on ───
-  'There is no Slavotax account for this login. Ask your administrator to add you.':
-    'Няма профил в Slavotax за този вход. Помолете администратора да ви добави.',
+  'There is no DoStotinka account for this login. Ask your administrator to add you.':
+    'Няма профил в DoStotinka за този вход. Помолете администратора да ви добави.',
   'Your login provider did not share an e-mail address.':
     'Доставчикът на вход не предостави имейл адрес.',
   'The login took too long. Please try again.': 'Входът отне твърде дълго. Опитайте отново.',
@@ -656,8 +656,8 @@ export const bg: Record<string, string> = {
   // ─── Security review ───
   'Your password': 'Вашата парола',
   'Single sign-on is connected': 'Единният вход е свързан',
-  'This login is already connected to another Slavotax account.':
-    'Този вход вече е свързан с друг профил в Slavotax.',
+  'This login is already connected to another DoStotinka account.':
+    'Този вход вече е свързан с друг профил в DoStotinka.',
   'Single sign-on': 'Единен вход',
   Connected: 'Свързан',
   'Not connected': 'Не е свързан',
@@ -760,8 +760,8 @@ export const bg: Record<string, string> = {
   'No goals yet': 'Все още няма цели',
   'Save up for the things that matter – a holiday, a new laptop or an emergency fund.':
     'Спестявайте за важните неща – почивка, нов лаптоп или авариен фонд.',
-  'Slavotax tells you how much to put aside every month.':
-    'Slavotax ще ви каже колко да отделяте всеки месец.',
+  'DoStotinka tells you how much to put aside every month.':
+    'DoStotinka ще ви каже колко да отделяте всеки месец.',
   'The goal follows the current balance of this account.':
     'Целта следва текущата наличност на тази сметка.',
   'The saved amount is not a valid number': 'Спестената сума не е валидно число',
@@ -811,11 +811,11 @@ export const bg: Record<string, string> = {
   'Wallet export detected': 'Разпознат е експорт от Wallet',
   'Wallet marks both sides of transfers with “true”.':
     'Wallet отбелязва двете страни на преводите с „true“.',
-  'We matched the categories of your file to Slavotax categories. Check the suggestions and adjust them if needed.':
-    'Съпоставихме категориите от файла с категориите на Slavotax. Проверете предложенията и ги коригирайте при нужда.',
+  'We matched the categories of your file to DoStotinka categories. Check the suggestions and adjust them if needed.':
+    'Съпоставихме категориите от файла с категориите на DoStotinka. Проверете предложенията и ги коригирайте при нужда.',
   'Year-Month-Day': 'Година-Месец-Ден',
-  "and download your records as CSV. Slavotax recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.":
-    'и изтеглете записите си като CSV. Slavotax разпознава формата автоматично, съпоставя категориите на Wallet и сдвоява преводите между сметки.',
+  "and download your records as CSV. DoStotinka recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.":
+    'и изтеглете записите си като CSV. DoStotinka разпознава формата автоматично, съпоставя категориите на Wallet и сдвоява преводите между сметки.',
   '— not in file —': '— няма във файла —',
 
   // ─── Settings ───
@@ -924,8 +924,8 @@ export const bg: Record<string, string> = {
     'Демо профил: {value} (променя се с DEMO_ENABLED).',
   'Initial password': 'Начална парола',
   'Make administrator': 'Направи администратор',
-  'Manage the users and settings of this Slavotax server.':
-    'Управлявайте потребителите и настройките на този Slavotax сървър.',
+  'Manage the users and settings of this DoStotinka server.':
+    'Управлявайте потребителите и настройките на този DoStotinka сървър.',
   'Password of {name} changed': 'Паролата на {name} е сменена',
   'Remove admin rights': 'Премахни администраторските права',
   'Reset password': 'Нулирай паролата',
@@ -955,8 +955,8 @@ export const bg: Record<string, string> = {
   'All your accounts in one place': 'Всички сметки на едно място',
   'Already have an account?': 'Вече имате профил?',
   'At least 8 characters.': 'Поне 8 символа.',
-  'Cannot reach the Slavotax server. Please check your connection and reload the page.':
-    'Сървърът на Slavotax не е достъпен. Проверете връзката си и презаредете страницата.',
+  'Cannot reach the DoStotinka server. Please check your connection and reload the page.':
+    'Сървърът на DoStotinka не е достъпен. Проверете връзката си и презаредете страницата.',
   'Cash, bank, savings or cards – in any currency.':
     'В брой, банка, спестявания или карти – във всяка валута.',
   'Clear statistics': 'Ясна статистика',
@@ -965,7 +965,7 @@ export const bg: Record<string, string> = {
   'Know where your money goes.': 'Знайте къде отиват парите ви.',
   'Log in to continue to your budget.': 'Влезте, за да продължите към бюджета си.',
   'Never miss a payment': 'Никога не пропускайте плащане',
-  'New to Slavotax?': 'Нови сте в Slavotax?',
+  'New to DoStotinka?': 'Нови сте в DoStotinka?',
   'Open source · Self-hosted · Made for humans':
     'Отворен код · На вашия сървър · Направено за хора',
   'Plan rent, bills and subscriptions ahead.':

@@ -1,4 +1,4 @@
-import { occurrencesBetween, type PlannedPayment } from '@slavotax/shared';
+import { occurrencesBetween, type PlannedPayment } from '@dostotinka/shared';
 import {
   addDays,
   addMonths,

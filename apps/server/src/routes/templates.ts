@@ -1,4 +1,4 @@
-import { type RecordTemplate, templateInput } from '@slavotax/shared';
+import { type RecordTemplate, templateInput } from '@dostotinka/shared';
 import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export function LogoMark({ className }: { className?: string }) {
   // Unique gradient id: several logos can be mounted at once (some of them hidden).
-  const id = `slv-logo-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const id = `ds-logo-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   return (
     <svg viewBox="0 0 64 64" className={cn('size-8', className)} aria-hidden>
       <defs>
@@ -26,7 +26,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
       <LogoMark />
-      <span className="text-lg font-semibold tracking-tight">{t('Slavotax')}</span>
+      <span className="text-lg font-semibold tracking-tight">{t('DoStotinka')}</span>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { ACCOUNT_TYPE_LABELS, CATEGORY_TEMPLATE } from '@slavotax/shared';
+import { ACCOUNT_TYPE_LABELS, CATEGORY_TEMPLATE } from '@dostotinka/shared';
 import { describe, expect, it } from 'vitest';
 import { bg } from './bg';
 

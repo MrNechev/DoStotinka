@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { convertMinor, type ImportResult, type importInput } from '@slavotax/shared';
+import { convertMinor, type ImportResult, type importInput } from '@dostotinka/shared';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';

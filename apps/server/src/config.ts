@@ -18,9 +18,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().int().default(5432),
-  DB_USERNAME: z.string().default('slavotax'),
-  DB_PASSWORD: z.string().default('slavotax'),
-  DB_DATABASE_NAME: z.string().default('slavotax'),
+  DB_USERNAME: z.string().default('dostotinka'),
+  DB_PASSWORD: z.string().default('dostotinka'),
+  DB_DATABASE_NAME: z.string().default('dostotinka'),
 
   /** Directory containing the built web app (index.html). Empty = API only. */
   WEB_DIST: z.string().optional(),
@@ -40,7 +40,7 @@ const envSchema = z.object({
     }),
 
   DEMO_ENABLED: bool(true),
-  DEMO_EMAIL: z.string().default('demo@slavotax.app'),
+  DEMO_EMAIL: z.string().default('demo@dostotinka.app'),
   DEMO_PASSWORD: z.string().default('demo1234'),
   /** Regenerate the demo data every N hours (0 = only at startup when missing). */
   DEMO_RESET_HOURS: z.coerce.number().min(0).default(24),
@@ -67,11 +67,11 @@ const envSchema = z.object({
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_SCOPE: z.string().default('openid email profile'),
   OIDC_BUTTON_TEXT: z.string().default('Log in with SSO'),
-  /** Create a Slavotax user on the first SSO login (otherwise only existing users may log in). */
+  /** Create a DoStotinka user on the first SSO login (otherwise only existing users may log in). */
   OIDC_AUTO_REGISTER: bool(true),
   /**
    * Link an SSO login to an existing user with the same e-mail address automatically. Only safe
-   * when users cannot choose their e-mail freely in Slavotax or at the provider – off by default;
+   * when users cannot choose their e-mail freely in DoStotinka or at the provider – off by default;
    * users can always connect SSO in Settings instead.
    */
   OIDC_LINK_BY_EMAIL: bool(false),
@@ -96,5 +96,5 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const databaseUrl =
     c.DATABASE_URL ??
     `postgres://${encodeURIComponent(c.DB_USERNAME)}:${encodeURIComponent(c.DB_PASSWORD)}@${c.DB_HOST}:${c.DB_PORT}/${encodeURIComponent(c.DB_DATABASE_NAME)}`;
-  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.5.0' };
+  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.5.1' };
 }

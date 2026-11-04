@@ -1,30 +1,30 @@
 <div align="center">
 
-<img src="apps/web/public/favicon.svg" width="72" height="72" alt="Slavotax logo" />
+<img src="apps/web/public/favicon.svg" width="72" height="72" alt="DoStotinka logo" />
 
-# Slavotax
+# DoStotinka
 
 **A simple, self-hosted budget & money manager.**
 
 Track your accounts, expenses, income, transfers and scheduled payments – and see at a glance where your money goes.
 
-[![CI](https://github.com/MrNechev/slavotax/actions/workflows/ci.yml/badge.svg)](https://github.com/MrNechev/slavotax/actions/workflows/ci.yml)
-[![Docker image](https://github.com/MrNechev/slavotax/actions/workflows/docker.yml/badge.svg)](https://github.com/MrNechev/slavotax/pkgs/container/slavotax)
+[![CI](https://github.com/MrNechev/DoStotinka/actions/workflows/ci.yml/badge.svg)](https://github.com/MrNechev/DoStotinka/actions/workflows/ci.yml)
+[![Docker image](https://github.com/MrNechev/DoStotinka/actions/workflows/docker.yml/badge.svg)](https://github.com/MrNechev/DoStotinka/pkgs/container/dostotinka)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
-<img src="docs/screenshots/dashboard-light.webp" alt="Slavotax dashboard" width="900" />
+<img src="docs/screenshots/dashboard-light.webp" alt="DoStotinka dashboard" width="900" />
 
 </div>
 
 ---
 
-Slavotax is inspired by the core of mobile budget apps like *Wallet by BudgetBakers* – without the
-subscriptions, upsells and features nobody uses. You enter your transactions, Slavotax turns them
+DoStotinka is inspired by the core of mobile budget apps like *Wallet by BudgetBakers* – without the
+subscriptions, upsells and features nobody uses. You enter your transactions, DoStotinka turns them
 into clear, colourful statistics. Everything runs on your own server; your financial data never
 leaves it.
 
 > **Status: alpha.** The core features are complete and usable, but expect changes before 1.0.
-> Please [report bugs](https://github.com/MrNechev/slavotax/issues) – feedback is very welcome.
+> Please [report bugs](https://github.com/MrNechev/DoStotinka/issues) – feedback is very welcome.
 
 ## Features
 
@@ -110,17 +110,17 @@ The [user guide](docs/USER_GUIDE.md) explains every feature in detail.
 
 ## Installation
 
-Slavotax runs as two containers: the app itself and a PostgreSQL database. All you need is
+DoStotinka runs as two containers: the app itself and a PostgreSQL database. All you need is
 [Docker](https://docs.docker.com/engine/install/) with the Compose plugin.
 
 ### Option 1 – Docker Compose with the published image (recommended)
 
 ```bash
-mkdir slavotax && cd slavotax
+mkdir dostotinka && cd dostotinka
 
 # Download the compose file and the example configuration
-curl -fsSLO https://raw.githubusercontent.com/MrNechev/slavotax/main/docker-compose.yml
-curl -fsSL  https://raw.githubusercontent.com/MrNechev/slavotax/main/.env.example -o .env
+curl -fsSLO https://raw.githubusercontent.com/MrNechev/DoStotinka/main/docker-compose.yml
+curl -fsSL  https://raw.githubusercontent.com/MrNechev/DoStotinka/main/.env.example -o .env
 
 # Set a strong database password
 sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$(openssl rand -hex 24)/" .env
@@ -129,16 +129,16 @@ docker compose up -d
 ```
 
 Open **http://&lt;your-server&gt;:8742**, create your account – done. Images are published for
-`linux/amd64` and `linux/arm64` (e.g. Raspberry Pi 4/5) at `ghcr.io/mrnechev/slavotax`.
+`linux/amd64` and `linux/arm64` (e.g. Raspberry Pi 4/5) at `ghcr.io/mrnechev/dostotinka`.
 
 > Want to look around first? Click **“Explore the demo account”** on the login page
-> (or log in as `demo@slavotax.app` / `demo1234`).
+> (or log in as `demo@dostotinka.app` / `demo1234`).
 
 ### Option 2 – Build the image yourself with Docker
 
 ```bash
-git clone https://github.com/MrNechev/slavotax.git
-cd slavotax
+git clone https://github.com/MrNechev/DoStotinka.git
+cd DoStotinka
 cp .env.example .env            # then edit DB_PASSWORD
 docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
 ```
@@ -157,7 +157,7 @@ Database migrations run automatically when the container starts.
 
 > **Upgrading from 0.4 or older:** the app now listens on port **8742** (instead of 3000). Download
 > the current `docker-compose.yml` (or change the port mapping in yours to
-> `"${SLAVOTAX_PORT:-8742}:8742"`) and update the port in your reverse proxy.
+> `"${DOSTOTINKA_PORT:-8742}:8742"`) and update the port in your reverse proxy.
 
 ### After installing
 
@@ -165,7 +165,7 @@ Database migrations run automatically when the container starts.
   *Administration* you can add accounts for your family and switch off public sign-ups (or set
   `ALLOW_REGISTRATION=false` in `.env`).
 - Disable the demo account on private servers with `DEMO_ENABLED=false`.
-- Put Slavotax behind a reverse proxy with HTTPS if it is reachable from the internet (see below).
+- Put DoStotinka behind a reverse proxy with HTTPS if it is reachable from the internet (see below).
 
 ## Configuration
 
@@ -173,17 +173,17 @@ All settings are environment variables (set them in `.env` when using Docker Com
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `SLAVOTAX_PORT` | `8742` | Host port of the web app (Compose only). |
-| `SLAVOTAX_VERSION` | `latest` | Image tag to run (Compose only). |
+| `DOSTOTINKA_PORT` | `8742` | Host port of the web app (Compose only). |
+| `DOSTOTINKA_VERSION` | `latest` | Image tag to run (Compose only). |
 | `DB_PASSWORD` | – | **Required.** PostgreSQL password. |
-| `DB_USERNAME` | `slavotax` | PostgreSQL user. |
-| `DB_DATABASE_NAME` | `slavotax` | PostgreSQL database. |
+| `DB_USERNAME` | `dostotinka` | PostgreSQL user. |
+| `DB_DATABASE_NAME` | `dostotinka` | PostgreSQL database. |
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Database host and port (Compose sets the host automatically). |
 | `DATABASE_URL` | – | Full connection string; overrides the `DB_*` variables. |
 | `DB_DATA_LOCATION` | `./postgres` | Where the database files are stored on the host (Compose only). |
 | `ALLOW_REGISTRATION` | `true` | Allow new users to sign up (default; administrators can override it in the UI). The very first user can always register. |
 | `DEMO_ENABLED` | `true` | Create the demo account with example data. |
-| `DEMO_EMAIL` / `DEMO_PASSWORD` | `demo@slavotax.app` / `demo1234` | Credentials of the demo account. |
+| `DEMO_EMAIL` / `DEMO_PASSWORD` | `demo@dostotinka.app` / `demo1234` | Credentials of the demo account. |
 | `DEMO_RESET_HOURS` | `24` | Regenerate the demo data every N hours (`0` = only on start). |
 | `SESSION_TTL_DAYS` | `30` | How long a login stays valid without activity. |
 | `COOKIE_SECURE` | `auto` | `auto` = Secure cookie when the request came over HTTPS; or `true` / `false`. |
@@ -206,7 +206,7 @@ All settings are environment variables (set them in `.env` when using Docker Com
 
 ### Single sign-on (OpenID Connect)
 
-Slavotax can use your identity provider (Authentik, Authelia, Keycloak, Zitadel, Pocket ID, Google
+DoStotinka can use your identity provider (Authentik, Authelia, Keycloak, Zitadel, Pocket ID, Google
 …) for logins:
 
 1. Create an OAuth2 / OpenID Connect application (confidential client) at the provider with the
@@ -216,13 +216,13 @@ Slavotax can use your identity provider (Authentik, Authelia, Keycloak, Zitadel,
 
 The login page then shows a “Log in with SSO” button. A first SSO login creates a new user
 (`OIDC_AUTO_REGISTER`; independent of `ALLOW_REGISTRATION`). Existing users connect their account
-once in **Settings → Security → Single sign-on** – Slavotax does not hand an existing account to an
+once in **Settings → Security → Single sign-on** – DoStotinka does not hand an existing account to an
 SSO login just because the e-mail matches, unless you enable `OIDC_LINK_BY_EMAIL`. Password logins
 keep working. Two-factor login is left to the provider for SSO logins.
 
 ### Reverse proxy
 
-Slavotax is a normal HTTP service on port 8742. Example for **Caddy**:
+DoStotinka is a normal HTTP service on port 8742. Example for **Caddy**:
 
 ```caddyfile
 money.example.com {
@@ -259,13 +259,13 @@ docker compose --profile backup up -d
 Or make a backup by hand:
 
 ```bash
-docker exec slavotax_postgres pg_dump -U slavotax slavotax | gzip > slavotax-$(date +%F).sql.gz
+docker exec dostotinka_postgres pg_dump -U dostotinka dostotinka | gzip > dostotinka-$(date +%F).sql.gz
 ```
 
 Restore into a fresh installation with
-`gunzip -c backup.sql.gz | docker exec -i slavotax_postgres psql -U slavotax slavotax`.
+`gunzip -c backup.sql.gz | docker exec -i dostotinka_postgres psql -U dostotinka dostotinka`.
 Every user can additionally download their own data (CSV / JSON) in **Settings → Your data** and
-restore such a JSON backup there – also on a different Slavotax server. The JSON backup does not
+restore such a JSON backup there – also on a different DoStotinka server. The JSON backup does not
 contain attached receipts; the database backup does.
 
 ## Development
@@ -273,15 +273,15 @@ contain attached receipts; the database backup does.
 Requirements: **Node.js 24+**, **pnpm 10** (`corepack enable`) and Docker (for PostgreSQL).
 
 ```bash
-git clone https://github.com/MrNechev/slavotax.git && cd slavotax
+git clone https://github.com/MrNechev/DoStotinka.git && cd DoStotinka
 pnpm install
 
 # Start a development database
-docker run -d --name slavotax-dev-db -p 54329:5432 \
-  -e POSTGRES_USER=slavotax -e POSTGRES_PASSWORD=slavotax -e POSTGRES_DB=slavotax postgres:18-alpine
-docker exec slavotax-dev-db createdb -U slavotax slavotax_test   # for the tests
+docker run -d --name dostotinka-dev-db -p 54329:5432 \
+  -e POSTGRES_USER=dostotinka -e POSTGRES_PASSWORD=dostotinka -e POSTGRES_DB=dostotinka postgres:18-alpine
+docker exec dostotinka-dev-db createdb -U dostotinka dostotinka_test   # for the tests
 
-echo "DATABASE_URL=postgres://slavotax:slavotax@localhost:54329/slavotax" > .env
+echo "DATABASE_URL=postgres://dostotinka:dostotinka@localhost:54329/dostotinka" > .env
 echo "NODE_ENV=development" >> .env
 
 pnpm dev   # API on http://localhost:8742, web app with hot reload on http://localhost:5173
@@ -295,7 +295,7 @@ pnpm dev   # API on http://localhost:8742, web app with hot reload on http://loc
 | `pnpm typecheck` | TypeScript checks for all packages. |
 | `pnpm lint` / `pnpm lint:fix` | Linting & formatting with Biome. |
 | `pnpm db:generate` | Creates a SQL migration after changing `apps/server/src/db/schema.ts`. |
-| `pnpm --filter @slavotax/server demo:reset` | Regenerates the demo data. |
+| `pnpm --filter @dostotinka/server demo:reset` | Regenerates the demo data. |
 
 ### Tech stack
 
@@ -342,4 +342,4 @@ Ideas and pull requests are welcome – see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Slavotax is free software licensed under the [GNU Affero General Public License v3.0](LICENSE).
+DoStotinka is free software licensed under the [GNU Affero General Public License v3.0](LICENSE).

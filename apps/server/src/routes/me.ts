@@ -11,7 +11,7 @@ import {
   type TwoFactorSetup,
   twoFactorEnableInput,
   updateProfileInput,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

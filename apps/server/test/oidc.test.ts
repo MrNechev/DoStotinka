@@ -14,7 +14,7 @@ function fakeProvider() {
   const idToken = (claims: object) => {
     const head = b64({ alg: 'RS256', typ: 'JWT', kid: 'k1' });
     const now = Math.floor(Date.now() / 1000);
-    const body = b64({ iss: issuer, aud: 'slavotax', iat: now, exp: now + 300, ...claims });
+    const body = b64({ iss: issuer, aud: 'dostotinka', iat: now, exp: now + 300, ...claims });
     const signature = sign('sha256', Buffer.from(`${head}.${body}`), privateKey);
     return `${head}.${body}.${signature.toString('base64url')}`;
   };
@@ -81,7 +81,7 @@ beforeAll(async () => {
   issuerUrl = await idp.listen();
   ctx = await createTestApp({
     OIDC_ISSUER_URL: issuerUrl,
-    OIDC_CLIENT_ID: 'slavotax',
+    OIDC_CLIENT_ID: 'dostotinka',
     OIDC_CLIENT_SECRET: 'secret',
     PUBLIC_URL: 'http://money.test',
   });
@@ -93,7 +93,7 @@ afterAll(async () => {
 
 /** Runs the browser part of the flow and returns the callback response. */
 async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void, session?: string) {
-  const sessionCookie: Record<string, string> = session ? { slavotax_session: session } : {};
+  const sessionCookie: Record<string, string> = session ? { dostotinka_session: session } : {};
   const start = await ctx.app.inject({
     method: 'GET',
     url: session ? '/api/auth/oidc/start?link=1' : '/api/auth/oidc/start',
@@ -103,7 +103,7 @@ async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void, s
   const auth = new URL(start.headers.location as string);
   expect(auth.searchParams.get('redirect_uri')).toBe('http://money.test/api/auth/oidc/callback');
   expect(auth.searchParams.get('code_challenge_method')).toBe('S256');
-  const cookie = start.cookies.find((c) => c.name === 'slavotax_oidc')!;
+  const cookie = start.cookies.find((c) => c.name === 'dostotinka_oidc')!;
   const code = `code-${Math.random()}`;
   idp.codes.set(code, {
     nonce: auth.searchParams.get('nonce')!,
@@ -115,16 +115,16 @@ async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void, s
   return ctx.app.inject({
     method: 'GET',
     url: `/api/auth/oidc/callback?${query}`,
-    cookies: { slavotax_oidc: cookie.value, ...sessionCookie },
+    cookies: { dostotinka_oidc: cookie.value, ...sessionCookie },
   });
 }
 
 const me = async (res: Awaited<ReturnType<typeof ssoLogin>>) => {
-  const session = res.cookies.find((c) => c.name === 'slavotax_session')!;
+  const session = res.cookies.find((c) => c.name === 'dostotinka_session')!;
   const r = await ctx.app.inject({
     method: 'GET',
     url: '/api/me',
-    cookies: { slavotax_session: session.value },
+    cookies: { dostotinka_session: session.value },
   });
   return r.json().user;
 };
@@ -149,11 +149,11 @@ describe('single sign-on', () => {
   });
 
   it('never hands an existing account to an SSO login with the same e-mail', async () => {
-    // Anybody could have changed their Slavotax e-mail to this address.
+    // Anybody could have changed their DoStotinka e-mail to this address.
     const existing = await registerUser(ctx.app);
     const refused = await ssoLogin({ sub: 'bob-1', email: existing.email, email_verified: true });
     expect(refused.headers.location).toBe('http://money.test/login?sso_error=account_exists');
-    expect(refused.cookies.find((c) => c.name === 'slavotax_session')).toBeUndefined();
+    expect(refused.cookies.find((c) => c.name === 'dostotinka_session')).toBeUndefined();
   });
 
   it('lets a logged-in user connect and disconnect SSO', async () => {
@@ -178,7 +178,7 @@ describe('single sign-on', () => {
   it('links by e-mail only when enabled and verified', async () => {
     const linking = await createTestApp({
       OIDC_ISSUER_URL: issuerUrl,
-      OIDC_CLIENT_ID: 'slavotax',
+      OIDC_CLIENT_ID: 'dostotinka',
       OIDC_CLIENT_SECRET: 'secret',
       PUBLIC_URL: 'http://money.test',
       OIDC_LINK_BY_EMAIL: 'true',
@@ -203,7 +203,7 @@ describe('single sign-on', () => {
       q.set('state', 'forged'),
     );
     expect(res.headers.location).toBe('http://money.test/login?sso_error=failed');
-    expect(res.cookies.find((c) => c.name === 'slavotax_session')).toBeUndefined();
+    expect(res.cookies.find((c) => c.name === 'dostotinka_session')).toBeUndefined();
   });
 
   it('requires the login cookie', async () => {

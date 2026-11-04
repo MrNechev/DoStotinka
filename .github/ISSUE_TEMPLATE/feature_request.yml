@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for Slavotax
+description: Suggest an idea for DoStotinka
 labels: [enhancement]
 body:
   - type: textarea

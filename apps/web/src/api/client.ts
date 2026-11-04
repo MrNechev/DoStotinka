@@ -1,4 +1,4 @@
-import type { ApiErrorBody } from '@slavotax/shared';
+import type { ApiErrorBody } from '@dostotinka/shared';
 import { t } from '@/i18n';
 
 export class ApiError extends Error {

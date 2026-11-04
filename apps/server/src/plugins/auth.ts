@@ -6,7 +6,7 @@ import { sessions, type UserRow, users } from '../db/schema';
 import { generateToken, sha256 } from '../lib/crypto';
 import { forbidden, unauthorized } from '../lib/errors';
 
-export const SESSION_COOKIE = 'slavotax_session';
+export const SESSION_COOKIE = 'dostotinka_session';
 const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
 
 declare module 'fastify' {

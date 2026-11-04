@@ -1,6 +1,6 @@
-# Moving from Wallet by BudgetBakers to Slavotax
+# Moving from Wallet by BudgetBakers to DoStotinka
 
-Slavotax can import the CSV export of *Wallet by BudgetBakers*, so you can keep your history.
+DoStotinka can import the CSV export of *Wallet by BudgetBakers*, so you can keep your history.
 
 ## 1. Export your records from Wallet
 
@@ -12,20 +12,20 @@ Slavotax can import the CSV export of *Wallet by BudgetBakers*, so you can keep 
 The file contains one row per record with the columns `account`, `category`, `currency`, `amount`,
 `type`, `note`, `date`, `transfer`, `payee`, `labels` and a few more.
 
-## 2. Import it into Slavotax
+## 2. Import it into DoStotinka
 
-1. In Slavotax open **Records → Import** (or **Settings → Your data → Import from CSV**).
-2. Choose the exported file. Slavotax shows *“Wallet export detected”* and fills in the column mapping
+1. In DoStotinka open **Records → Import** (or **Settings → Your data → Import from CSV**).
+2. Choose the exported file. DoStotinka shows *“Wallet export detected”* and fills in the column mapping
    automatically.
-3. **Accounts:** every Wallet account found in the file is listed. Pick an existing Slavotax account or
-   let Slavotax create a new one (with the right currency and type).
-4. **Categories:** Wallet's default categories are matched to Slavotax categories automatically
+3. **Accounts:** every Wallet account found in the file is listed. Pick an existing DoStotinka account or
+   let DoStotinka create a new one (with the right currency and type).
+4. **Categories:** Wallet's default categories are matched to DoStotinka categories automatically
    (e.g. *Restaurant, fast-food* → *Food & Drinks › Restaurants*, *Wage, invoices* →
    *Salary & Wages › Salary*). Custom categories are matched by name when possible – check the
    suggestions and adjust them.
 5. Review the summary and click **Import**.
 
-Transfers between accounts appear twice in a Wallet export (once per account). Slavotax pairs the two
+Transfers between accounts appear twice in a Wallet export (once per account). DoStotinka pairs the two
 halves and imports them as a single transfer. Importing the same file again is safe: records that
 already exist (same account, time and amount) are skipped.
 

@@ -5,7 +5,8 @@ import { createDatabase } from '../src/db';
 import { runMigrations } from '../src/db/migrate';
 
 const url =
-  process.env.TEST_DATABASE_URL ?? 'postgres://slavotax:slavotax@localhost:54329/slavotax_test';
+  process.env.TEST_DATABASE_URL ??
+  'postgres://dostotinka:dostotinka@localhost:54329/dostotinka_test';
 
 export async function createTestApp(env: Record<string, string> = {}) {
   const config = loadConfig({
@@ -43,14 +44,14 @@ export async function registerUser(app: FastifyInstance, overrides: Record<strin
     payload: { name: 'Test User', email, password: 'correct horse battery', ...overrides },
   });
   if (res.statusCode !== 201) throw new Error(`register failed: ${res.statusCode} ${res.body}`);
-  const cookie = res.cookies.find((c) => c.name === 'slavotax_session');
+  const cookie = res.cookies.find((c) => c.name === 'dostotinka_session');
   if (!cookie) throw new Error('no session cookie');
   const call = async <T = any>(method: string, url: string, payload?: unknown) => {
     const r = await app.inject({
       method: method as 'GET',
       url,
       payload: payload as Record<string, unknown> | undefined,
-      cookies: { slavotax_session: cookie.value },
+      cookies: { dostotinka_session: cookie.value },
     });
     return { status: r.statusCode, body: (r.body ? safeJson(r.body) : null) as T, raw: r };
   };

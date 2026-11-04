@@ -1,4 +1,4 @@
-import type { Category } from '@slavotax/shared';
+import type { Category } from '@dostotinka/shared';
 import { t } from '@/i18n';
 
 export const UNCATEGORIZED_COLOR = '#94A3B8';

@@ -3,7 +3,7 @@ import {
   CURRENCIES,
   getCurrency,
   type ReminderSettings,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArchiveRestore,
@@ -990,9 +990,9 @@ export default function SettingsPage() {
         <DataSection />
         <DangerSection />
         <p className="flex flex-wrap items-center justify-center gap-4 pb-4 text-xs text-muted-foreground">
-          <span>Slavotax {config?.version}</span>
+          <span>DoStotinka {config?.version}</span>
           <a
-            href="https://github.com/MrNechev/slavotax"
+            href="https://github.com/MrNechev/DoStotinka"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 hover:text-foreground"

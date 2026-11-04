@@ -14,7 +14,7 @@ import {
   userForIdentity,
 } from '../services/oidc';
 
-const STATE_COOKIE = 'slavotax_oidc';
+const STATE_COOKIE = 'dostotinka_oidc';
 
 /** Single sign-on with OpenID Connect (authorization code flow with PKCE). */
 export const oidcRoutes: FastifyPluginAsync = async (app) => {

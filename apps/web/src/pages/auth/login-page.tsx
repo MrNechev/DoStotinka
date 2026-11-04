@@ -14,7 +14,7 @@ function ssoErrorMessage(code: string | null): string | null {
     case null:
       return null;
     case 'not_allowed':
-      return t('There is no Slavotax account for this login. Ask your administrator to add you.');
+      return t('There is no DoStotinka account for this login. Ask your administrator to add you.');
     case 'account_exists':
       return t(
         'An account with this e-mail address already exists. Log in with your password and connect single sign-on in Settings → Security.',
@@ -172,7 +172,7 @@ export function LoginPage() {
 
       {config?.registrationEnabled !== false && (
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t('New to Slavotax?')}{' '}
+          {t('New to DoStotinka?')}{' '}
           <Link to="/register" className="font-medium text-primary hover:underline">
             {t('Sign up')}
           </Link>

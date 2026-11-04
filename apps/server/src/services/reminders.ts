@@ -1,4 +1,4 @@
-import { addDays, formatMoney, type NotifyFormat } from '@slavotax/shared';
+import { addDays, formatMoney, type NotifyFormat } from '@dostotinka/shared';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import type { Database } from '../db';
 import { accounts, plannedPayments, type UserRow, users } from '../db/schema';
@@ -16,9 +16,9 @@ const TEXTS = {
     overdueSince: (d: string) => `overdue since ${d}`,
     today: 'today',
     tomorrow: 'tomorrow',
-    overdueTitle: (n: number) => `Slavotax: ${n} overdue ${n === 1 ? 'payment' : 'payments'}`,
-    dueTitle: (n: number) => `Slavotax: ${n} ${n === 1 ? 'payment' : 'payments'} due soon`,
-    testTitle: 'Slavotax test reminder',
+    overdueTitle: (n: number) => `DoStotinka: ${n} overdue ${n === 1 ? 'payment' : 'payments'}`,
+    dueTitle: (n: number) => `DoStotinka: ${n} ${n === 1 ? 'payment' : 'payments'} due soon`,
+    testTitle: 'DoStotinka test reminder',
     testLine: 'Reminders work. Nothing is due today or tomorrow.',
   },
   bg: {
@@ -26,10 +26,10 @@ const TEXTS = {
     today: 'днес',
     tomorrow: 'утре',
     overdueTitle: (n: number) =>
-      `Slavotax: ${n} ${n === 1 ? 'просрочено плащане' : 'просрочени плащания'}`,
+      `DoStotinka: ${n} ${n === 1 ? 'просрочено плащане' : 'просрочени плащания'}`,
     dueTitle: (n: number) =>
-      `Slavotax: ${n} ${n === 1 ? 'предстоящо плащане' : 'предстоящи плащания'}`,
-    testTitle: 'Slavotax: тестово напомняне',
+      `DoStotinka: ${n} ${n === 1 ? 'предстоящо плащане' : 'предстоящи плащания'}`,
+    testTitle: 'DoStotinka: тестово напомняне',
     testLine: 'Напомнянията работят. Днес и утре няма плащания.',
   },
 };
@@ -58,7 +58,7 @@ export async function buildReminder(
   const today = toLocalDate(now, tz);
   const tomorrow = addDays(today, 1);
   const occurrences = (await upcoming(db, user, 2, tz)).filter((o) => o.dueDate <= tomorrow);
-  if (!occurrences.length) return { title: 'Slavotax', lines: [], count: 0 };
+  if (!occurrences.length) return { title: 'DoStotinka', lines: [], count: 0 };
 
   const plans = await db
     .select({ plan: plannedPayments, currency: accounts.currency })

@@ -1,4 +1,4 @@
-import { type Category, COLOR_PALETTE, type Label } from '@slavotax/shared';
+import { type Category, COLOR_PALETTE, type Label } from '@dostotinka/shared';
 import {
   Archive,
   ArchiveRestore,

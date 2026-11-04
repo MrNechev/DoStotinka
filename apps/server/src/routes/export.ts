@@ -1,4 +1,4 @@
-import { currencyDecimals, recordListQuery } from '@slavotax/shared';
+import { currencyDecimals, recordListQuery } from '@dostotinka/shared';
 import { and, asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -129,7 +129,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
       const stamp = new Date().toISOString().slice(0, 10);
       return reply
         .header('content-type', 'text/csv; charset=utf-8')
-        .header('content-disposition', `attachment; filename="slavotax-records-${stamp}.csv"`)
+        .header('content-disposition', `attachment; filename="dostotinka-records-${stamp}.csv"`)
         .send(`﻿${lines.join('\r\n')}\r\n`);
     },
   );
@@ -175,7 +175,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
       const strip = <T extends { userId?: string }>(rows: T[]) =>
         rows.map(({ userId: _u, ...rest }) => rest);
       const backup = {
-        format: 'slavotax-backup',
+        format: 'dostotinka-backup',
         version: 1,
         exportedAt: new Date().toISOString(),
         appVersion: app.config.version,
@@ -195,7 +195,7 @@ export const exportRoutes: FastifyPluginAsyncZod = async (app) => {
       const stamp = new Date().toISOString().slice(0, 10);
       return reply
         .header('content-type', 'application/json; charset=utf-8')
-        .header('content-disposition', `attachment; filename="slavotax-backup-${stamp}.json"`)
+        .header('content-disposition', `attachment; filename="dostotinka-backup-${stamp}.json"`)
         .send(JSON.stringify(backup, null, 2));
     },
   );

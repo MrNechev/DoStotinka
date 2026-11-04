@@ -1,4 +1,4 @@
-import type { RecordTemplate, TemplateInput } from '@slavotax/shared';
+import type { RecordTemplate, TemplateInput } from '@dostotinka/shared';
 import { BookmarkPlus, Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';

@@ -9,7 +9,7 @@ import {
   type ImportResult,
   isSupportedCurrency,
   toMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileUp, Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -491,10 +491,10 @@ export default function ImportPage() {
               <span className="font-medium text-foreground">{t('Coming from Wallet?')}</span>{' '}
               {t('In the Wallet web app open')} <em>{t('Records → Export')}</em>{' '}
               {t(
-                "and download your records as CSV. Slavotax recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.",
+                "and download your records as CSV. DoStotinka recognises the format automatically, matches Wallet's categories and pairs transfers between accounts.",
               )}{' '}
               <a
-                href="https://github.com/MrNechev/slavotax/blob/main/docs/MIGRATING_FROM_WALLET.md"
+                href="https://github.com/MrNechev/DoStotinka/blob/main/docs/MIGRATING_FROM_WALLET.md"
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-primary hover:underline"
@@ -670,7 +670,7 @@ export default function ImportPage() {
         <Card className="p-5">
           <p className="mb-4 text-sm text-muted-foreground">
             {t(
-              'We matched the categories of your file to Slavotax categories. Check the suggestions and adjust them if needed.',
+              'We matched the categories of your file to DoStotinka categories. Check the suggestions and adjust them if needed.',
             )}
           </p>
           <div className="divide-y divide-border rounded-xl border border-border">

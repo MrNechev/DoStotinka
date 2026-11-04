@@ -1,4 +1,4 @@
-import { convertMinor } from '@slavotax/shared';
+import { convertMinor } from '@dostotinka/shared';
 import { addMonths, startOfHour, startOfMonth, subDays } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useMemo } from 'react';

@@ -1,4 +1,4 @@
-# Using the Slavotax API
+# Using the DoStotinka API
 
 Everything the web app does goes through a JSON REST API under `/api`. The interactive OpenAPI
 documentation of your own server is at **`https://<your-server>/api/docs`**.
@@ -85,7 +85,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ## Recipe: add an expense from an iPhone (Shortcuts)
 
-1. Create a token in Slavotax (**Settings → API tokens**).
+1. Create a token in DoStotinka (**Settings → API tokens**).
 2. In the Shortcuts app create a shortcut with:
    - **Ask for Input** (Number) – “Amount”
    - **Calculate** – *Provided Input* × 100

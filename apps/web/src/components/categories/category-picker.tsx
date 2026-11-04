@@ -1,4 +1,4 @@
-import type { Category } from '@slavotax/shared';
+import type { Category } from '@dostotinka/shared';
 import { ArrowLeft, Check, ChevronRight, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCategories } from '@/api/queries';

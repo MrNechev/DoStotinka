@@ -1181,9 +1181,28 @@ describe('backup & restore', () => {
     expect((await source.call<any[]>('GET', '/api/accounts')).body).toHaveLength(2);
   });
 
-  it('rejects files that are not Slavotax backups', async () => {
+  it('rejects files that are not DoStotinka backups', async () => {
     const { call } = await registerUser(ctx.app);
     expect((await call('POST', '/api/me/restore', { hello: 'world' })).status).toBe(400);
+  });
+
+  it('restores backups made before the rename', async () => {
+    const source = await registerUser(ctx.app);
+    await source.call('POST', '/api/accounts', {
+      name: 'Old',
+      type: 'cash',
+      currency: 'EUR',
+      color: '#22C55E',
+    });
+    const backup = (await source.call('GET', '/api/export/backup.json')).body;
+    expect(backup.format).toBe('dostotinka-backup');
+    const target = await registerUser(ctx.app);
+    const res = await target.call('POST', '/api/me/restore', {
+      ...backup,
+      format: 'slavotax-backup',
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ accounts: 1 });
   });
 });
 
@@ -1197,13 +1216,13 @@ describe('demo account', () => {
     await ensureDemo(demo.db, demo.config, true);
     const login = async () => {
       const res = await demo.app.inject({ method: 'POST', url: '/api/auth/demo', payload: {} });
-      const cookie = res.cookies.find((c) => c.name === 'slavotax_session')!.value;
+      const cookie = res.cookies.find((c) => c.name === 'dostotinka_session')!.value;
       return (method: string, url: string, payload?: unknown) =>
         demo.app.inject({
           method: method as 'GET',
           url,
           payload: payload as never,
-          cookies: { slavotax_session: cookie },
+          cookies: { dostotinka_session: cookie },
         });
     };
     const visitorA = await login();
@@ -1216,6 +1235,27 @@ describe('demo account', () => {
     expect((await visitorA('GET', '/api/me')).json().user.theme).toBe('system');
     const accounts = (await visitorA('GET', '/api/accounts')).json();
     expect(accounts.length).toBeGreaterThan(3);
+    await demo.close();
+  });
+
+  it('keeps the demo account of installations from before the rename', async () => {
+    const { eq } = await import('drizzle-orm');
+    const { users } = await import('../src/db/schema');
+    const { ensureDemo, LEGACY_DEMO_EMAIL } = await import('../src/demo/seed');
+    const demo = await createTestApp({
+      DEMO_ENABLED: 'true',
+      DEMO_EMAIL: `renamed${Date.now()}@example.com`,
+    });
+    const [legacy] = await demo.db
+      .insert(users)
+      .values({ email: LEGACY_DEMO_EMAIL, name: 'Demo User', passwordHash: 'x', isDemo: true })
+      .returning();
+    await ensureDemo(demo.db, demo.config, true);
+    const [moved] = await demo.db.select().from(users).where(eq(users.id, legacy!.id));
+    expect(moved!.email).toBe(demo.config.DEMO_EMAIL);
+    expect(await demo.db.select().from(users).where(eq(users.email, LEGACY_DEMO_EMAIL))).toEqual(
+      [],
+    );
     await demo.close();
   });
 });
@@ -1320,7 +1360,7 @@ describe('attachments', () => {
       url: `/api/records/${recordId}/attachments${name ? `?name=${encodeURIComponent(name)}` : ''}`,
       headers: { 'content-type': type },
       payload: body,
-      cookies: { slavotax_session: cookie },
+      cookies: { dostotinka_session: cookie },
     });
 
   it('stores, serves and cleans up files attached to records', async () => {
@@ -1365,7 +1405,7 @@ describe('attachments', () => {
     const dl = await ctx.app.inject({
       method: 'GET',
       url: `/api/attachments/${file.id}`,
-      cookies: { slavotax_session: cookie },
+      cookies: { dostotinka_session: cookie },
     });
     expect(dl.statusCode).toBe(200);
     expect(dl.headers['content-type']).toBe('image/png');
@@ -1861,7 +1901,7 @@ describe('debt records', () => {
       url: `/api/records/${tr[0].id}/attachments`,
       headers: { 'content-type': 'image/png' },
       payload: png,
-      cookies: { slavotax_session: cookie },
+      cookies: { dostotinka_session: cookie },
     });
     expect(up.statusCode).toBe(201);
     expect((await call('DELETE', `/api/accounts/${old.id}`)).status).toBe(204);

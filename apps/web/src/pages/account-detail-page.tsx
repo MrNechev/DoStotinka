@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPE_LABELS } from '@slavotax/shared';
+import { ACCOUNT_TYPE_LABELS } from '@dostotinka/shared';
 import { ArrowLeft, MoreHorizontal, Pencil, Plus, Scale, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';

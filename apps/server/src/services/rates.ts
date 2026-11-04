@@ -1,4 +1,4 @@
-import { FIXED_EUR_RATES, isSupportedCurrency, type RateMap } from '@slavotax/shared';
+import { FIXED_EUR_RATES, isSupportedCurrency, type RateMap } from '@dostotinka/shared';
 import { and, eq, ne } from 'drizzle-orm';
 import type { Database } from '../db';
 import { accounts, exchangeRates, referenceRates } from '../db/schema';

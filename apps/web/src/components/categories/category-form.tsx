@@ -1,4 +1,4 @@
-import type { Category } from '@slavotax/shared';
+import type { Category } from '@dostotinka/shared';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';

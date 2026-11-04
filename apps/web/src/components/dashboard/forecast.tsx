@@ -1,4 +1,4 @@
-import { convertMinor, type PlannedPayment } from '@slavotax/shared';
+import { convertMinor, type PlannedPayment } from '@dostotinka/shared';
 import { endOfMonth } from 'date-fns';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAccounts, useCurrencies, usePlanned, useUpcoming, useUser } from '@/api/queries';

@@ -31,7 +31,7 @@ const MESSAGE_CALLS = new Set([
 ]);
 /** Words that are the same in every language (names, formats, units). */
 const ALLOWED =
-  /^(Slavotax|PDF|CSV|JSON|API|ntfy|Gotify|Discord|Slack|Wallet|ECB|IBAN|KB|MB|URL|cURL|OpenAPI|ID|[A-Z]{3}|[A-Za-z]{1})$/;
+  /^(DoStotinka|PDF|CSV|JSON|API|ntfy|Gotify|Discord|Slack|Wallet|ECB|IBAN|KB|MB|URL|cURL|OpenAPI|ID|[A-Z]{3}|[A-Za-z]{1})$/;
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

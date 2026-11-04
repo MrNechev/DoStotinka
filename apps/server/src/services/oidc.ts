@@ -156,7 +156,7 @@ export async function finishLogin(config: Config, currentUrl: URL, state: LoginS
  * Finds the user of an SSO identity: by the linked subject, then – only with OIDC_LINK_BY_EMAIL – by
  * verified e-mail (which links the account), or creates a new user when automatic registration is
  * on. Without automatic linking an existing account must connect SSO in Settings first, otherwise
- * anybody who changed their Slavotax e-mail to a colleague's address would receive their login.
+ * anybody who changed their DoStotinka e-mail to a colleague's address would receive their login.
  */
 export async function userForIdentity(
   db: Database,

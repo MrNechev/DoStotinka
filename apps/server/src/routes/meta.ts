@@ -1,5 +1,5 @@
-import type { ServerConfig } from '@slavotax/shared';
-import { CURRENCIES } from '@slavotax/shared';
+import type { ServerConfig } from '@dostotinka/shared';
+import { CURRENCIES } from '@dostotinka/shared';
 import { sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { oidcEnabled } from '../services/oidc';

@@ -1,4 +1,4 @@
-import { type CurrenciesResponse, type ExchangeRate, ratesUpdateInput } from '@slavotax/shared';
+import { type CurrenciesResponse, type ExchangeRate, ratesUpdateInput } from '@dostotinka/shared';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

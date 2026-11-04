@@ -1,4 +1,4 @@
-import type { AdminSettings, AdminUser } from '@slavotax/shared';
+import type { AdminSettings, AdminUser } from '@dostotinka/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { KeyRound, MoreHorizontal, Shield, ShieldOff, Trash2, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -208,13 +208,13 @@ export default function AdminPage() {
     <div className="mx-auto max-w-4xl">
       <PageHeader
         title={t('Administration')}
-        description={t('Manage the users and settings of this Slavotax server.')}
+        description={t('Manage the users and settings of this DoStotinka server.')}
       />
       <div className="grid gap-6">
         <Card>
           <CardHeader
             title={t('Server')}
-            description={settings.data ? `Slavotax ${settings.data.version}` : undefined}
+            description={settings.data ? `DoStotinka ${settings.data.version}` : undefined}
           />
           <div className="grid gap-3 px-5 pb-5 pt-2">
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border p-3">

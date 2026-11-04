@@ -1,4 +1,4 @@
-import type { Interval } from '@slavotax/shared';
+import type { Interval } from '@dostotinka/shared';
 import { ArrowDownRight, ArrowLeft, ArrowUpRight, ChartColumn } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { Link } from 'react-router';

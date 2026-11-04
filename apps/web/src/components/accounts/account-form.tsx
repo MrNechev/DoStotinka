@@ -6,7 +6,7 @@ import {
   CURRENCIES,
   minorToInputString,
   parseAmountToMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';

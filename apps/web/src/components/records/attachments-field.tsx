@@ -1,4 +1,4 @@
-import type { Attachment } from '@slavotax/shared';
+import type { Attachment } from '@dostotinka/shared';
 import { FileText, Loader2, Paperclip, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';

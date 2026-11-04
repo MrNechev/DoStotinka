@@ -83,7 +83,7 @@ export function verifyTotp(
 }
 
 /** `otpauth://` link shown as a QR code to authenticator apps. */
-export function otpauthUrl(secretBase32: string, account: string, issuer = 'Slavotax'): string {
+export function otpauthUrl(secretBase32: string, account: string, issuer = 'DoStotinka'): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
   const params = new URLSearchParams({
     secret: secretBase32,

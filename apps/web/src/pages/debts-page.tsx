@@ -5,7 +5,7 @@ import {
   type DebtDirection,
   minorToInputString,
   parseAmountToMinor,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import {
   ArrowDownLeft,

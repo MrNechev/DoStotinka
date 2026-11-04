@@ -10,7 +10,7 @@ export const LANGUAGES = [
 ] as const;
 export type Language = (typeof LANGUAGES)[number]['code'];
 
-const STORAGE_KEY = 'slavotax.language';
+const STORAGE_KEY = 'dostotinka.language';
 /** Dictionaries are loaded on demand – English needs none. */
 const loaders: Record<Language, () => Promise<Readonly<Record<string, string>>>> = {
   en: async () => ({}),

@@ -1,4 +1,4 @@
-import type { PlannedPayment } from '@slavotax/shared';
+import type { PlannedPayment } from '@dostotinka/shared';
 import { parseISO } from 'date-fns';
 import {
   CalendarClock,

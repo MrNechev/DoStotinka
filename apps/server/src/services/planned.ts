@@ -6,7 +6,7 @@ import {
   type plannedPaymentPayInput,
   type RecurrenceRule,
   type UpcomingOccurrence,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { and, asc, eq, inArray, isNotNull, isNull, lte, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';

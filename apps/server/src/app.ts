@@ -116,15 +116,15 @@ export async function buildApp(config: Config, db: Database) {
     await app.register(swagger, {
       openapi: {
         info: {
-          title: 'Slavotax API',
+          title: 'DoStotinka API',
           description:
-            'REST API of Slavotax. Authenticate with the session cookie or an `Authorization: Bearer <token>` header (obtain a token via `POST /api/auth/login` with `issueToken: true`). Amounts are integers in minor units (cents).',
+            'REST API of DoStotinka. Authenticate with the session cookie or an `Authorization: Bearer <token>` header (obtain a token via `POST /api/auth/login` with `issueToken: true`). Amounts are integers in minor units (cents).',
           version: config.version,
         },
         components: {
           securitySchemes: {
             bearer: { type: 'http', scheme: 'bearer' },
-            cookie: { type: 'apiKey', in: 'cookie', name: 'slavotax_session' },
+            cookie: { type: 'apiKey', in: 'cookie', name: 'dostotinka_session' },
           },
         },
         security: [{ bearer: [] }, { cookie: [] }],

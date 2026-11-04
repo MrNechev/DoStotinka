@@ -4,7 +4,7 @@ import {
   adminCreateUserInput,
   adminSettingsInput,
   adminUpdateUserInput,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { and, asc, count, eq, max, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

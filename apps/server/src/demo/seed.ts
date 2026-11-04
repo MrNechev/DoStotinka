@@ -1,9 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Config } from '../config';
 import type { Database } from '../db';
 import { accounts, users } from '../db/schema';
 import { hashPassword } from '../lib/crypto';
 import { generateDemoData } from './generate';
+
+export const LEGACY_DEMO_EMAIL = 'demo@slavotax.app';
 
 /**
  * Creates the demo user if missing and (re)generates its data.
@@ -12,6 +14,14 @@ import { generateDemoData } from './generate';
 export async function ensureDemo(db: Database, config: Config, force = false): Promise<boolean> {
   const email = config.DEMO_EMAIL.toLowerCase();
   let [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) {
+    // Before the project was renamed (0.5.0 and older) the demo account was demo@slavotax.app.
+    [user] = await db
+      .update(users)
+      .set({ email })
+      .where(and(eq(users.email, LEGACY_DEMO_EMAIL), eq(users.isDemo, true)))
+      .returning();
+  }
   if (user && !user.isDemo) {
     // Never touch a real account that happens to use the demo e-mail.
     return false;

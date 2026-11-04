@@ -9,7 +9,7 @@ import {
   type RecordItem,
   type RecordTemplate,
   type RecordType,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { ArrowDown, Copy, Handshake, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
 import {
   createContext,

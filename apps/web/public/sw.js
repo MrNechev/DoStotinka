@@ -1,6 +1,6 @@
-// Slavotax service worker – makes the installed app start fast and survive flaky connections.
+// DoStotinka service worker – makes the installed app start fast and survive flaky connections.
 // API responses are never cached: financial data always comes fresh from your server.
-const CACHE = 'slavotax-shell-v1';
+const CACHE = 'dostotinka-shell-v1';
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg', '/theme-init.js'];
 
 self.addEventListener('install', (event) => {

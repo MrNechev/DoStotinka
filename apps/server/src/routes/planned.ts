@@ -1,4 +1,4 @@
-import { plannedPaymentInput, plannedPaymentPayInput } from '@slavotax/shared';
+import { plannedPaymentInput, plannedPaymentPayInput } from '@dostotinka/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { safeTimeZone } from '../lib/dates';

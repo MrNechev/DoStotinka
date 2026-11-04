@@ -1,6 +1,6 @@
 {
-  "name": "@slavotax/e2e",
-  "version": "0.5.0",
+  "name": "@dostotinka/e2e",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { addDays, nextOccurrence, type RecurrenceRule } from '@slavotax/shared';
+import { addDays, nextOccurrence, type RecurrenceRule } from '@dostotinka/shared';
 import { eq } from 'drizzle-orm';
 import type { Database } from '../db';
 import {

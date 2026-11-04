@@ -1,30 +1,30 @@
-# Slavotax – self-hosted budget & money manager
+# DoStotinka – self-hosted budget & money manager
 #
 # Quick start:
 #   cp .env.example .env      # then edit DB_PASSWORD
 #   docker compose up -d
 # Open http://<your-server>:8742
-name: slavotax
+name: dostotinka
 
 services:
-  slavotax:
-    image: ghcr.io/mrnechev/slavotax:${SLAVOTAX_VERSION:-latest}
-    container_name: slavotax
+  dostotinka:
+    image: ghcr.io/mrnechev/dostotinka:${DOSTOTINKA_VERSION:-latest}
+    container_name: dostotinka
     restart: unless-stopped
     ports:
-      - "${SLAVOTAX_PORT:-8742}:8742"
+      - "${DOSTOTINKA_PORT:-8742}:8742"
     # Every setting from .env reaches the app (see the README); the values below take precedence.
     env_file:
       - path: .env
         required: false
     environment:
-      # Fixed inside the container (the published port is SLAVOTAX_PORT).
+      # Fixed inside the container (the published port is DOSTOTINKA_PORT).
       PORT: "8742"
       NODE_ENV: production
       DB_HOST: database
-      DB_USERNAME: ${DB_USERNAME:-slavotax}
+      DB_USERNAME: ${DB_USERNAME:-dostotinka}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
-      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-slavotax}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-dostotinka}
       ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
       DEMO_ENABLED: ${DEMO_ENABLED:-true}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
@@ -37,12 +37,12 @@ services:
 
   database:
     image: postgres:18-alpine
-    container_name: slavotax_postgres
+    container_name: dostotinka_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-slavotax}
+      POSTGRES_USER: ${DB_USERNAME:-dostotinka}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
-      POSTGRES_DB: ${DB_DATABASE_NAME:-slavotax}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-dostotinka}
     volumes:
       - ${DB_DATA_LOCATION:-./postgres}:/var/lib/postgresql
     healthcheck:
@@ -55,14 +55,14 @@ services:
   # Enable with:  docker compose --profile backup up -d
   backup:
     image: postgres:18-alpine
-    container_name: slavotax_backup
+    container_name: dostotinka_backup
     restart: unless-stopped
     profiles: ["backup"]
     environment:
       PGHOST: database
-      PGUSER: ${DB_USERNAME:-slavotax}
+      PGUSER: ${DB_USERNAME:-dostotinka}
       PGPASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your .env file}
-      PGDATABASE: ${DB_DATABASE_NAME:-slavotax}
+      PGDATABASE: ${DB_DATABASE_NAME:-dostotinka}
       KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
     volumes:
       - ${BACKUP_LOCATION:-./backups}:/backups
@@ -71,13 +71,13 @@ services:
       - |
         sleep 300  # first backup a few minutes after start-up (after migrations)
         while true; do
-          name="slavotax-$$(date +%Y-%m-%d_%H%M).sql.gz"
+          name="dostotinka-$$(date +%Y-%m-%d_%H%M).sql.gz"
           if pg_dump --clean --if-exists | gzip > /backups/.partial; then
             mv /backups/.partial "/backups/$$name" && echo "Backup written: $$name"
           else
             echo "Backup failed" >&2
           fi
-          find /backups -name 'slavotax-*.sql.gz' -mtime +$$KEEP_DAYS -delete
+          find /backups -name 'dostotinka-*.sql.gz' -mtime +$$KEEP_DAYS -delete
           sleep 86400
         done
     depends_on:

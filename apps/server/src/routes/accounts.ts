@@ -3,7 +3,7 @@ import {
   accountUpdateInput,
   adjustBalanceInput,
   reorderInput,
-} from '@slavotax/shared';
+} from '@dostotinka/shared';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';

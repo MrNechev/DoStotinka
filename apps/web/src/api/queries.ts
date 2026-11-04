@@ -42,8 +42,8 @@ import type {
   UpcomingOccurrence,
   UpdateProfileInput,
   User,
-} from '@slavotax/shared';
-import { CATEGORY_TEMPLATE } from '@slavotax/shared';
+} from '@dostotinka/shared';
+import { CATEGORY_TEMPLATE } from '@dostotinka/shared';
 import {
   keepPreviousData,
   type QueryClient,

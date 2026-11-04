@@ -1,4 +1,4 @@
-import type { PlannedPayment, UpcomingOccurrence } from '@slavotax/shared';
+import type { PlannedPayment, UpcomingOccurrence } from '@dostotinka/shared';
 import { parseISO } from 'date-fns';
 import { Check, SkipForward } from 'lucide-react';
 import { useState } from 'react';

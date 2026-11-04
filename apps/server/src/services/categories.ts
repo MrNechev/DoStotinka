@@ -1,4 +1,4 @@
-import { CATEGORY_TEMPLATE } from '@slavotax/shared';
+import { CATEGORY_TEMPLATE } from '@dostotinka/shared';
 import type { Database } from '../db';
 import { categories } from '../db/schema';
 
