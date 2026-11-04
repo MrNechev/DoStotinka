@@ -234,6 +234,7 @@ function ContributeDialog({
 }) {
   const contribute = useContributeGoal();
   const [value, setValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
@@ -249,10 +250,16 @@ function ContributeDialog({
           onSubmit={async (e) => {
             e.preventDefault();
             const minor = parseAmountToMinor(value, goal.currency);
-            if (!minor || minor <= 0) return;
+            if (!minor || minor <= 0) {
+              setError(t('Enter an amount greater than zero'));
+              return;
+            }
+            setError(null);
             try {
               const res = await contribute.mutateAsync({ id: goal.id, amount: direction * minor });
-              toast.success(res.progress >= 1 ? 'Goal reached – congratulations! 🎉' : t('Saved'));
+              toast.success(
+                res.progress >= 1 ? t('Goal reached – congratulations! 🎉') : t('Saved'),
+              );
               onClose();
             } catch (err) {
               toast.error(errorMessage(err));
@@ -265,9 +272,15 @@ function ContributeDialog({
               inputMode="decimal"
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              aria-invalid={!!error}
               autoFocus
             />
           </Field>
+          {error && (
+            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
           <DialogFooter className="mt-0">
             <Button variant="outline" onClick={onClose}>
               {t('Cancel')}

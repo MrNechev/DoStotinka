@@ -1481,3 +1481,51 @@ describe('record filters', () => {
     expect(summary.expense).toBe(300);
   });
 });
+
+describe('weekly statistics', () => {
+  it('starts week buckets on the first day of the week of the user', async () => {
+    const { call } = await registerUser(ctx.app);
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const add = (day: string, amount: number) =>
+      call('POST', '/api/records', {
+        type: 'expense',
+        accountId: acc.id,
+        amount,
+        occurredAt: iso(`${day}T12:00:00Z`),
+      });
+    await add('2026-03-01', 100); // Sunday
+    await add('2026-03-07', 200); // Saturday
+    await add('2026-03-08', 400); // Sunday
+    const q = `from=${encodeURIComponent('2026-03-01T00:00:00Z')}&to=${encodeURIComponent('2026-03-15T00:00:00Z')}&tz=UTC&interval=week`;
+    const weeks = async () =>
+      (await call('GET', `/api/stats/cashflow?${q}`)).body.points.map((p: any) => [
+        p.date,
+        p.expense,
+      ]);
+
+    // Monday weeks (default): Sun 1 Mar belongs to the week of 23 Feb.
+    expect(await weeks()).toEqual([
+      ['2026-02-23', 100],
+      ['2026-03-02', 200 + 400],
+      ['2026-03-09', 0],
+    ]);
+    await call('PATCH', '/api/me', { weekStartsOn: 0 });
+    expect(await weeks()).toEqual([
+      ['2026-03-01', 100 + 200],
+      ['2026-03-08', 400],
+    ]);
+    await call('PATCH', '/api/me', { weekStartsOn: 6 });
+    expect(await weeks()).toEqual([
+      ['2026-02-28', 100],
+      ['2026-03-07', 200 + 400],
+      ['2026-03-14', 0],
+    ]);
+  });
+});

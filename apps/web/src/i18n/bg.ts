@@ -477,6 +477,9 @@ export const bg: Record<string, string> = {
   'Request body is too large': 'Файлът е твърде голям',
   // ─── Counts & summaries ───
   '{n} record selected': '{n} избран запис',
+  '{n} record deleted': '{n} запис е изтрит',
+  '{n} records deleted': '{n} записа са изтрити',
+  'Goal reached – congratulations! 🎉': 'Целта е постигната – поздравления! 🎉',
   '{n} records selected': '{n} избрани записа',
   'No {label} in this period.': 'Няма {label} за този период.',
   'Total {label}': 'Общо {label}',

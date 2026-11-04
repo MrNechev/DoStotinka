@@ -24,6 +24,9 @@ All notable changes to this project are documented in this file. The format is b
   groups can be expanded with the keyboard, the “clear category” button is a real button.
 - A malformed period in the URL no longer breaks the page.
 - Quick-add suggestions reset a previously chosen foreign currency.
+- Weekly charts start weeks on the first day of the week chosen in Settings (Sunday/Saturday).
+- Confirming a planned payment from an account in another currency converts the amount.
+- Adding to a savings goal shows an error for an invalid amount instead of doing nothing.
 - Remaining untranslated texts (budgets, goals, import, report, record type switch …); a test now
   fails when English text is written directly into the interface.
 

@@ -31,7 +31,7 @@ function scopeOf(
     compareFrom?: string;
     compareTo?: string;
   },
-  fallbackTz: string,
+  user: { timezone: string; weekStartsOn: number },
 ): StatsScope {
   const from = new Date(q.from);
   const to = new Date(q.to);
@@ -47,7 +47,8 @@ function scopeOf(
     from,
     to,
     accountIds: q.accountIds,
-    tz: safeTimeZone(q.tz, fallbackTz),
+    tz: safeTimeZone(q.tz, user.timezone),
+    weekStartsOn: user.weekStartsOn,
     compareFrom,
     compareTo,
   };
@@ -80,7 +81,7 @@ export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (req) => {
       const user = currentUser(req);
-      return summary(db, user, scopeOf(req.query, user.timezone));
+      return summary(db, user, scopeOf(req.query, user));
     },
   );
 
@@ -98,7 +99,7 @@ export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
       return categoryBreakdown(
         db,
         user,
-        scopeOf(req.query, user.timezone),
+        scopeOf(req.query, user),
         req.query.type,
         req.query.parentId,
       );
@@ -117,7 +118,7 @@ export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req) => {
       const user = currentUser(req);
       const q = req.query;
-      return timeseries(db, user, scopeOf(q, user.timezone), q.interval, q.type, q.categoryId);
+      return timeseries(db, user, scopeOf(q, user), q.interval, q.type, q.categoryId);
     },
   );
 
@@ -132,7 +133,7 @@ export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (req) => {
       const user = currentUser(req);
-      return cashflow(db, user, scopeOf(req.query, user.timezone), req.query.interval);
+      return cashflow(db, user, scopeOf(req.query, user), req.query.interval);
     },
   );
 
@@ -141,7 +142,7 @@ export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { tags: ['stats'], summary: 'Balance trend over time', querystring: balanceQuery } },
     async (req) => {
       const user = currentUser(req);
-      return balanceTrend(db, user, scopeOf(req.query, user.timezone), req.query.interval);
+      return balanceTrend(db, user, scopeOf(req.query, user), req.query.interval);
     },
   );
 };

@@ -155,7 +155,7 @@ export function BulkBar({
             if (!ok) return;
             remove.mutate(selected, {
               onSuccess: (res) => {
-                toast.success(`${plural(res.deleted, 'record')} deleted`);
+                toast.success(tn(res.deleted, '{n} record deleted', '{n} records deleted'));
                 onClear();
               },
               onError: (e) => toast.error(errorMessage(e)),

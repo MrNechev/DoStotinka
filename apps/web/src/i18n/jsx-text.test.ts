@@ -20,6 +20,15 @@ const TEXT_ATTRIBUTES = new Set([
   'emptyDescription',
   'confirmLabel',
 ]);
+const MESSAGE_CALLS = new Set([
+  'toast.success',
+  'toast.error',
+  'toast.info',
+  'toast.warning',
+  'toast.message',
+  'toast',
+  'setError',
+]);
 /** Words that are the same in every language (names, formats, units). */
 const ALLOWED =
   /^(Slavotax|PDF|CSV|JSON|API|ntfy|Gotify|Discord|Slack|Wallet|ECB|IBAN|KB|MB|URL|cURL|OpenAPI|ID|[A-Z]{3}|[A-Za-z]{1})$/;
@@ -28,7 +37,9 @@ function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const full = path.join(dir, name);
     if (statSync(full).isDirectory()) return sourceFiles(full);
-    return name.endsWith('.tsx') && !name.includes('.test.') ? [full] : [];
+    return /\.tsx?$/.test(name) && !name.includes('.test.') && dir !== path.join(SRC, 'i18n')
+      ? [full]
+      : [];
   });
 }
 
@@ -84,6 +95,19 @@ function findings(file: string): string[] {
       if (name && TEXT_ATTRIBUTES.has(name)) {
         const expr = value?.type === 'JSXExpressionContainer' ? (value.expression as Node) : value;
         for (const lit of shownTexts(expr ?? undefined)) {
+          if (hasWords(lit.text)) report(lit.node, lit.text);
+        }
+      }
+    }
+    // Messages shown through toasts or error states: toast.success('Saved'), setError('…').
+    if (n.type === 'CallExpression') {
+      const callee = n.callee as Node;
+      const name =
+        callee.type === 'MemberExpression'
+          ? `${(callee.object as Node).name}.${(callee.property as Node).name}`
+          : (callee.name as string | undefined);
+      if (name && MESSAGE_CALLS.has(name)) {
+        for (const lit of shownTexts((n.arguments as Node[])[0])) {
           if (hasWords(lit.text)) report(lit.node, lit.text);
         }
       }

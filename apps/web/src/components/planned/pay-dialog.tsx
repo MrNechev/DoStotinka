@@ -1,8 +1,13 @@
-import { minorToInputString, type PlannedPayment, parseAmountToMinor } from '@slavotax/shared';
+import {
+  convertMinor,
+  minorToInputString,
+  type PlannedPayment,
+  parseAmountToMinor,
+} from '@slavotax/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
-import { useAccounts, usePayPlanned } from '@/api/queries';
+import { useAccounts, useCurrencies, usePayPlanned } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
@@ -21,6 +26,7 @@ export function PayDialog({
   onClose: () => void;
 }) {
   const { data: accounts = [] } = useAccounts();
+  const { data: currencies } = useCurrencies();
   const pay = usePayPlanned();
   const [amount, setAmount] = useState(minorToInputString(plan.amount, plan.currency));
   const [accountId, setAccountId] = useState(plan.accountId);
@@ -28,6 +34,22 @@ export function PayDialog({
   const [error, setError] = useState<string | null>(null);
   const account = accounts.find((a) => a.id === accountId);
   const currency = account?.currency ?? plan.currency;
+
+  /** Switching to an account in another currency converts the entered amount. */
+  const changeAccount = (id: string) => {
+    const next = accounts.find((a) => a.id === id);
+    if (next && next.currency !== currency && currencies) {
+      const rates: Record<string, number> = { [currencies.baseCurrency]: 1 };
+      for (const r of currencies.rates) rates[r.currency] = r.rate;
+      const minor = parseAmountToMinor(amount, currency);
+      if (minor && currency in rates && next.currency in rates) {
+        setAmount(
+          minorToInputString(convertMinor(minor, currency, next.currency, rates), next.currency),
+        );
+      }
+    }
+    setAccountId(id);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +101,7 @@ export function PayDialog({
             <Select
               id="pay-account"
               value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
+              onChange={(e) => changeAccount(e.target.value)}
             >
               {accounts
                 .filter((a) => !a.archived || a.id === accountId)

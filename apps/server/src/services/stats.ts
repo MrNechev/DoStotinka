@@ -21,6 +21,8 @@ export interface StatsScope {
   to: Date;
   accountIds?: string[];
   tz: string;
+  /** First day of a week bucket: 0 = Sunday, 1 = Monday, 6 = Saturday. */
+  weekStartsOn?: number;
   /** Range to compare with; defaults to the same length right before `from`. */
   compareFrom?: Date;
   compareTo?: Date;
@@ -71,13 +73,12 @@ const conv = (ctx: Ctx, amount: number, currency: string) =>
 
 // ───────────────────────────── Buckets ─────────────────────────────
 
-export function bucketStart(date: string, interval: Interval): string {
+export function bucketStart(date: string, interval: Interval, weekStartsOn = 1): string {
   if (interval === 'day') return date;
   if (interval === 'month') return `${date.slice(0, 7)}-01`;
-  // ISO week (Monday) – matches PostgreSQL date_trunc('week').
   const d = new Date(`${date}T00:00:00Z`);
-  const dow = (d.getUTCDay() + 6) % 7;
-  return addDays(date, -dow);
+  const offset = (d.getUTCDay() - weekStartsOn + 7) % 7;
+  return addDays(date, -offset);
 }
 
 export function nextBucket(date: string, interval: Interval): string {
@@ -89,7 +90,7 @@ export function nextBucket(date: string, interval: Interval): string {
 /** All bucket start dates covering [from, to) in the given time zone. */
 export function bucketsFor(scope: StatsScope, interval: Interval, capAtNow = false): string[] {
   const end = capAtNow ? new Date(Math.min(scope.to.getTime(), Date.now())) : scope.to;
-  const first = bucketStart(toLocalDate(scope.from, scope.tz), interval);
+  const first = bucketStart(toLocalDate(scope.from, scope.tz), interval, scope.weekStartsOn);
   const last = toLocalDate(new Date(Math.max(scope.from.getTime(), end.getTime() - 1)), scope.tz);
   const result: string[] = [];
   for (let b = first; b <= last && result.length < 5000; b = nextBucket(b, interval)) {
@@ -98,8 +99,15 @@ export function bucketsFor(scope: StatsScope, interval: Interval, capAtNow = fal
   return result;
 }
 
-const bucketExpr = (interval: Interval, tz: string) =>
-  sql`to_char(date_trunc(${interval}, r.occurred_at at time zone ${tz}), 'YYYY-MM-DD')`;
+function bucketExpr(interval: Interval, scope: StatsScope): SQL {
+  const local = sql`(r.occurred_at at time zone ${scope.tz})`;
+  if (interval !== 'week') {
+    return sql`to_char(date_trunc(${interval}, ${local}), 'YYYY-MM-DD')`;
+  }
+  // date_trunc('week') starts weeks on Monday; shift so they start on the user's first day.
+  const shift = (1 - (scope.weekStartsOn ?? 1) + 7) % 7;
+  return sql`to_char(date_trunc('week', ${local} + make_interval(days => ${shift}::int)) - make_interval(days => ${shift}::int), 'YYYY-MM-DD')`;
+}
 
 // ───────────────────────────── Summary ─────────────────────────────
 
@@ -252,7 +260,7 @@ export async function timeseries(
   }
 
   const rows = (await db.execute(sql`
-    select ${bucketExpr(interval, scope.tz)} as bucket, ${groupExpr} as category_id, r.currency,
+    select ${bucketExpr(interval, scope)} as bucket, ${groupExpr} as category_id, r.currency,
       sum(r.amount)::bigint as total
     from records r
     left join categories c on c.id = r.category_id
@@ -293,7 +301,7 @@ export async function cashflow(
 ): Promise<CashflowResponse> {
   const ctx = await context(db, user);
   const rows = (await db.execute(sql`
-    select ${bucketExpr(interval, scope.tz)} as bucket, r.type, r.currency, sum(r.amount)::bigint as total
+    select ${bucketExpr(interval, scope)} as bucket, r.type, r.currency, sum(r.amount)::bigint as total
     from records r
     where ${accountScope(user.id, scope.accountIds)}
       and r.type in ('income', 'expense')
@@ -337,7 +345,7 @@ export async function balanceTrend(
       group by a.currency
     `) as unknown as Promise<{ currency: string; balance: string }[]>,
     db.execute(sql`
-      select ${bucketExpr(interval, scope.tz)} as bucket, r.currency, sum(r.amount)::bigint as total
+      select ${bucketExpr(interval, scope)} as bucket, r.currency, sum(r.amount)::bigint as total
       from records r
       where ${accountScope(user.id, scope.accountIds)}
         and r.occurred_at >= ${scope.from.toISOString()}::timestamptz
