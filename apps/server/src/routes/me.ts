@@ -2,19 +2,24 @@ import {
   type CreatedToken,
   changePasswordInput,
   deleteAccountInput,
+  NOTIFY_FORMATS,
+  type NotifyFormat,
+  type ReminderSettings,
+  reminderSettingsInput,
   type Session,
   updateProfileInput,
 } from '@slavotax/shared';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { sessions, users } from '../db/schema';
+import { sessions, type UserRow, users } from '../db/schema';
 import { generateToken, hashPassword, sha256, verifyPassword } from '../lib/crypto';
 import { isValidTimeZone } from '../lib/dates';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { clearSessionCookie, currentUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
 import { rebaseRates } from '../services/rates';
+import { buildReminder, sendReminder } from '../services/reminders';
 import { backupSchema, restoreBackup } from '../services/restore';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -122,6 +127,75 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       const user = currentUser(req);
       if (user.isDemo) throw forbidden('Restoring a backup is not available for the demo account');
       return restoreBackup(app.db, user, req.body);
+    },
+  );
+
+  const reminderSettings = (u: UserRow): ReminderSettings => ({
+    url: u.notifyUrl,
+    format: (NOTIFY_FORMATS as readonly string[]).includes(u.notifyFormat)
+      ? (u.notifyFormat as ReminderSettings['format'])
+      : 'ntfy',
+    hour: u.notifyHour,
+    lastSentOn: u.lastNotifiedOn,
+  });
+  const assertReminders = (u: UserRow) => {
+    if (!app.config.NOTIFICATIONS_ENABLED) throw forbidden('Reminders are disabled on this server');
+    if (u.isDemo) throw forbidden('Reminders are not available for the demo account');
+  };
+
+  app.get('/reminders', { schema: { tags: ['user'], summary: 'Reminder settings' } }, async (req) =>
+    reminderSettings(currentUser(req)),
+  );
+
+  app.put(
+    '/reminders',
+    {
+      schema: {
+        tags: ['user'],
+        summary: 'Configure daily planned-payment reminders',
+        body: reminderSettingsInput,
+      },
+    },
+    async (req) => {
+      const user = currentUser(req);
+      assertReminders(user);
+      const [row] = await app.db
+        .update(users)
+        .set({
+          notifyUrl: req.body.url,
+          notifyFormat: req.body.format,
+          notifyHour: req.body.hour,
+          lastNotifiedOn: null,
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+      return reminderSettings(row!);
+    },
+  );
+
+  app.post(
+    '/reminders/test',
+    { schema: { tags: ['user'], summary: 'Send a test reminder now' } },
+    async (req) => {
+      const user = currentUser(req);
+      assertReminders(user);
+      if (!user.notifyUrl) throw badRequest('Save a reminder URL first');
+      const message = await buildReminder(app.db, user);
+      const test = message.count
+        ? message
+        : {
+            title: 'Slavotax test reminder',
+            lines: ['Reminders work. Nothing is due today or tomorrow.'],
+            count: 0,
+          };
+      try {
+        await sendReminder(user.notifyUrl, user.notifyFormat as NotifyFormat, test);
+      } catch (err) {
+        throw badRequest(
+          `Could not deliver the reminder: ${err instanceof Error ? err.message : 'unknown error'}`,
+        );
+      }
+      return { sent: true, items: message.count };
     },
   );
 

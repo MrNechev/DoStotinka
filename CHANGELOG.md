@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- Daily reminders for overdue and upcoming planned payments via ntfy, Gotify, Discord, Slack or a
+  JSON webhook (Settings → Reminders; disable server-wide with `NOTIFICATIONS_ENABLED=false`).
+
+### Fixed
+- Demo visitors no longer see each other's sessions and cannot change the shared profile.
+
 ## [0.2.0] – 2026-11-04
 
 ### Added

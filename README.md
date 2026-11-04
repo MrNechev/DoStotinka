@@ -50,7 +50,8 @@ leaves it.
 - **Account details** – the same statistics for every individual account.
 - **Planned payments** – rent, taxes, subscriptions, salary … one-time or recurring (daily, weekly,
   monthly, yearly, every N periods). Mark them as paid (creates the record), skip them, or let them be
-  recorded automatically on the due date. Overdue payments are highlighted.
+  recorded automatically on the due date. Overdue payments are highlighted, and a daily reminder can
+  be sent to your phone via ntfy, Gotify, Discord, Slack or any webhook.
 - **Calendar** – see your spending day by day and what is due next.
 - **Budgets** – weekly, monthly or yearly limits for any set of categories and accounts, with
   history.
@@ -169,6 +170,7 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `TRUST_PROXY` | `false` | Set to `true` (or a hop count / IP list) behind a reverse proxy. |
 | `EXCHANGE_RATES_AUTO_UPDATE` | `true` | Fetch the daily ECB reference rates. |
 | `EXCHANGE_RATES_URL` | ECB daily XML | Alternative source in the same format. |
+| `NOTIFICATIONS_ENABLED` | `true` | Allow users to send payment reminders to a URL of their choice (ntfy, Gotify, Discord, Slack, webhook). Disable on servers with untrusted users. |
 | `API_DOCS` | `true` | Serve the OpenAPI documentation at `/api/docs`. |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | Login / registration attempts per IP and minute. |
 | `LOG_LEVEL` | `info` | `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`. |

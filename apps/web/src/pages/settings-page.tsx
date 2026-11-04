@@ -1,8 +1,14 @@
-import { type CreatedToken, CURRENCIES, getCurrency } from '@slavotax/shared';
-import { useQueryClient } from '@tanstack/react-query';
+import {
+  type CreatedToken,
+  CURRENCIES,
+  getCurrency,
+  type ReminderSettings,
+} from '@slavotax/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
   ArchiveRestore,
+  Bell,
   BookOpen,
   Code,
   Copy,
@@ -635,6 +641,140 @@ function ApiTokensSection() {
   );
 }
 
+const NOTIFY_HELP: Record<string, { label: string; placeholder: string; hint: string }> = {
+  ntfy: {
+    label: 'ntfy',
+    placeholder: 'https://ntfy.sh/my-secret-topic',
+    hint: 'Use a hard-to-guess topic on ntfy.sh or your own ntfy server and subscribe to it in the ntfy app.',
+  },
+  gotify: {
+    label: 'Gotify',
+    placeholder: 'https://gotify.example.com/message?token=…',
+    hint: 'The message URL of your Gotify server including the application token.',
+  },
+  discord: {
+    label: 'Discord',
+    placeholder: 'https://discord.com/api/webhooks/…',
+    hint: 'A channel webhook (Channel settings → Integrations → Webhooks).',
+  },
+  slack: {
+    label: 'Slack',
+    placeholder: 'https://hooks.slack.com/services/…',
+    hint: 'An incoming webhook URL.',
+  },
+  json: {
+    label: 'Webhook (JSON)',
+    placeholder: 'https://example.com/hook',
+    hint: 'Receives a POST with {"title", "message", "lines"} – e.g. for Home Assistant or n8n.',
+  },
+};
+
+function RemindersSection() {
+  const user = useUser();
+  const { data: config } = useServerConfig();
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ['reminders'],
+    queryFn: () => api<ReminderSettings>('/me/reminders'),
+    enabled: !user.isDemo,
+  });
+  const [form, setForm] = useState<{
+    url: string;
+    format: ReminderSettings['format'];
+    hour: number;
+  } | null>(null);
+  useEffect(() => {
+    if (data && !form) setForm({ url: data.url ?? '', format: data.format, hour: data.hour });
+  }, [data, form]);
+  const save = useMutation({
+    mutationFn: () =>
+      api<ReminderSettings>('/me/reminders', {
+        method: 'PUT',
+        body: { url: form?.url.trim() || null, format: form?.format, hour: form?.hour },
+      }),
+    onSuccess: (res) => {
+      qc.setQueryData(['reminders'], res);
+      toast.success(res.url ? 'Reminders switched on' : 'Reminders switched off');
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  const test = useMutation({
+    mutationFn: () => api<{ sent: boolean }>('/me/reminders/test', { method: 'POST' }),
+    onSuccess: () => toast.success('Test reminder sent'),
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  if (user.isDemo || !config?.notificationsEnabled || !form) return null;
+  const help = NOTIFY_HELP[form.format]!;
+  return (
+    <Section
+      title="Reminders"
+      description="Get a daily message about overdue payments and payments due today or tomorrow."
+    >
+      <form
+        className="grid items-start gap-4 sm:grid-cols-[180px_1fr]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save.mutate();
+        }}
+      >
+        <Field label="Service" htmlFor="rem-format">
+          <Select
+            id="rem-format"
+            value={form.format}
+            onChange={(e) =>
+              setForm({ ...form, format: e.target.value as ReminderSettings['format'] })
+            }
+          >
+            {Object.entries(NOTIFY_HELP).map(([value, h]) => (
+              <option key={value} value={value}>
+                {h.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="URL" htmlFor="rem-url" hint={help.hint}>
+          <Input
+            id="rem-url"
+            type="url"
+            value={form.url}
+            onChange={(e) => setForm({ ...form, url: e.target.value })}
+            placeholder={help.placeholder}
+          />
+        </Field>
+        <Field label="Send after" htmlFor="rem-hour">
+          <Select
+            id="rem-hour"
+            value={form.hour}
+            onChange={(e) => setForm({ ...form, hour: Number(e.target.value) })}
+          >
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, '0')}:00
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="flex flex-wrap items-end gap-2">
+          <Button type="submit" loading={save.isPending}>
+            Save
+          </Button>
+          <Button
+            variant="outline"
+            loading={test.isPending}
+            disabled={!data?.url}
+            onClick={() => test.mutate()}
+          >
+            <Bell /> Send test
+          </Button>
+          {data?.lastSentOn && (
+            <span className="text-xs text-muted-foreground">Last checked on {data.lastSentOn}</span>
+          )}
+        </div>
+      </form>
+    </Section>
+  );
+}
+
 function DataSection() {
   const user = useUser();
   const confirm = useConfirm();
@@ -800,6 +940,7 @@ export default function SettingsPage() {
         <PreferencesSection />
         <CurrenciesSection />
         <SecuritySection />
+        <RemindersSection />
         <ApiTokensSection />
         <DataSection />
         <DangerSection />

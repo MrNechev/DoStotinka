@@ -1218,3 +1218,61 @@ describe('demo account', () => {
     await demo.close();
   });
 });
+
+describe('reminders', () => {
+  it('sends one daily reminder with due planned payments', async () => {
+    const http = await import('node:http');
+    const received: { headers: Record<string, unknown>; body: string }[] = [];
+    const server = http.createServer((req, res) => {
+      let body = '';
+      req.on('data', (c) => (body += c));
+      req.on('end', () => {
+        received.push({ headers: req.headers, body });
+        res.end('ok');
+      });
+    });
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    const port = (server.address() as { port: number }).port;
+    const { processReminders } = await import('../src/services/reminders');
+
+    const { call } = await registerUser(ctx.app, { timezone: 'UTC' });
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    await call('POST', '/api/planned-payments', {
+      name: 'Rent',
+      type: 'expense',
+      accountId: acc.id,
+      amount: 75000,
+      frequency: 'monthly',
+      startDate: '2026-05-10',
+    });
+    const saved = await call('PUT', '/api/me/reminders', {
+      url: `http://127.0.0.1:${port}/my-topic`,
+      format: 'ntfy',
+      hour: 7,
+    });
+    expect(saved.status).toBe(200);
+
+    expect(await processReminders(ctx.db, new Date('2026-05-10T06:00:00Z'))).toBe(0); // before 07:00
+    expect(await processReminders(ctx.db, new Date('2026-05-10T08:00:00Z'))).toBe(1);
+    expect(await processReminders(ctx.db, new Date('2026-05-10T12:00:00Z'))).toBe(0); // once a day
+    expect(received).toHaveLength(1);
+    expect(received[0]!.body).toContain('Rent');
+    expect(received[0]!.body).toContain('today');
+    expect(String(received[0]!.headers.title)).toContain('due soon');
+
+    const test = await call('POST', '/api/me/reminders/test');
+    expect(test.status).toBe(200);
+    expect(received).toHaveLength(2);
+
+    await call('PUT', '/api/me/reminders', { url: null, format: 'ntfy', hour: 7 });
+    expect((await call('POST', '/api/me/reminders/test')).status).toBe(400);
+    server.close();
+  });
+});

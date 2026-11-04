@@ -6,6 +6,7 @@ import { exchangeRates, sessions, users } from './db/schema';
 import { ensureDemo } from './demo/seed';
 import { processAutoConfirm } from './services/planned';
 import { applyReferenceRates, refreshReferenceRates } from './services/rates';
+import { processReminders } from './services/reminders';
 
 const HOUR = 3_600_000;
 
@@ -48,6 +49,19 @@ export function startJobs(db: Database, config: Config, log: FastifyBaseLogger):
   };
   timers.push(setInterval(autoConfirm, 0.25 * HOUR));
   timers.push(setTimeout(autoConfirm, 10_000));
+
+  if (config.NOTIFICATIONS_ENABLED) {
+    const reminders = async () => {
+      try {
+        const sent = await processReminders(db);
+        if (sent) log.info({ sent }, 'Sent planned-payment reminders');
+      } catch (err) {
+        log.warn({ err }, 'Reminders failed');
+      }
+    };
+    timers.push(setInterval(reminders, 0.25 * HOUR));
+    timers.push(setTimeout(reminders, 20_000));
+  }
 
   if (config.EXCHANGE_RATES_AUTO_UPDATE) {
     timers.push(setInterval(() => void updateAllRates(db, config, log), 6 * HOUR));

@@ -427,3 +427,20 @@ export type AdminUpdateUserInput = z.input<typeof adminUpdateUserInput>;
 export const adminSettingsInput = z.object({
   registrationEnabled: z.boolean(),
 });
+
+// ───────────────────────────── Reminders ─────────────────────────────
+
+export const NOTIFY_FORMATS = ['ntfy', 'gotify', 'discord', 'slack', 'json'] as const;
+export type NotifyFormat = (typeof NOTIFY_FORMATS)[number];
+
+export const reminderSettingsInput = z.object({
+  /** Where reminders are sent; null switches them off. */
+  url: z
+    .url({ protocol: /^https?$/ })
+    .max(500)
+    .nullable(),
+  format: z.enum(NOTIFY_FORMATS).default('ntfy'),
+  /** Local hour (0–23) after which the daily reminder is sent. */
+  hour: z.number().int().min(0).max(23).default(8),
+});
+export type ReminderSettingsInput = z.input<typeof reminderSettingsInput>;

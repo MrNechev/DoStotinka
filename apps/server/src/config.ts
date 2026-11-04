@@ -51,6 +51,9 @@ const envSchema = z.object({
     .string()
     .default('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml'),
 
+  /** Allow users to send planned-payment reminders to a URL of their choice (ntfy, Gotify …). */
+  NOTIFICATIONS_ENABLED: bool(true),
+
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().min(1).default(20),

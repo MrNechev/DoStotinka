@@ -6,6 +6,7 @@ import type { Frequency } from './recurrence';
 export interface ServerConfig {
   version: string;
   registrationEnabled: boolean;
+  notificationsEnabled: boolean;
   demo: { enabled: boolean; email: string | null };
 }
 
@@ -293,4 +294,11 @@ export interface ApiErrorBody {
   error: string;
   message: string;
   issues?: { path: string; message: string }[];
+}
+
+export interface ReminderSettings {
+  url: string | null;
+  format: 'ntfy' | 'gotify' | 'discord' | 'slack' | 'json';
+  hour: number;
+  lastSentOn: string | null;
 }

@@ -58,6 +58,11 @@ export const users = pgTable(
     locale: text('locale').notNull().default('en'),
     isDemo: boolean('is_demo').notNull().default(false),
     isAdmin: boolean('is_admin').notNull().default(false),
+    /** Reminder delivery: where and how to send daily planned-payment reminders. */
+    notifyUrl: text('notify_url'),
+    notifyFormat: text('notify_format').notNull().default('ntfy'),
+    notifyHour: smallint('notify_hour').notNull().default(8),
+    lastNotifiedOn: date('last_notified_on', { mode: 'string' }),
     ...timestamps,
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],
