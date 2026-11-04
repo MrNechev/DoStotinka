@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.5.0] – 2026-11-04
+
 ### Changed
 - **The default port is now 8742** instead of the very common 3000 (inside the container and as
   the published port). When upgrading, use the new `docker-compose.yml` or change the port
