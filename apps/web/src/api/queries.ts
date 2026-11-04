@@ -308,6 +308,15 @@ export function useSaveCategory() {
   });
 }
 
+export function useReorderCategories() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      api<void>('/categories/reorder', { method: 'POST', body: { ids } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.categories }),
+  });
+}
+
 export function useDeleteCategory() {
   const qc = useQueryClient();
   return useMutation({

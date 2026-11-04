@@ -2,6 +2,8 @@ import { type Category, COLOR_PALETTE, type Label } from '@slavotax/shared';
 import {
   Archive,
   ArchiveRestore,
+  ArrowDown,
+  ArrowUp,
   ChevronRight,
   MoreHorizontal,
   Pencil,
@@ -19,6 +21,7 @@ import {
   useDeleteCategory,
   useDeleteLabel,
   useLabels,
+  useReorderCategories,
   useSaveCategory,
   useSaveLabel,
 } from '@/api/queries';
@@ -104,6 +107,7 @@ export default function CategoriesPage() {
   const index = useMemo(() => buildCategoryIndex(categories), [categories]);
   const save = useSaveCategory();
   const remove = useDeleteCategory();
+  const reorder = useReorderCategories();
   const removeLabel = useDeleteLabel();
   const confirm = useConfirm();
   const [kind, setKind] = useState<'expense' | 'income'>('expense');
@@ -143,6 +147,17 @@ export default function CategoriesPage() {
       { onSuccess: () => toast.success(c.archived ? 'Category restored' : 'Category archived') },
     );
 
+  /** Swaps a category with its neighbour among its siblings. */
+  const move = (c: Category, dir: -1 | 1) => {
+    const siblings = c.parentId ? index.childrenOf(c.parentId) : index.topLevel(c.kind, true);
+    const ids = siblings.map((x) => x.id);
+    const i = ids.indexOf(c.id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+    reorder.mutate(ids);
+  };
+
   const renderActions = (c: Category) => (
     <Menu>
       <MenuTrigger asChild>
@@ -156,6 +171,13 @@ export default function CategoriesPage() {
         </Button>
       </MenuTrigger>
       <MenuContent>
+        <MenuItem icon={<ArrowUp />} onSelect={() => move(c, -1)}>
+          Move up
+        </MenuItem>
+        <MenuItem icon={<ArrowDown />} onSelect={() => move(c, 1)}>
+          Move down
+        </MenuItem>
+        <MenuSeparator />
         {!c.parentId && (
           <MenuItem
             icon={<Plus />}
