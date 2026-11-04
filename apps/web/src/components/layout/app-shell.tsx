@@ -204,7 +204,8 @@ export function AppShell() {
         </div>
         {user.isDemo && (
           <div className="mx-3 mb-2 rounded-xl bg-warning/10 px-3 py-2 text-xs text-warning">
-            You are exploring the demo account. Data is reset regularly.
+            You are exploring the shared demo account – others can see what you enter. Data is reset
+            regularly.
           </div>
         )}
         <div className="border-t border-border p-2">
@@ -263,7 +264,7 @@ export function AppShell() {
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">
         {user.isDemo && (
           <div className="mb-4 rounded-xl bg-warning/10 px-3 py-2 text-xs text-warning lg:hidden">
-            Demo account – data is reset regularly.
+            Shared demo account – visible to others and reset regularly.
           </div>
         )}
         <Outlet />
