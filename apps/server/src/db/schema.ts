@@ -56,6 +56,8 @@ export const users = pgTable(
     weekStartsOn: smallint('week_starts_on').notNull().default(1),
     theme: text('theme').notNull().default('system'),
     locale: text('locale').notNull().default('en'),
+    /** UI language, used for texts generated on the server (reminders). */
+    language: varchar('language', { length: 5 }).notNull().default('en'),
     isDemo: boolean('is_demo').notNull().default(false),
     isAdmin: boolean('is_admin').notNull().default(false),
     /** Reminder delivery: where and how to send daily planned-payment reminders. */

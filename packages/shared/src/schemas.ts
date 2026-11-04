@@ -88,6 +88,7 @@ export const updateProfileInput = z.object({
   weekStartsOn: z.union([z.literal(0), z.literal(1), z.literal(6)]).optional(),
   theme: z.enum(THEMES).optional(),
   locale: z.string().max(16).optional(),
+  language: z.enum(['en', 'bg']).optional(),
 });
 export type UpdateProfileInput = z.input<typeof updateProfileInput>;
 

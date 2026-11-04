@@ -19,6 +19,8 @@ export interface User {
   weekStartsOn: 0 | 1 | 6;
   theme: 'system' | 'light' | 'dark';
   locale: string;
+  /** UI language used for server-generated texts (reminders). */
+  language: string;
   isDemo: boolean;
   isAdmin: boolean;
   createdAt: string;

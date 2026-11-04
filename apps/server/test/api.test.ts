@@ -1276,3 +1276,33 @@ describe('reminders', () => {
     server.close();
   });
 });
+
+describe('localized reminders', () => {
+  it('uses the language of the user', async () => {
+    const { buildReminder } = await import('../src/services/reminders');
+    const { eq } = await import('drizzle-orm');
+    const { users } = await import('../src/db/schema');
+    const { call, user } = await registerUser(ctx.app, { timezone: 'UTC' });
+    const acc = (
+      await call('POST', '/api/accounts', {
+        name: 'A',
+        type: 'checking',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    await call('POST', '/api/planned-payments', {
+      name: 'Наем',
+      type: 'expense',
+      accountId: acc.id,
+      amount: 50000,
+      frequency: 'monthly',
+      startDate: '2026-05-10',
+    });
+    expect((await call('PATCH', '/api/me', { language: 'bg' })).body.user).toBeTruthy();
+    const [row] = await ctx.db.select().from(users).where(eq(users.id, user.id));
+    const message = await buildReminder(ctx.db, row!, new Date('2026-05-10T09:00:00Z'));
+    expect(message.title).toContain('предстоящо плащане');
+    expect(message.lines[0]).toContain('днес');
+  });
+});

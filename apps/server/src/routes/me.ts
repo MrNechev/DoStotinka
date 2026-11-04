@@ -19,7 +19,7 @@ import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { clearSessionCookie, currentUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
 import { rebaseRates } from '../services/rates';
-import { buildReminder, sendReminder } from '../services/reminders';
+import { buildReminder, sendReminder, testReminder } from '../services/reminders';
 import { backupSchema, restoreBackup } from '../services/restore';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -181,13 +181,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       assertReminders(user);
       if (!user.notifyUrl) throw badRequest('Save a reminder URL first');
       const message = await buildReminder(app.db, user);
-      const test = message.count
-        ? message
-        : {
-            title: 'Slavotax test reminder',
-            lines: ['Reminders work. Nothing is due today or tomorrow.'],
-            count: 0,
-          };
+      const test = message.count ? message : testReminder(user.language);
       try {
         await sendReminder(user.notifyUrl, user.notifyFormat as NotifyFormat, test);
       } catch (err) {

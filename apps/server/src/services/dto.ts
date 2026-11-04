@@ -27,6 +27,7 @@ export function toUser(u: UserRow): User {
     weekStartsOn: (u.weekStartsOn === 0 || u.weekStartsOn === 6 ? u.weekStartsOn : 1) as 0 | 1 | 6,
     theme: (['light', 'dark'].includes(u.theme) ? u.theme : 'system') as User['theme'],
     locale: u.locale,
+    language: u.language,
     isDemo: u.isDemo,
     isAdmin: u.isAdmin,
     createdAt: u.createdAt.toISOString(),

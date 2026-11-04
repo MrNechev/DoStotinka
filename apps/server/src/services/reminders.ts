@@ -11,6 +11,35 @@ export interface ReminderMessage {
   count: number;
 }
 
+const TEXTS = {
+  en: {
+    overdueSince: (d: string) => `overdue since ${d}`,
+    today: 'today',
+    tomorrow: 'tomorrow',
+    overdueTitle: (n: number) => `Slavotax: ${n} overdue ${n === 1 ? 'payment' : 'payments'}`,
+    dueTitle: (n: number) => `Slavotax: ${n} ${n === 1 ? 'payment' : 'payments'} due soon`,
+    testTitle: 'Slavotax test reminder',
+    testLine: 'Reminders work. Nothing is due today or tomorrow.',
+  },
+  bg: {
+    overdueSince: (d: string) => `просрочено от ${d}`,
+    today: 'днес',
+    tomorrow: 'утре',
+    overdueTitle: (n: number) =>
+      `Slavotax: ${n} ${n === 1 ? 'просрочено плащане' : 'просрочени плащания'}`,
+    dueTitle: (n: number) =>
+      `Slavotax: ${n} ${n === 1 ? 'предстоящо плащане' : 'предстоящи плащания'}`,
+    testTitle: 'Slavotax: тестово напомняне',
+    testLine: 'Напомнянията работят. Днес и утре няма плащания.',
+  },
+};
+const texts = (language: string) => (language === 'bg' ? TEXTS.bg : TEXTS.en);
+
+export function testReminder(language: string): ReminderMessage {
+  const tx = texts(language);
+  return { title: tx.testTitle, lines: [tx.testLine], count: 0 };
+}
+
 function localHour(now: Date, tz: string): number {
   return Number(
     new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', hourCycle: 'h23' }).format(
@@ -51,16 +80,15 @@ export async function buildReminder(
       locale,
       signDisplay: plan.type === 'transfer' ? 'never' : 'exceptZero',
     });
+    const tx = texts(user.language);
     const when =
-      o.dueDate < today ? `overdue since ${o.dueDate}` : o.dueDate === today ? 'today' : 'tomorrow';
+      o.dueDate < today ? tx.overdueSince(o.dueDate) : o.dueDate === today ? tx.today : tx.tomorrow;
     if (o.dueDate < today) overdue++;
     lines.push(`${o.dueDate < today ? '⚠️' : '•'} ${plan.name}: ${amount} (${when})`);
   }
   const count = lines.length;
-  const title =
-    overdue > 0
-      ? `Slavotax: ${overdue} overdue ${overdue === 1 ? 'payment' : 'payments'}`
-      : `Slavotax: ${count} ${count === 1 ? 'payment' : 'payments'} due soon`;
+  const tx = texts(user.language);
+  const title = overdue > 0 ? tx.overdueTitle(overdue) : tx.dueTitle(count);
   return { title, lines, count };
 }
 
@@ -77,7 +105,10 @@ export async function sendReminder(
       init = {
         method: 'POST',
         headers: {
-          Title: /^[\x20-\x7e]*$/.test(message.title) ? message.title : 'Slavotax',
+          // HTTP headers are ASCII: other characters are sent RFC 2047 encoded (supported by ntfy).
+          Title: /^[\x20-\x7e]*$/.test(message.title)
+            ? message.title
+            : `=?UTF-8?B?${Buffer.from(message.title).toString('base64')}?=`,
           Tags: 'moneybag',
         },
         body,

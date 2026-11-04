@@ -4,7 +4,7 @@ import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router
 import { RouterProvider } from 'react-router/dom';
 import { Toaster } from 'sonner';
 import { t } from '@/i18n';
-import { ApiError, setUnauthorizedHandler } from './api/client';
+import { ApiError, api, setUnauthorizedHandler } from './api/client';
 import { qk, useMe } from './api/queries';
 import { AppShell } from './components/layout/app-shell';
 import { LogoMark } from './components/layout/logo';
@@ -12,6 +12,7 @@ import { RecordEditorProvider } from './components/records/record-editor';
 import { ConfirmProvider } from './components/ui/confirm';
 import { Spinner } from './components/ui/misc';
 import { useThemeSync } from './hooks/use-theme';
+import { language } from './i18n';
 import { setNumberLocale } from './lib/format';
 import { LoginPage } from './pages/auth/login-page';
 import { RegisterPage } from './pages/auth/register-page';
@@ -68,6 +69,12 @@ function RequireAuth() {
   const location = useLocation();
   useThemeSync(user?.theme);
   useEffect(() => setNumberLocale(user?.locale), [user?.locale]);
+  // Tell the server which language this device uses (for reminders sent by the server).
+  useEffect(() => {
+    if (user && !user.isDemo && user.language !== language) {
+      void api('/me', { method: 'PATCH', body: { language } }).catch(() => {});
+    }
+  }, [user]);
   if (isLoading) return <FullscreenLoader />;
   if (isError) {
     return (
