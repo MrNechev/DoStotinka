@@ -11,6 +11,7 @@ All notable changes to this project are documented in this file. The format is b
   JSON webhook (Settings → Reminders; disable server-wide with `NOTIFICATIONS_ENABLED=false`).
 
 ### Fixed
+- Import converts records whose currency differs from their account's currency.
 - Demo visitors no longer see each other's sessions and cannot change the shared profile.
 
 ## [0.2.0] – 2026-11-04

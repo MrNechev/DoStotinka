@@ -45,5 +45,6 @@ Planned payments, budgets and goals are not part of the export. Add them again u
 
 - Use **Select** on the Records page to recategorise many imported records at once.
 - Labels from Wallet are imported and created automatically.
-- Records in a currency different from their account are imported with the amount from the file;
-  check such accounts after the import.
+- Records in a currency different from their account (e.g. a USD purchase on a EUR card) are
+  converted with your exchange rates (**Settings → Currencies**); the original amount is kept in the
+  note. Set the rates before importing for the best result.

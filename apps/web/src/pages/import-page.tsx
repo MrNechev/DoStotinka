@@ -3,6 +3,7 @@ import {
   ACCOUNT_TYPES,
   type AccountType,
   CURRENCIES,
+  convertMinor,
   type ImportRecordInput,
   type ImportResult,
   isSupportedCurrency,
@@ -14,7 +15,14 @@ import { ArrowLeft, ArrowRight, CheckCircle2, FileUp, Info } from 'lucide-react'
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { api, errorMessage } from '@/api/client';
-import { invalidateFinancialData, qk, useAccounts, useCategories, useUser } from '@/api/queries';
+import {
+  invalidateFinancialData,
+  qk,
+  useAccounts,
+  useCategories,
+  useCurrencies,
+  useUser,
+} from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Field, Select } from '@/components/ui/input';
 import { Badge, Card, Checkbox, PageHeader } from '@/components/ui/misc';
@@ -181,6 +189,7 @@ export default function ImportPage() {
   const qc = useQueryClient();
   const { data: accounts = [] } = useAccounts();
   const { data: categories } = useCategories();
+  const { data: currencies } = useCurrencies();
   const index = useMemo(() => buildCategoryIndex(categories), [categories]);
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<{ name: string; headers: string[]; rows: string[][] } | null>(
@@ -301,13 +310,34 @@ export default function ImportPage() {
           ? { key, existingId: c.id }
           : { key, create: { name: c.name, type: c.type, currency: c.currency, color: '#3B82F6' } };
       });
+      const rateMap: Record<string, number> = {};
+      if (currencies) {
+        rateMap[currencies.baseCurrency] = 1;
+        for (const r of currencies.rates) rateMap[r.currency] = r.rate;
+      }
       const records: ImportRecordInput[] = built.drafts.map((d) => {
         const currency = currencyOfKey(d.accountKey);
+        // A record in another currency than its account (e.g. a USD purchase on a EUR card) is
+        // converted with the exchange rates; the original amount is kept in the note.
+        const foreign =
+          d.type !== 'transfer' &&
+          d.currency &&
+          d.currency !== currency &&
+          d.currency in rateMap &&
+          currency in rateMap;
+        const minor = foreign
+          ? convertMinor(toMinor(d.amount, d.currency!), d.currency!, currency, rateMap)
+          : toMinor(d.amount, currency);
+        const note = foreign
+          ? [d.note, `Paid ${money(toMinor(d.amount, d.currency!), d.currency!)}`]
+              .filter(Boolean)
+              .join(' · ')
+          : d.note;
         const base = {
           accountKey: d.accountKey,
-          amount: Math.max(1, toMinor(d.amount, currency)),
+          amount: Math.max(1, minor),
           occurredAt: d.date.toISOString(),
-          note: d.note || null,
+          note: note || null,
           payee: d.payee || null,
           labels: d.labels,
         };
