@@ -21,4 +21,5 @@ Slavotax is in alpha; only the latest release receives security fixes.
 - Use a long random `DB_PASSWORD` and do not expose the PostgreSQL port.
 - Disable sign-ups (`ALLOW_REGISTRATION=false`) after creating your accounts and disable the demo
   account (`DEMO_ENABLED=false`) on private instances.
+- Ask your users to turn on two-factor login (Settings → Security), at least for administrators.
 - Back up the database regularly.

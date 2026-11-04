@@ -30,6 +30,8 @@ export function toUser(u: UserRow): User {
     language: u.language,
     isDemo: u.isDemo,
     isAdmin: u.isAdmin,
+    twoFactorEnabled: !!u.totpSecret,
+    recoveryCodesLeft: u.totpSecret ? u.recoveryCodes.length : 0,
     createdAt: u.createdAt.toISOString(),
   };
 }

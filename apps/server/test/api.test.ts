@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { base32Decode, hotp, timeStep } from '../src/lib/totp';
 import { createTestApp, registerUser } from './helpers';
 
 let ctx: Awaited<ReturnType<typeof createTestApp>>;
@@ -1610,5 +1611,48 @@ describe('record templates', () => {
 
     expect((await call('DELETE', `/api/templates/${created.body.id}`)).status).toBe(204);
     expect((await call<any[]>('GET', '/api/templates')).body).toHaveLength(1);
+  });
+});
+
+describe('two-factor login', () => {
+  it('requires a single-use code after enabling it', async () => {
+    const { call, email } = await registerUser(ctx.app);
+    const password = 'correct horse battery';
+    const login = (code?: string) =>
+      ctx.app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: { email, password, ...(code ? { code } : {}) },
+      });
+
+    const setup = (await call('POST', '/api/me/2fa/setup')).body;
+    expect(setup.otpauthUrl).toContain(`secret=${setup.secret}`);
+    const key = base32Decode(setup.secret);
+    expect((await call('POST', '/api/me/2fa/enable', { code: '000000' })).status).toBe(400);
+    const first = hotp(key, timeStep());
+    const enabled = await call('POST', '/api/me/2fa/enable', { code: first });
+    expect(enabled.status).toBe(200);
+    const recovery: string[] = enabled.body.recoveryCodes;
+    expect(recovery).toHaveLength(10);
+    expect((await call('GET', '/api/me')).body.user).toMatchObject({
+      twoFactorEnabled: true,
+      recoveryCodesLeft: 10,
+    });
+
+    // Password alone is not enough; a used code cannot be replayed.
+    const noCode = await login();
+    expect(noCode.statusCode).toBe(401);
+    expect(noCode.json().issues[0].path).toBe('code');
+    expect((await login(first)).statusCode).toBe(401);
+    expect((await login(hotp(key, timeStep() + 1))).statusCode).toBe(200);
+
+    // Recovery codes work once.
+    expect((await login(recovery[0]!.toUpperCase())).statusCode).toBe(200);
+    expect((await login(recovery[0])).statusCode).toBe(401);
+    expect((await call('GET', '/api/me')).body.user.recoveryCodesLeft).toBe(9);
+
+    expect((await call('POST', '/api/me/2fa/disable', { password: 'wrong' })).status).toBe(400);
+    expect((await call('POST', '/api/me/2fa/disable', { password })).status).toBe(204);
+    expect((await login()).statusCode).toBe(200);
   });
 });

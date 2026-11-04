@@ -9,6 +9,7 @@ import { clearSessionCookie, createSession, setSessionCookie } from '../plugins/
 import { seedDefaultCategories } from '../services/categories';
 import { toUser } from '../services/dto';
 import { realUserCount, registrationOpen } from '../services/settings';
+import { verifySecondFactor } from '../services/two-factor';
 
 // A valid hash used to keep login timing constant for unknown e-mails.
 let dummyHash: Promise<string> | null = null;
@@ -76,6 +77,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!(await verifyPassword(user.passwordHash, password))) {
         throw unauthorized('Invalid e-mail or password');
       }
+      await verifySecondFactor(app.db, user, req.body.code);
       const session = await createSession(app.db, app.config, user.id, req);
       setSessionCookie(reply, req, app.config, session.token, session.expiresAt);
       return { user: toUser(user), ...(issueToken ? { token: session.token } : {}) };

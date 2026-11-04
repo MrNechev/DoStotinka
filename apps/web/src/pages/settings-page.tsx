@@ -40,6 +40,7 @@ import {
   useUser,
 } from '@/api/queries';
 import { TemplatesSection } from '@/components/records/templates';
+import { TwoFactorSettings } from '@/components/settings/two-factor';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
@@ -468,6 +469,7 @@ function SecuritySection() {
           </Button>
         </form>
       )}
+      <TwoFactorSettings />
       <h3 className="mb-2 mt-6 text-sm font-semibold">{t('Active sessions')}</h3>
       <ul className="divide-y divide-border rounded-xl border border-border">
         {sessions
@@ -508,7 +510,7 @@ function SecuritySection() {
 }
 
 function describeAgent(ua: string | null) {
-  if (!ua) return 'Unknown device';
+  if (!ua) return t('Unknown device');
   const browser = /Edg\//.test(ua)
     ? t('Edge')
     : /Firefox\//.test(ua)
@@ -529,7 +531,7 @@ function describeAgent(ua: string | null) {
           : /Linux/.test(ua)
             ? t('Linux')
             : '';
-  return os ? `${browser} on ${os}` : browser;
+  return os ? t('{browser} on {os}', { browser, os }) : browser;
 }
 
 function ApiTokensSection() {

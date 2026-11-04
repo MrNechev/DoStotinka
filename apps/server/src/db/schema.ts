@@ -65,6 +65,14 @@ export const users = pgTable(
     language: varchar('language', { length: 5 }).notNull().default('en'),
     isDemo: boolean('is_demo').notNull().default(false),
     isAdmin: boolean('is_admin').notNull().default(false),
+    /** Two-factor authentication (TOTP): the active secret (base32) – null = disabled. */
+    totpSecret: text('totp_secret'),
+    /** Secret shown during setup, activated once a code from it is confirmed. */
+    totpPendingSecret: text('totp_pending_secret'),
+    /** Last accepted time step – codes cannot be used twice. */
+    totpLastStep: integer('totp_last_step'),
+    /** SHA-256 hashes of the unused recovery codes. */
+    recoveryCodes: jsonb('recovery_codes').$type<string[]>().notNull().default([]),
     /** Reminder delivery: where and how to send daily planned-payment reminders. */
     notifyUrl: text('notify_url'),
     notifyFormat: text('notify_format').notNull().default('ntfy'),

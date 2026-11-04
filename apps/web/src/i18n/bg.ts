@@ -535,6 +535,53 @@ export const bg: Record<string, string> = {
   'Unknown account': 'Непозната сметка',
   'Unknown category': 'Непозната категория',
   'Unknown label': 'Непознат етикет',
+  // ─── Two-factor login ───
+  'Keep these recovery codes somewhere safe. Each one lets you log in once without your phone. They are shown only now.':
+    'Пазете тези кодове за възстановяване на сигурно място. Всеки от тях позволява еднократен вход без телефона ви. Показват се само сега.',
+  'Copying is not allowed by the browser': 'Браузърът не позволява копиране',
+  Copied: 'Копирано',
+  Download: 'Изтегли',
+  'Save your recovery codes': 'Запазете кодовете за възстановяване',
+  'Set up two-factor login': 'Настройка на двуфакторен вход',
+  'Two-factor login is on': 'Двуфакторният вход е включен',
+  'Scan the code with an authenticator app (e.g. Aegis, 2FAS, Google Authenticator, 1Password) and enter the 6-digit code it shows.':
+    'Сканирайте кода с приложение за удостоверяване (напр. Aegis, 2FAS, Google Authenticator, 1Password) и въведете 6-цифрения код, който то показва.',
+  'QR code for your authenticator app': 'QR код за приложението за удостоверяване',
+  'Can’t scan? Enter the key by hand': 'Не можете да сканирате? Въведете ключа ръчно',
+  'Code from the app': 'Код от приложението',
+  'Turn on': 'Включи',
+  'Turn off two-factor login': 'Изключи двуфакторния вход',
+  'New recovery codes': 'Нови кодове за възстановяване',
+  'Logging in will only need your password again.': 'За вход отново ще е нужна само паролата.',
+  'Your old recovery codes stop working.': 'Старите кодове за възстановяване спират да работят.',
+  'Two-factor login is off': 'Двуфакторният вход е изключен',
+  'Turn off': 'Изключи',
+  'Create new codes': 'Създай нови кодове',
+  'Two-factor login': 'Двуфакторен вход',
+  On: 'Включен',
+  Off: 'Изключен',
+  'Protect your account with a code from an authenticator app on your phone.':
+    'Защитете профила си с код от приложение за удостоверяване на телефона.',
+  'A code from your authenticator app is needed to log in. {n} recovery code left.':
+    'За вход е нужен код от приложението за удостоверяване. Остава {n} код за възстановяване.',
+  'A code from your authenticator app is needed to log in. {n} recovery codes left.':
+    'За вход е нужен код от приложението за удостоверяване. Остават {n} кода за възстановяване.',
+  '2FA': '2FA',
+  'Turn off two-factor login for {name}?': 'Да се изключи ли двуфакторният вход за {name}?',
+  'Only do this when the user lost their phone and recovery codes. They can log in with the password alone afterwards.':
+    'Направете го само ако потребителят е загубил телефона и кодовете си за възстановяване. След това ще може да влиза само с парола.',
+  'Authentication code': 'Код за удостоверяване',
+  'Open your authenticator app – or enter one of your recovery codes.':
+    'Отворете приложението за удостоверяване – или въведете един от кодовете си за възстановяване.',
+  'Unknown device': 'Неизвестно устройство',
+  '{browser} on {os}': '{browser} на {os}',
+  'Enter the code from your authenticator app': 'Въведете кода от приложението за удостоверяване',
+  'The code is not valid': 'Кодът не е валиден',
+  'Two-factor login is not available for the demo account':
+    'Двуфакторният вход не е достъпен за демо профила',
+  'Two-factor login is already enabled': 'Двуфакторният вход вече е включен',
+  'Start the setup first': 'Първо започнете настройката',
+  'Two-factor login is not enabled': 'Двуфакторният вход не е включен',
   // ─── Accounts ───
   'Cannot be changed once the account has records.':
     'Не може да се променя, след като сметката има записи.',

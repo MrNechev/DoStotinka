@@ -50,6 +50,7 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
           email: u.email,
           isAdmin: u.isAdmin,
           isDemo: u.isDemo,
+          twoFactorEnabled: !!u.totpSecret,
           createdAt: u.createdAt.toISOString(),
           lastActiveAt: activeOf.get(u.id)?.toISOString() ?? null,
           accountCount: accountsOf.get(u.id) ?? 0,
@@ -111,6 +112,14 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       if (req.body.name !== undefined) patch.name = req.body.name;
       if (req.body.isAdmin !== undefined) patch.isAdmin = req.body.isAdmin;
       if (req.body.password) patch.passwordHash = await hashPassword(req.body.password);
+      if (req.body.disableTwoFactor) {
+        Object.assign(patch, {
+          totpSecret: null,
+          totpPendingSecret: null,
+          totpLastStep: null,
+          recoveryCodes: [],
+        });
+      }
       if (Object.keys(patch).length)
         await db.update(users).set(patch).where(eq(users.id, target.id));
       // A password reset signs the user out everywhere.

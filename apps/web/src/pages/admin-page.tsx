@@ -180,8 +180,8 @@ export default function AdminPage() {
     },
   });
   const updateUser = useMutation({
-    mutationFn: ({ id, isAdmin }: { id: string; isAdmin: boolean }) =>
-      api(`/admin/users/${id}`, { method: 'PATCH', body: { isAdmin } }),
+    mutationFn: ({ id, ...body }: { id: string; isAdmin?: boolean; disableTwoFactor?: true }) =>
+      api(`/admin/users/${id}`, { method: 'PATCH', body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: adminKeys.users }),
     onError: (e) => toast.error(errorMessage(e)),
   });
@@ -273,6 +273,7 @@ export default function AdminPage() {
                       {u.id === me.id && <Badge tone="success">{t('you')}</Badge>}
                       {u.isAdmin && <Badge tone="info">{t('admin')}</Badge>}
                       {u.isDemo && <Badge tone="warning">{t('demo')}</Badge>}
+                      {u.twoFactorEnabled && <Badge tone="success">{t('2FA')}</Badge>}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {u.email} · {plural(u.accountCount, 'account')} ·{' '}
@@ -293,6 +294,26 @@ export default function AdminPage() {
                         <MenuItem icon={<KeyRound />} onSelect={() => setResetting(u)}>
                           {t('Reset password')}
                         </MenuItem>
+                        {u.twoFactorEnabled && (
+                          <MenuItem
+                            icon={<ShieldOff />}
+                            onSelect={async () => {
+                              const ok = await confirm({
+                                title: t('Turn off two-factor login for {name}?', {
+                                  name: u.name,
+                                }),
+                                description: t(
+                                  'Only do this when the user lost their phone and recovery codes. They can log in with the password alone afterwards.',
+                                ),
+                                confirmLabel: t('Turn off'),
+                                destructive: true,
+                              });
+                              if (ok) updateUser.mutate({ id: u.id, disableTwoFactor: true });
+                            }}
+                          >
+                            {t('Turn off two-factor login')}
+                          </MenuItem>
+                        )}
                         <MenuItem
                           icon={u.isAdmin ? <ShieldOff /> : <Shield />}
                           onSelect={() => updateUser.mutate({ id: u.id, isAdmin: !u.isAdmin })}

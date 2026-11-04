@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Two-factor login with an authenticator app (TOTP) and ten one-time recovery codes
+  (Settings → Security). Administrators can switch it off for users who lost their phone.
 - Record templates: save the values of a record as a template (“Save as template” in the record
   editor) and apply it with one tap; manage them in Settings. Templates are part of the JSON backup.
 - Attach receipts and other files (photos, PDFs) to records. Photos are scaled down in the browser
@@ -29,6 +31,7 @@ All notable changes to this project are documented in this file. The format is b
 - Weekly charts start weeks on the first day of the week chosen in Settings (Sunday/Saturday).
 - Confirming a planned payment from an account in another currency converts the amount.
 - Adding to a savings goal shows an error for an invalid amount instead of doing nothing.
+- The record editor no longer grows wider than its dialog when there are many suggestions.
 - Remaining untranslated texts (budgets, goals, import, report, record type switch …); a test now
   fails when English text is written directly into the interface.
 

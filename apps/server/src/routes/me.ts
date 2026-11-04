@@ -4,9 +4,12 @@ import {
   deleteAccountInput,
   NOTIFY_FORMATS,
   type NotifyFormat,
+  passwordConfirmInput,
   type ReminderSettings,
   reminderSettingsInput,
   type Session,
+  type TwoFactorSetup,
+  twoFactorCodeInput,
   updateProfileInput,
 } from '@slavotax/shared';
 import { and, desc, eq, ne } from 'drizzle-orm';
@@ -16,6 +19,7 @@ import { sessions, type UserRow, users } from '../db/schema';
 import { generateToken, hashPassword, sha256, verifyPassword } from '../lib/crypto';
 import { isValidTimeZone } from '../lib/dates';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
+import { generateRecoveryCodes, generateSecret, otpauthUrl, verifyTotp } from '../lib/totp';
 import { clearSessionCookie, currentUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
 import { rebaseRates } from '../services/rates';
@@ -190,6 +194,100 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         );
       }
       return { sent: true, items: message.count };
+    },
+  );
+
+  // ───── Two-factor authentication ─────
+
+  const assertPassword = async (u: UserRow, password: string) => {
+    if (!(await verifyPassword(u.passwordHash, password))) {
+      throw badRequest('Password is incorrect');
+    }
+  };
+  const newRecoveryCodes = () => {
+    const codes = generateRecoveryCodes();
+    return { codes, hashes: codes.map((c) => sha256(c)) };
+  };
+
+  app.post(
+    '/2fa/setup',
+    { schema: { tags: ['user'], summary: 'Start setting up two-factor login (returns a secret)' } },
+    async (req) => {
+      const user = currentUser(req);
+      if (user.isDemo) throw forbidden('Two-factor login is not available for the demo account');
+      if (user.totpSecret) throw conflict('Two-factor login is already enabled');
+      const secret = generateSecret();
+      await app.db.update(users).set({ totpPendingSecret: secret }).where(eq(users.id, user.id));
+      const setup: TwoFactorSetup = { secret, otpauthUrl: otpauthUrl(secret, user.email) };
+      return setup;
+    },
+  );
+
+  app.post(
+    '/2fa/enable',
+    {
+      schema: {
+        tags: ['user'],
+        summary: 'Confirm the first code and enable two-factor login (returns recovery codes)',
+        body: twoFactorCodeInput,
+      },
+    },
+    async (req) => {
+      const user = currentUser(req);
+      if (user.totpSecret) throw conflict('Two-factor login is already enabled');
+      if (!user.totpPendingSecret) throw badRequest('Start the setup first');
+      const step = verifyTotp(user.totpPendingSecret, req.body.code);
+      if (step === null) throw badRequest('The code is not valid');
+      const { codes, hashes } = newRecoveryCodes();
+      await app.db
+        .update(users)
+        .set({
+          totpSecret: user.totpPendingSecret,
+          totpPendingSecret: null,
+          totpLastStep: step,
+          recoveryCodes: hashes,
+        })
+        .where(eq(users.id, user.id));
+      return { recoveryCodes: codes };
+    },
+  );
+
+  app.post(
+    '/2fa/recovery-codes',
+    {
+      schema: {
+        tags: ['user'],
+        summary: 'Replace the recovery codes with new ones',
+        body: passwordConfirmInput,
+      },
+    },
+    async (req) => {
+      const user = currentUser(req);
+      if (!user.totpSecret) throw badRequest('Two-factor login is not enabled');
+      await assertPassword(user, req.body.password);
+      const { codes, hashes } = newRecoveryCodes();
+      await app.db.update(users).set({ recoveryCodes: hashes }).where(eq(users.id, user.id));
+      return { recoveryCodes: codes };
+    },
+  );
+
+  app.post(
+    '/2fa/disable',
+    {
+      schema: {
+        tags: ['user'],
+        summary: 'Switch off two-factor login',
+        body: passwordConfirmInput,
+      },
+    },
+    async (req, reply) => {
+      const user = currentUser(req);
+      await assertPassword(user, req.body.password);
+      await app.db
+        .update(users)
+        .set({ totpSecret: null, totpPendingSecret: null, totpLastStep: null, recoveryCodes: [] })
+        .where(eq(users.id, user.id));
+      return reply.status(204).send();
     },
   );
 

@@ -12,7 +12,9 @@ Authorization: Bearer <token>
 ```
 
 Tokens are valid for ten years and can be revoked at any time in the same place. (Alternatively
-`POST /api/auth/login` with `{"email", "password", "issueToken": true}` returns a session token.)
+`POST /api/auth/login` with `{"email", "password", "issueToken": true}` returns a session token.
+When two-factor login is enabled, add `"code"` with the current authenticator code – without it
+the server answers `401` with `issues[0].path == "code"`.)
 
 ## Conventions
 

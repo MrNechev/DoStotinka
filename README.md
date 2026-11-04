@@ -30,6 +30,7 @@ leaves it.
 
 - **Multiple users** – everyone has their own private data. The first user becomes the
   administrator and can add users, reset passwords and close sign-ups from the web UI.
+- **Two-factor login** with any authenticator app (TOTP) and one-time recovery codes.
 - **Accounts** – cash, bank, savings, credit cards, deposits, investments, loans … each with its own
   balance and currency. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.

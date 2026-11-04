@@ -1,7 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { errorMessage } from '@/api/client';
+import { ApiError, errorMessage } from '@/api/client';
 import { useDemoLogin, useLogin, useServerConfig } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
@@ -16,14 +16,22 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Two-factor login: the server asks for the authenticator code after a correct password.
+  const [needsCode, setNeedsCode] = useState(false);
+  const [code, setCode] = useState('');
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await login.mutateAsync({ email, password });
+      await login.mutateAsync({ email, password, ...(needsCode ? { code } : {}) });
       navigate('/', { replace: true });
     } catch (err) {
+      const codeIssue = err instanceof ApiError && err.issues[0]?.path === 'code';
+      if (codeIssue && !needsCode) {
+        setNeedsCode(true);
+        return;
+      }
       setError(errorMessage(err));
     }
   };
@@ -66,6 +74,25 @@ export function LoginPage() {
             required
           />
         </Field>
+        {needsCode && (
+          <Field
+            label={t('Authentication code')}
+            htmlFor="code"
+            hint={t('Open your authenticator app – or enter one of your recovery codes.')}
+          >
+            <Input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="123 456"
+              maxLength={20}
+              required
+              autoFocus
+            />
+          </Field>
+        )}
         {error && (
           <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
         )}

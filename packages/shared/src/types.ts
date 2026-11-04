@@ -23,7 +23,16 @@ export interface User {
   language: string;
   isDemo: boolean;
   isAdmin: boolean;
+  /** Login requires a code from an authenticator app. */
+  twoFactorEnabled: boolean;
+  /** Unused recovery codes left (only when two-factor login is enabled). */
+  recoveryCodesLeft: number;
   createdAt: string;
+}
+
+export interface TwoFactorSetup {
+  secret: string;
+  otpauthUrl: string;
 }
 
 export interface AdminUser {
@@ -32,6 +41,7 @@ export interface AdminUser {
   email: string;
   isAdmin: boolean;
   isDemo: boolean;
+  twoFactorEnabled: boolean;
   createdAt: string;
   lastActiveAt: string | null;
   accountCount: number;

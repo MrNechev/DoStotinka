@@ -34,6 +34,7 @@ import type {
   StatsSummary,
   TemplateInput,
   TimeseriesResponse,
+  TwoFactorSetup,
   UpcomingOccurrence,
   UpdateProfileInput,
   User,
@@ -786,6 +787,44 @@ export function useRefreshRates() {
 }
 
 // ───────────────────────────── Goals ─────────────────────────────
+
+// ───── Two-factor login ─────
+
+export function useTwoFactorSetup() {
+  return useMutation({
+    mutationFn: () => api<TwoFactorSetup>('/me/2fa/setup', { method: 'POST' }),
+  });
+}
+
+export function useEnableTwoFactor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) =>
+      api<{ recoveryCodes: string[] }>('/me/2fa/enable', { method: 'POST', body: { code } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
+
+export function useNewRecoveryCodes() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) =>
+      api<{ recoveryCodes: string[] }>('/me/2fa/recovery-codes', {
+        method: 'POST',
+        body: { password },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
+
+export function useDisableTwoFactor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) =>
+      api<void>('/me/2fa/disable', { method: 'POST', body: { password } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
 
 export function useTemplates() {
   return useQuery({

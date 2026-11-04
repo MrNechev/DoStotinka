@@ -77,6 +77,8 @@ export const loginInput = z.object({
   password: z.string().min(1).max(200),
   /** Return a bearer token in the response body (for API / mobile clients). */
   issueToken: z.boolean().optional(),
+  /** Code from the authenticator app (or a recovery code) when two-factor login is enabled. */
+  code: z.string().trim().max(20).optional(),
 });
 export type LoginInput = z.input<typeof loginInput>;
 
@@ -443,7 +445,12 @@ export const adminUpdateUserInput = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   isAdmin: z.boolean().optional(),
   password: passwordSchema.optional(),
+  /** Switch off two-factor login (when the user lost their device and recovery codes). */
+  disableTwoFactor: z.literal(true).optional(),
 });
+
+export const twoFactorCodeInput = z.object({ code: z.string().trim().min(1).max(20) });
+export const passwordConfirmInput = z.object({ password: z.string().min(1).max(200) });
 export type AdminUpdateUserInput = z.input<typeof adminUpdateUserInput>;
 
 export const adminSettingsInput = z.object({
