@@ -1628,9 +1628,15 @@ describe('two-factor login', () => {
     const setup = (await call('POST', '/api/me/2fa/setup')).body;
     expect(setup.otpauthUrl).toContain(`secret=${setup.secret}`);
     const key = base32Decode(setup.secret);
-    expect((await call('POST', '/api/me/2fa/enable', { code: '000000' })).status).toBe(400);
+    expect((await call('POST', '/api/me/2fa/enable', { code: '000000', password })).status).toBe(
+      400,
+    );
     const first = hotp(key, timeStep());
-    const enabled = await call('POST', '/api/me/2fa/enable', { code: first });
+    // A stolen session alone cannot switch it on.
+    expect(
+      (await call('POST', '/api/me/2fa/enable', { code: first, password: 'wrong' })).status,
+    ).toBe(400);
+    const enabled = await call('POST', '/api/me/2fa/enable', { code: first, password });
     expect(enabled.status).toBe(200);
     const recovery: string[] = enabled.body.recoveryCodes;
     expect(recovery).toHaveLength(10);
@@ -1646,10 +1652,16 @@ describe('two-factor login', () => {
     expect((await login(first)).statusCode).toBe(401);
     expect((await login(hotp(key, timeStep() + 1))).statusCode).toBe(200);
 
-    // Recovery codes work once.
+    // Recovery codes work once – with or without the dash.
     expect((await login(recovery[0]!.toUpperCase())).statusCode).toBe(200);
     expect((await login(recovery[0])).statusCode).toBe(401);
-    expect((await call('GET', '/api/me')).body.user.recoveryCodesLeft).toBe(9);
+    expect((await login(recovery[1]!.replace('-', ''))).statusCode).toBe(200);
+    expect((await call('GET', '/api/me')).body.user.recoveryCodesLeft).toBe(8);
+
+    // Guessing is stopped after a few wrong codes, even with the right one afterwards.
+    for (let i = 0; i < 5; i++) expect((await login('000000')).statusCode).toBe(401);
+    const locked = await login(hotp(key, timeStep() + 1));
+    expect(locked.statusCode).toBe(429);
 
     expect((await call('POST', '/api/me/2fa/disable', { password: 'wrong' })).status).toBe(400);
     expect((await call('POST', '/api/me/2fa/disable', { password })).status).toBe(204);
@@ -1761,5 +1773,100 @@ describe('debts', () => {
     expect((await other.call('PATCH', `/api/debts/${borrowed.id}`, { closed: true })).status).toBe(
       404,
     );
+  });
+});
+
+describe('debt records', () => {
+  it('keep their type, update the debt state and stay out of suggestions', async () => {
+    const { call } = await registerUser(ctx.app);
+    const color = '#22C55E';
+    const bank = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color,
+      })
+    ).body;
+    const cash = (
+      await call('POST', '/api/accounts', { name: 'Cash', type: 'cash', currency: 'EUR', color })
+    ).body;
+    const debt = (
+      await call('POST', '/api/debts', {
+        direction: 'lent',
+        person: 'Zoe',
+        amount: 1000,
+        date: '2026-05-01',
+        accountId: bank.id,
+      })
+    ).body;
+    const repay = async () =>
+      (
+        await call('POST', `/api/debts/${debt.id}/movements`, {
+          kind: 'repayment',
+          amount: 1000,
+          accountId: bank.id,
+          occurredAt: new Date().toISOString(),
+        })
+      ).body;
+    expect((await repay()).closedAt).not.toBeNull();
+
+    const [repayment, lending] = (await call('GET', `/api/records?debtId=${debt.id}`)).body.items;
+    expect(repayment.amount).toBe(1000);
+    const asTransfer = await call('PUT', `/api/records/${lending.id}`, {
+      type: 'transfer',
+      accountId: bank.id,
+      toAccountId: cash.id,
+      amount: 1000,
+      occurredAt: lending.occurredAt,
+    });
+    expect(asTransfer.status).toBe(400);
+
+    // Deleting the repayment opens the debt again.
+    expect((await call('DELETE', `/api/records/${repayment.id}`)).status).toBe(204);
+    const reopened = (await call<any[]>('GET', '/api/debts')).body[0];
+    expect(reopened).toMatchObject({ outstanding: 1000, closedAt: null });
+
+    // Debt records are neither suggestions nor "uncategorized" spending.
+    await repay();
+    await repay();
+    expect((await call<any[]>('GET', '/api/records/suggestions')).body).toHaveLength(0);
+    expect((await call('GET', '/api/records?uncategorized=true')).body.items).toHaveLength(0);
+  });
+
+  it('keep the files of a transfer when the outgoing account is deleted', async () => {
+    const { call, cookie } = await registerUser(ctx.app);
+    const color = '#22C55E';
+    const old = (
+      await call('POST', '/api/accounts', { name: 'Old', type: 'checking', currency: 'EUR', color })
+    ).body;
+    const keep = (
+      await call('POST', '/api/accounts', { name: 'Keep', type: 'cash', currency: 'EUR', color })
+    ).body;
+    const tr = (
+      await call<any[]>('POST', '/api/records', {
+        type: 'transfer',
+        accountId: old.id,
+        toAccountId: keep.id,
+        amount: 500,
+        occurredAt: new Date().toISOString(),
+      })
+    ).body;
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      'base64',
+    );
+    const up = await ctx.app.inject({
+      method: 'POST',
+      url: `/api/records/${tr[0].id}/attachments`,
+      headers: { 'content-type': 'image/png' },
+      payload: png,
+      cookies: { slavotax_session: cookie },
+    });
+    expect(up.statusCode).toBe(201);
+    expect((await call('DELETE', `/api/accounts/${old.id}`)).status).toBe(204);
+    const survivor = (await call('GET', `/api/records?accountIds=${keep.id}`)).body.items[0];
+    expect(survivor.attachmentCount).toBe(1);
+    expect((await call('GET', `/api/attachments/${up.json().id}`)).status).toBe(200);
   });
 });

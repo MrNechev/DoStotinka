@@ -131,6 +131,17 @@ export const accountRoutes: FastifyPluginAsyncZod = async (app) => {
       const user = currentUser(req);
       const existing = await getOwned(db, user.id, req.params.id);
       await db.transaction(async (tx) => {
+        // Files of transfers belong to the outgoing row; when that row goes with this account,
+        // the other side (in an account that stays) keeps them.
+        await tx.execute(sql`
+          update attachments a set record_id = s.id
+          from records r
+          join records s on s.transfer_group_id = r.transfer_group_id and s.id <> r.id
+          where a.record_id = r.id
+            and a.user_id = ${user.id}::uuid
+            and r.account_id = ${existing.id}::uuid
+            and s.account_id <> ${existing.id}::uuid
+        `);
         await tx.delete(accounts).where(eq(accounts.id, existing.id));
         await sweepOrphanAttachments(tx, user.id);
       });

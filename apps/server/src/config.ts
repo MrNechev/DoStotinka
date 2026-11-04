@@ -69,6 +69,15 @@ const envSchema = z.object({
   OIDC_BUTTON_TEXT: z.string().default('Log in with SSO'),
   /** Create a Slavotax user on the first SSO login (otherwise only existing users may log in). */
   OIDC_AUTO_REGISTER: bool(true),
+  /**
+   * Link an SSO login to an existing user with the same e-mail address automatically. Only safe
+   * when users cannot choose their e-mail freely in Slavotax or at the provider – off by default;
+   * users can always connect SSO in Settings instead.
+   */
+  OIDC_LINK_BY_EMAIL: bool(false),
+
+  /** Total size of the attached files (receipts) per user in MB; 0 = unlimited. */
+  ATTACHMENT_QUOTA_MB: z.coerce.number().min(0).default(1024),
 
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),

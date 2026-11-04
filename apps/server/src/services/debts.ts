@@ -8,7 +8,7 @@ import {
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';
-import { accounts, type DebtRow, debts, records, type UserRow } from '../db/schema';
+import { accounts, type DebtRow, debts, records, type UserRow, users } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { sweepOrphanAttachments } from './attachments';
 import { getRateMap } from './rates';
@@ -222,4 +222,27 @@ export async function deleteDebt(db: Database, userId: string, id: string): Prom
     await tx.delete(debts).where(eq(debts.id, debt.id));
     await sweepOrphanAttachments(tx, userId);
   });
+}
+
+/**
+ * Closes debts whose records now cover everything and reopens closed ones with money still owed –
+ * after linked records were edited or deleted.
+ */
+export async function syncDebtStates(tx: Tx, userId: string, debtIds: string[]): Promise<void> {
+  const ids = [...new Set(debtIds)];
+  if (!ids.length) return;
+  const [user] = await tx.select().from(users).where(eq(users.id, userId));
+  if (!user) return;
+  const rows = await tx
+    .select()
+    .from(debts)
+    .where(and(eq(debts.userId, userId), inArray(debts.id, ids)));
+  for (const d of await presentDebts(tx, user, rows)) {
+    const settled = d.outstanding === 0;
+    if (settled === !!d.closedAt) continue;
+    await tx
+      .update(debts)
+      .set({ closedAt: settled ? new Date() : null })
+      .where(eq(debts.id, d.id));
+  }
 }

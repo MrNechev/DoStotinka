@@ -40,7 +40,7 @@ import {
   useUser,
 } from '@/api/queries';
 import { TemplatesSection } from '@/components/records/templates';
-import { TwoFactorSettings } from '@/components/settings/two-factor';
+import { SsoSettings, TwoFactorSettings } from '@/components/settings/two-factor';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
@@ -470,6 +470,7 @@ function SecuritySection() {
         </form>
       )}
       <TwoFactorSettings />
+      <SsoSettings />
       <h3 className="mb-2 mt-6 text-sm font-semibold">{t('Active sessions')}</h3>
       <ul className="divide-y divide-border rounded-xl border border-border">
         {sessions
@@ -829,7 +830,7 @@ function DataSection() {
     const ok = await confirm({
       title: t('Restore this backup?'),
       description: t(
-        'All your current accounts, records, categories, planned payments, budgets and goals will be replaced by the contents of the backup. This cannot be undone.',
+        'All your current accounts, records, categories, planned payments, budgets, goals, debts and templates will be replaced by the contents of the backup. Attached receipts and files are deleted (they are not part of the backup). This cannot be undone.',
       ),
       confirmLabel: t('Replace my data'),
       destructive: true,

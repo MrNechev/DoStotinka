@@ -497,6 +497,10 @@ export const adminUpdateUserInput = z.object({
 });
 
 export const twoFactorCodeInput = z.object({ code: z.string().trim().min(1).max(20) });
+/** Turning two-factor login on also needs the password (a stolen session must not do it). */
+export const twoFactorEnableInput = twoFactorCodeInput.extend({
+  password: z.string().min(1).max(200),
+});
 export const passwordConfirmInput = z.object({ password: z.string().min(1).max(200) });
 export type AdminUpdateUserInput = z.input<typeof adminUpdateUserInput>;
 

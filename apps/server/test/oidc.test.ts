@@ -74,12 +74,13 @@ function fakeProvider() {
 
 let idp: ReturnType<typeof fakeProvider>;
 let ctx: Awaited<ReturnType<typeof createTestApp>>;
+let issuerUrl = '';
 
 beforeAll(async () => {
   idp = fakeProvider();
-  const issuer = await idp.listen();
+  issuerUrl = await idp.listen();
   ctx = await createTestApp({
-    OIDC_ISSUER_URL: issuer,
+    OIDC_ISSUER_URL: issuerUrl,
     OIDC_CLIENT_ID: 'slavotax',
     OIDC_CLIENT_SECRET: 'secret',
     PUBLIC_URL: 'http://money.test',
@@ -91,8 +92,13 @@ afterAll(async () => {
 });
 
 /** Runs the browser part of the flow and returns the callback response. */
-async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void) {
-  const start = await ctx.app.inject({ method: 'GET', url: '/api/auth/oidc/start' });
+async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void, session?: string) {
+  const sessionCookie: Record<string, string> = session ? { slavotax_session: session } : {};
+  const start = await ctx.app.inject({
+    method: 'GET',
+    url: session ? '/api/auth/oidc/start?link=1' : '/api/auth/oidc/start',
+    cookies: sessionCookie,
+  });
   expect(start.statusCode).toBe(302);
   const auth = new URL(start.headers.location as string);
   expect(auth.searchParams.get('redirect_uri')).toBe('http://money.test/api/auth/oidc/callback');
@@ -109,7 +115,7 @@ async function ssoLogin(claims: object, tamper?: (q: URLSearchParams) => void) {
   return ctx.app.inject({
     method: 'GET',
     url: `/api/auth/oidc/callback?${query}`,
-    cookies: { slavotax_oidc: cookie.value },
+    cookies: { slavotax_oidc: cookie.value, ...sessionCookie },
   });
 }
 
@@ -142,18 +148,54 @@ describe('single sign-on', () => {
     expect((await me(again)).id).toBe(user.id);
   });
 
-  it('links an existing account with the same verified e-mail', async () => {
+  it('never hands an existing account to an SSO login with the same e-mail', async () => {
+    // Anybody could have changed their Slavotax e-mail to this address.
     const existing = await registerUser(ctx.app);
-    const res = await ssoLogin({ sub: 'bob-1', email: existing.email, email_verified: true });
-    expect((await me(res)).id).toBe(existing.user.id);
+    const refused = await ssoLogin({ sub: 'bob-1', email: existing.email, email_verified: true });
+    expect(refused.headers.location).toBe('http://money.test/login?sso_error=account_exists');
+    expect(refused.cookies.find((c) => c.name === 'slavotax_session')).toBeUndefined();
+  });
 
-    const unverified = await registerUser(ctx.app);
-    const refused = await ssoLogin({
-      sub: 'eve-1',
-      email: unverified.email,
-      email_verified: false,
+  it('lets a logged-in user connect and disconnect SSO', async () => {
+    const existing = await registerUser(ctx.app);
+    const linked = await ssoLogin(
+      { sub: 'carol-1', email: 'other@idp.test' },
+      undefined,
+      existing.cookie,
+    );
+    expect(linked.headers.location).toBe('http://money.test/settings?sso=linked');
+    expect((await existing.call('GET', '/api/me')).body.user.ssoLinked).toBe(true);
+    // From now on the SSO login opens this account.
+    expect((await me(await ssoLogin({ sub: 'carol-1' }))).id).toBe(existing.user.id);
+    // The same identity cannot be connected to a second account.
+    const second = await registerUser(ctx.app);
+    const taken = await ssoLogin({ sub: 'carol-1' }, undefined, second.cookie);
+    expect(taken.headers.location).toBe('http://money.test/settings?sso_error=already_linked');
+    expect((await existing.call('DELETE', '/api/me/oidc')).status).toBe(204);
+    expect((await existing.call('GET', '/api/me')).body.user.ssoLinked).toBe(false);
+  });
+
+  it('links by e-mail only when enabled and verified', async () => {
+    const linking = await createTestApp({
+      OIDC_ISSUER_URL: issuerUrl,
+      OIDC_CLIENT_ID: 'slavotax',
+      OIDC_CLIENT_SECRET: 'secret',
+      PUBLIC_URL: 'http://money.test',
+      OIDC_LINK_BY_EMAIL: 'true',
     });
-    expect(refused.headers.location).toBe('http://money.test/login?sso_error=not_allowed');
+    const original = ctx;
+    ctx = linking;
+    try {
+      const existing = await registerUser(ctx.app);
+      // A provider that does not say the address is verified is not trusted.
+      const noClaim = await ssoLogin({ sub: 'dan-1', email: existing.email });
+      expect(noClaim.headers.location).toBe('http://money.test/login?sso_error=account_exists');
+      const ok = await ssoLogin({ sub: 'dan-1', email: existing.email, email_verified: true });
+      expect((await me(ok)).id).toBe(existing.user.id);
+    } finally {
+      ctx = original;
+      await linking.close();
+    }
   });
 
   it('rejects a forged state', async () => {

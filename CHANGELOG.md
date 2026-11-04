@@ -17,7 +17,21 @@ All notable changes to this project are documented in this file. The format is b
 - Single sign-on with OpenID Connect (Authentik, Authelia, Keycloak, Google …): configure
   `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `PUBLIC_URL`.
 
+### Security
+- Single sign-on no longer links a login to an existing account just because the e-mail matches
+  (a user could have changed their e-mail to someone else's). Existing users connect SSO in
+  Settings → Security; automatic linking is opt-in (`OIDC_LINK_BY_EMAIL`) and requires a verified
+  e-mail. SSO identities are stored together with their provider.
+- Two-factor login: five wrong codes block logging in for 15 minutes; turning it on requires the
+  password; recovery codes also work without the dash.
+- A per-user storage quota for attached files (`ATTACHMENT_QUOTA_MB`, default 1 GB).
+
 ### Fixed
+- Debt records keep their type, and editing or deleting them reopens or settles the debt; they no
+  longer appear in quick-add suggestions or in the “Uncategorized” filter.
+- Deleting an account keeps the receipts of transfers on the other side of the transfer.
+- The restore dialog says that attached files are deleted and that debts and templates are
+  replaced too.
 - Docker Compose passes every setting from `.env` to the app (previously only some were
   forwarded, e.g. `NOTIFICATIONS_ENABLED` had no effect). `PORT` and `NODE_ENV` stay fixed inside
   the container.

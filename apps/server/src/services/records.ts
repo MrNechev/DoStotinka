@@ -37,6 +37,7 @@ import {
 } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { attachmentCounts } from './attachments';
+import { syncDebtStates } from './debts';
 import { toRecord } from './dto';
 import { getRateMap } from './rates';
 
@@ -210,6 +211,11 @@ export async function updateRecord(
     const main =
       group.find((r) => r.amount < 0 && r.type === 'transfer') ?? group.find((r) => r.id === id)!;
     const other = group.find((r) => r.id !== main.id);
+    // Lending, borrowing and repayments are expense/income rows of a debt; turning one into
+    // something else would break the debt's totals.
+    if (main.debtId && input.type !== main.type) {
+      throw badRequest('The type of a debt record cannot be changed');
+    }
     await tx.delete(records).where(
       inArray(
         records.id,
@@ -223,6 +229,12 @@ export async function updateRecord(
       plannedDueDate: main.plannedDueDate,
       debtId: main.debtId,
     });
+    if (
+      main.debtId &&
+      (inserted[0]!.amount !== main.amount || inserted[0]!.currency !== main.currency)
+    ) {
+      await syncDebtStates(tx, user.id, [main.debtId]);
+    }
     // A transfer that became an expense/income loses its second row – keep its files.
     const gone = group.map((r) => r.id).filter((rid) => !inserted.some((r) => r.id === rid));
     if (gone.length) {
@@ -242,6 +254,11 @@ export async function deleteRecord(db: Database, userId: string, id: string): Pr
     const groupIds = group.map((r) => r.id);
     await tx.delete(records).where(inArray(records.id, groupIds));
     await tx.delete(attachments).where(inArray(attachments.recordId, groupIds));
+    await syncDebtStates(
+      tx,
+      userId,
+      group.map((r) => r.debtId).filter((d): d is string => !!d),
+    );
   });
 }
 
@@ -264,7 +281,12 @@ export async function deleteRecords(db: Database, userId: string, ids: string[])
     const deleted = await tx
       .delete(records)
       .where(and(eq(records.userId, userId), or(...conditions)))
-      .returning({ id: records.id });
+      .returning({ id: records.id, debtId: records.debtId });
+    await syncDebtStates(
+      tx,
+      userId,
+      deleted.map((r) => r.debtId).filter((d): d is string => !!d),
+    );
     if (deleted.length) {
       await tx.delete(attachments).where(
         inArray(
@@ -368,7 +390,9 @@ export async function filterConditions(
     categoryConditions.push(inArray(records.categoryId, ids));
   }
   if (q.uncategorized) {
-    categoryConditions.push(and(isNull(records.categoryId), ne(records.type, 'transfer'))!);
+    categoryConditions.push(
+      and(isNull(records.categoryId), ne(records.type, 'transfer'), isNull(records.debtId))!,
+    );
   }
   if (categoryConditions.length) conditions.push(or(...categoryConditions)!);
   if (q.labelIds?.length) {
@@ -616,6 +640,7 @@ export async function recordSuggestions(
     where r.user_id = ${userId}::uuid
       and r.type in ('expense', 'income')
       and r.planned_payment_id is null
+      and r.debt_id is null
       and r.occurred_at > now() - interval '90 days'
     group by r.type, r.account_id, r.category_id, r.payee
     having count(*) >= 2

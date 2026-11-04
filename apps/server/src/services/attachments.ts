@@ -93,6 +93,7 @@ export async function addAttachment(
   userId: string,
   recordId: string,
   file: { data: Buffer; contentType: string; fileName?: string },
+  quotaBytes = 0,
 ): Promise<Attachment> {
   const check = SIGNATURES[file.contentType];
   if (!check) throw badRequest('Only images (JPEG, PNG, WebP, GIF) and PDF files can be attached');
@@ -110,6 +111,17 @@ export async function addAttachment(
       .where(inArray(attachments.recordId, all));
     if (count >= MAX_ATTACHMENTS_PER_RECORD) {
       throw badRequest(`A record can have at most ${MAX_ATTACHMENTS_PER_RECORD} attachments`);
+    }
+    if (quotaBytes > 0) {
+      const [{ used } = { used: 0 }] = await tx
+        .select({
+          used: sql<number>`coalesce(sum(${attachments.size}), 0)::bigint`.mapWith(Number),
+        })
+        .from(attachments)
+        .where(eq(attachments.userId, userId));
+      if (used + file.data.length > quotaBytes) {
+        throw badRequest('Your storage for attached files is full');
+      }
     }
     const [row] = await tx
       .insert(attachments)

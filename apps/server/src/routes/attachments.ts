@@ -48,11 +48,13 @@ export const attachmentRoutes: FastifyPluginAsyncZod = async (app) => {
       if (user.isDemo) throw forbidden('Attachments are not available for the demo account');
       const contentType = (req.headers['content-type'] ?? '').split(';')[0]!.trim().toLowerCase();
       if (!Buffer.isBuffer(req.body)) throw badRequest('Send the file as the request body');
-      const created = await addAttachment(db, user.id, req.params.id, {
-        data: req.body,
-        contentType,
-        fileName: req.query.name,
-      });
+      const created = await addAttachment(
+        db,
+        user.id,
+        req.params.id,
+        { data: req.body, contentType, fileName: req.query.name },
+        app.config.ATTACHMENT_QUOTA_MB * 1024 * 1024,
+      );
       return reply.status(201).send(created);
     },
   );

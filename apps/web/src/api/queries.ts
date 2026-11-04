@@ -845,8 +845,8 @@ export function useTwoFactorSetup() {
 export function useEnableTwoFactor() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (code: string) =>
-      api<{ recoveryCodes: string[] }>('/me/2fa/enable', { method: 'POST', body: { code } }),
+    mutationFn: (input: { code: string; password: string }) =>
+      api<{ recoveryCodes: string[] }>('/me/2fa/enable', { method: 'POST', body: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
   });
 }
@@ -859,6 +859,14 @@ export function useNewRecoveryCodes() {
         method: 'POST',
         body: { password },
       }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
+
+export function useDisconnectSso() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>('/me/oidc', { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
   });
 }

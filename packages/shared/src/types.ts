@@ -27,6 +27,8 @@ export interface User {
   isAdmin: boolean;
   /** Login requires a code from an authenticator app. */
   twoFactorEnabled: boolean;
+  /** Connected to a single sign-on identity. */
+  ssoLinked: boolean;
   /** Unused recovery codes left (only when two-factor login is enabled). */
   recoveryCodesLeft: number;
   createdAt: string;

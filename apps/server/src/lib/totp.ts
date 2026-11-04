@@ -104,4 +104,8 @@ export function generateRecoveryCodes(count = 10): string[] {
   });
 }
 
-export const normalizeRecoveryCode = (code: string) => code.trim().toLowerCase().replace(/\s/g, '');
+/** `K7D2 9FQ4`, `k7d29fq4` and `k7d2-9fq4` are the same code (stored as `k7d2-9fq4`). */
+export function normalizeRecoveryCode(code: string): string {
+  const plain = code.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return plain.length === 8 ? `${plain.slice(0, 4)}-${plain.slice(4)}` : plain;
+}

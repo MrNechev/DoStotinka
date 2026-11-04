@@ -1,13 +1,16 @@
 import type { TwoFactorSetup } from '@slavotax/shared';
 import { Check, Copy, Download, KeyRound, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { renderSVG } from 'uqr';
 import { errorMessage } from '@/api/client';
 import {
   useDisableTwoFactor,
+  useDisconnectSso,
   useEnableTwoFactor,
   useNewRecoveryCodes,
+  useServerConfig,
   useTwoFactorSetup,
   useUser,
 } from '@/api/queries';
@@ -74,6 +77,7 @@ function SetupDialog({ onClose }: { onClose: () => void }) {
   const enable = useEnableTwoFactor();
   const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [codes, setCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,7 +112,7 @@ function SetupDialog({ onClose }: { onClose: () => void }) {
             e.preventDefault();
             setError(null);
             try {
-              const res = await enable.mutateAsync(code);
+              const res = await enable.mutateAsync({ code, password });
               setCodes(res.recoveryCodes);
               toast.success(t('Two-factor login is on'));
             } catch (err) {
@@ -151,6 +155,16 @@ function SetupDialog({ onClose }: { onClose: () => void }) {
               maxLength={7}
               required
               autoFocus
+            />
+          </Field>
+          <Field label={t('Your password')} htmlFor="totp-password">
+            <Input
+              id="totp-password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -295,6 +309,60 @@ export function TwoFactorSettings() {
           <PasswordDialog mode={dialog} onClose={close} />
         )}
       </Dialog>
+    </div>
+  );
+}
+
+/** Connect the account to the single sign-on provider (only shown when SSO is configured). */
+export function SsoSettings() {
+  const user = useUser();
+  const { data: config } = useServerConfig();
+  const disconnect = useDisconnectSso();
+  const [params, setParams] = useSearchParams();
+  // The server sends the browser back here after connecting.
+  useEffect(() => {
+    const linked = params.get('sso');
+    const failed = params.get('sso_error');
+    if (!linked && !failed) return;
+    if (linked) toast.success(t('Single sign-on is connected'));
+    else if (failed === 'already_linked')
+      toast.error(t('This login is already connected to another Slavotax account.'));
+    else toast.error(t('Single sign-on failed. Please try again.'));
+    setParams({}, { replace: true });
+  }, [params, setParams]);
+  if (!config?.sso.enabled || user.isDemo) return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-start gap-3 rounded-xl border border-border p-4">
+      <KeyRound className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2 text-sm font-semibold">
+          {t('Single sign-on')}
+          {user.ssoLinked ? (
+            <Badge tone="success">{t('Connected')}</Badge>
+          ) : (
+            <Badge>{t('Not connected')}</Badge>
+          )}
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {t('Log in with your organisation’s account instead of a password.')}
+        </p>
+      </div>
+      {user.ssoLinked ? (
+        <Button
+          variant="destructive-ghost"
+          size="sm"
+          loading={disconnect.isPending}
+          onClick={() =>
+            disconnect.mutate(undefined, { onError: (err) => toast.error(errorMessage(err)) })
+          }
+        >
+          {t('Disconnect')}
+        </Button>
+      ) : (
+        <Button variant="outline" size="sm" asChild>
+          <a href="/api/auth/oidc/start?link=1">{t('Connect')}</a>
+        </Button>
+      )}
     </div>
   );
 }

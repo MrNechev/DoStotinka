@@ -9,7 +9,7 @@ import {
   reminderSettingsInput,
   type Session,
   type TwoFactorSetup,
-  twoFactorCodeInput,
+  twoFactorEnableInput,
   updateProfileInput,
 } from '@slavotax/shared';
 import { and, desc, eq, ne } from 'drizzle-orm';
@@ -229,13 +229,14 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         tags: ['user'],
         summary: 'Confirm the first code and enable two-factor login (returns recovery codes)',
-        body: twoFactorCodeInput,
+        body: twoFactorEnableInput,
       },
     },
     async (req) => {
       const user = currentUser(req);
       if (user.totpSecret) throw conflict('Two-factor login is already enabled');
       if (!user.totpPendingSecret) throw badRequest('Start the setup first');
+      await assertPassword(user, req.body.password);
       const step = verifyTotp(user.totpPendingSecret, req.body.code);
       if (step === null) throw badRequest('The code is not valid');
       const { codes, hashes } = newRecoveryCodes();
@@ -287,6 +288,16 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         .update(users)
         .set({ totpSecret: null, totpPendingSecret: null, totpLastStep: null, recoveryCodes: [] })
         .where(eq(users.id, user.id));
+      return reply.status(204).send();
+    },
+  );
+
+  app.delete(
+    '/oidc',
+    { schema: { tags: ['user'], summary: 'Disconnect single sign-on from the account' } },
+    async (req, reply) => {
+      const user = currentUser(req);
+      await app.db.update(users).set({ oidcSubject: null }).where(eq(users.id, user.id));
       return reply.status(204).send();
     },
   );

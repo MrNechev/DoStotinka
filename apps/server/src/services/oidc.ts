@@ -53,6 +53,8 @@ export interface LoginState {
   nonce: string;
   verifier: string;
   expires: number;
+  /** Set when a logged-in user connects SSO to their account (Settings). */
+  linkUserId?: string;
 }
 
 /** Key for signing the short-lived login cookie; a restart only invalidates logins in progress. */
@@ -79,7 +81,7 @@ export function openState(cookie: string | undefined): LoginState | null {
   }
 }
 
-export async function startLogin(config: Config, redirectUri: string) {
+export async function startLogin(config: Config, redirectUri: string, linkUserId?: string) {
   const conf = await oidcConfiguration(config);
   const verifier = client.randomPKCECodeVerifier();
   const state: LoginState = {
@@ -87,6 +89,7 @@ export async function startLogin(config: Config, redirectUri: string) {
     nonce: client.randomNonce(),
     verifier,
     expires: Date.now() + 10 * 60_000,
+    ...(linkUserId ? { linkUserId } : {}),
   };
   const url = client.buildAuthorizationUrl(conf, {
     redirect_uri: redirectUri,
@@ -101,7 +104,14 @@ export async function startLogin(config: Config, redirectUri: string) {
 }
 
 export class SsoError extends Error {
-  constructor(public readonly code: 'failed' | 'not_allowed' | 'no_email') {
+  constructor(
+    public readonly code:
+      | 'failed'
+      | 'not_allowed'
+      | 'no_email'
+      | 'account_exists'
+      | 'already_linked',
+  ) {
     super(code);
   }
 }
@@ -116,9 +126,15 @@ export async function finishLogin(config: Config, currentUrl: URL, state: LoginS
     idTokenExpected: true,
   });
   let claims: Record<string, unknown> = { ...tokens.claims() };
-  if (!claims.email && tokens.access_token) {
-    const info = await client.fetchUserInfo(conf, tokens.access_token, String(claims.sub));
-    claims = { ...info, ...claims, email: info.email };
+  // Some providers only put the e-mail into the userinfo response. A linked user does not need it,
+  // so a missing or failing userinfo endpoint is not an error here.
+  if (!claims.email && tokens.access_token && conf.serverMetadata().userinfo_endpoint) {
+    try {
+      const info = await client.fetchUserInfo(conf, tokens.access_token, String(claims.sub));
+      claims = { ...info, ...claims, email: info.email, email_verified: info.email_verified };
+    } catch {
+      /* continue without e-mail */
+    }
   }
   const email = typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : null;
   const name =
@@ -127,16 +143,20 @@ export async function finishLogin(config: Config, currentUrl: URL, state: LoginS
     email?.split('@')[0] ||
     'User';
   return {
-    subject: String(claims.sub),
+    // `sub` is only unique per provider – keep the issuer with it.
+    subject: `${String(claims.iss)}|${String(claims.sub)}`,
     email,
-    emailVerified: claims.email_verified !== false,
+    // Only an explicit `true` counts; providers that omit the claim may not verify addresses.
+    emailVerified: claims.email_verified === true,
     name: name.slice(0, 100),
   };
 }
 
 /**
- * Finds the user of an SSO identity: by the linked subject, then by (verified) e-mail – which
- * links the account – or creates a new user when automatic registration is on.
+ * Finds the user of an SSO identity: by the linked subject, then – only with OIDC_LINK_BY_EMAIL – by
+ * verified e-mail (which links the account), or creates a new user when automatic registration is
+ * on. Without automatic linking an existing account must connect SSO in Settings first, otherwise
+ * anybody who changed their Slavotax e-mail to a colleague's address would receive their login.
  */
 export async function userForIdentity(
   db: Database,
@@ -150,7 +170,9 @@ export async function userForIdentity(
 
   const [byEmail] = await db.select().from(users).where(eq(users.email, identity.email));
   if (byEmail) {
-    if (byEmail.isDemo || !identity.emailVerified) throw new SsoError('not_allowed');
+    if (byEmail.isDemo || !config.OIDC_LINK_BY_EMAIL || !identity.emailVerified) {
+      throw new SsoError('account_exists');
+    }
     const [row] = await db
       .update(users)
       .set({ oidcSubject: identity.subject })
@@ -177,4 +199,14 @@ export async function userForIdentity(
     await seedDefaultCategories(tx, created!.id);
     return created!;
   });
+}
+
+/** Connects an SSO identity to a logged-in user (Settings → Security). */
+export async function linkIdentity(db: Database, userId: string, subject: string): Promise<void> {
+  const [other] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.oidcSubject, subject));
+  if (other && other.id !== userId) throw new SsoError('already_linked');
+  await db.update(users).set({ oidcSubject: subject }).where(eq(users.id, userId));
 }

@@ -653,6 +653,26 @@ export const bg: Record<string, string> = {
   'Single sign-on failed. Please try again.': 'Единният вход не успя. Опитайте отново.',
   'Log in with SSO': 'Вход чрез SSO',
   'Single sign-on is not configured': 'Единният вход не е настроен',
+  // ─── Security review ───
+  'Your password': 'Вашата парола',
+  'Single sign-on is connected': 'Единният вход е свързан',
+  'This login is already connected to another Slavotax account.':
+    'Този вход вече е свързан с друг профил в Slavotax.',
+  'Single sign-on': 'Единен вход',
+  Connected: 'Свързан',
+  'Not connected': 'Не е свързан',
+  'Log in with your organisation’s account instead of a password.':
+    'Влизайте с профила на вашата организация вместо с парола.',
+  Disconnect: 'Прекъсни връзката',
+  Connect: 'Свържи',
+  'An account with this e-mail address already exists. Log in with your password and connect single sign-on in Settings → Security.':
+    'Вече съществува профил с този имейл адрес. Влезте с паролата си и свържете единния вход от Настройки → Сигурност.',
+  'All your current accounts, records, categories, planned payments, budgets, goals, debts and templates will be replaced by the contents of the backup. Attached receipts and files are deleted (they are not part of the backup). This cannot be undone.':
+    'Всички ваши сметки, записи, категории, планирани плащания, бюджети, цели, дългове и шаблони ще бъдат заменени със съдържанието на архива. Прикачените касови бележки и файлове се изтриват (те не са част от архива). Това не може да бъде отменено.',
+  'Too many wrong codes. Try again in 15 minutes.':
+    'Твърде много грешни кодове. Опитайте отново след 15 минути.',
+  'Your storage for attached files is full': 'Мястото ви за прикачени файлове е запълнено',
+  'The type of a debt record cannot be changed': 'Типът на запис към дълг не може да се променя',
   // ─── Accounts ───
   'Cannot be changed once the account has records.':
     'Не може да се променя, след като сметката има записи.',

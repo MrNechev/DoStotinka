@@ -4,6 +4,7 @@ import { createSession, setSessionCookie } from '../plugins/auth';
 import {
   callbackPath,
   finishLogin,
+  linkIdentity,
   oidcEnabled,
   openState,
   publicBaseUrl,
@@ -40,8 +41,15 @@ export const oidcRoutes: FastifyPluginAsync = async (app) => {
     async (req, reply) => {
       if (!oidcEnabled(app.config)) throw new HttpError(404, 'Single sign-on is not configured');
       const base = publicBaseUrl(app.config, req);
+      // `?link=1`: a logged-in user connects SSO to their account.
+      const link = (req.query as Record<string, string | undefined>).link === '1';
+      if (link && (!req.user || req.user.isDemo)) return reply.redirect(`${base}/login`);
       try {
-        const { url, state } = await startLogin(app.config, `${base}${callbackPath}`);
+        const { url, state } = await startLogin(
+          app.config,
+          `${base}${callbackPath}`,
+          link ? req.user!.id : undefined,
+        );
         reply.setCookie(STATE_COOKIE, sealState(state), {
           ...cookieOptions(isSecure(base)),
           maxAge: 600,
@@ -67,6 +75,21 @@ export const oidcRoutes: FastifyPluginAsync = async (app) => {
       reply.clearCookie(STATE_COOKIE, cookieOptions(isSecure(base)));
       if (!state) return fail(reply, base, 'expired');
       const query = req.query as Record<string, string | undefined>;
+      if (state.linkUserId) {
+        // Connecting SSO from Settings: only for the user who started it, still logged in.
+        const settings = (q: string) => reply.redirect(`${base}/settings?${q}`);
+        if (query.error) return settings('sso_error=cancelled');
+        if (req.user?.id !== state.linkUserId) return fail(reply, base, 'expired');
+        try {
+          const identity = await finishLogin(app.config, new URL(`${base}${req.url}`), state);
+          await linkIdentity(app.db, state.linkUserId, identity.subject);
+          return settings('sso=linked');
+        } catch (err) {
+          if (err instanceof SsoError) return settings(`sso_error=${err.code}`);
+          req.log.warn({ err }, 'Single sign-on: connecting the account failed');
+          return settings('sso_error=failed');
+        }
+      }
       if (query.error) return fail(reply, base, 'cancelled');
       try {
         const identity = await finishLogin(app.config, new URL(`${base}${req.url}`), state);

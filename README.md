@@ -197,6 +197,8 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `OIDC_SCOPE` | `openid email profile` | Requested scopes. |
 | `OIDC_BUTTON_TEXT` | `Log in with SSO` | Label of the login button. |
 | `OIDC_AUTO_REGISTER` | `true` | Create a user on the first SSO login (otherwise only existing users can log in). |
+| `OIDC_LINK_BY_EMAIL` | `false` | Link an SSO login to an existing user with the same verified e-mail automatically. Only enable it when users cannot pick arbitrary e-mail addresses. |
+| `ATTACHMENT_QUOTA_MB` | `1024` | Total size of attached files (receipts) per user; `0` = unlimited. |
 | `API_DOCS` | `true` | Serve the OpenAPI documentation at `/api/docs`. |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | Login / registration attempts per IP and minute. |
 | `LOG_LEVEL` | `info` | `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`. |
@@ -212,10 +214,11 @@ Slavotax can use your identity provider (Authentik, Authelia, Keycloak, Zitadel,
 2. Set `PUBLIC_URL`, `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` in `.env` and
    restart the container.
 
-The login page then shows a “Log in with SSO” button. On the first login Slavotax links the
-identity to the user with the same (verified) e-mail address or creates a new user
-(`OIDC_AUTO_REGISTER`; independent of `ALLOW_REGISTRATION`). Password logins keep working. Two-factor
-login is left to the provider for SSO logins.
+The login page then shows a “Log in with SSO” button. A first SSO login creates a new user
+(`OIDC_AUTO_REGISTER`; independent of `ALLOW_REGISTRATION`). Existing users connect their account
+once in **Settings → Security → Single sign-on** – Slavotax does not hand an existing account to an
+SSO login just because the e-mail matches, unless you enable `OIDC_LINK_BY_EMAIL`. Password logins
+keep working. Two-factor login is left to the provider for SSO logins.
 
 ### Reverse proxy
 

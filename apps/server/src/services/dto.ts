@@ -31,6 +31,7 @@ export function toUser(u: UserRow): User {
     isDemo: u.isDemo,
     isAdmin: u.isAdmin,
     twoFactorEnabled: !!u.totpSecret,
+    ssoLinked: !!u.oidcSubject,
     recoveryCodesLeft: u.totpSecret ? u.recoveryCodes.length : 0,
     createdAt: u.createdAt.toISOString(),
   };

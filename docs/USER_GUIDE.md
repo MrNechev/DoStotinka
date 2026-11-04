@@ -165,11 +165,13 @@ rates by hand (Settings → Currencies) – manual rates are kept until you upda
 - **Profile and preferences** – name, e-mail, base currency, time zone, first day of the week,
   number format, theme and language (English, Bulgarian).
 - **Two-factor login** – protect your account with an authenticator app (Aegis, 2FAS, Google
-  Authenticator, 1Password …). Keep the ten recovery codes somewhere safe; each works once.
+  Authenticator, 1Password …); turning it on asks for your password. Keep the ten recovery codes
+  somewhere safe; each works once. After five wrong codes, logging in is blocked for 15 minutes.
 - **Sessions** – see where you are logged in and sign out other devices.
 - **API tokens** – for scripts and phone automations, see the [API guide](API.md).
 - **Reminders** – daily messages about due payments via ntfy, Gotify, Discord, Slack or a webhook.
 - **Single sign-on** – if your administrator connected an identity provider, use “Log in with SSO”.
+  If you already had an account, connect it once in Settings → Security → Single sign-on.
 
 Administrators additionally see **Administration**: add users, reset passwords, switch off
 two-factor login for a user who lost their phone, grant administrator rights and close sign-ups.
