@@ -39,6 +39,7 @@ import {
   useUpdateProfile,
   useUser,
 } from '@/api/queries';
+import { TemplatesSection } from '@/components/records/templates';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
@@ -979,6 +980,7 @@ export default function SettingsPage() {
         <ProfileSection />
         <PreferencesSection />
         <CurrenciesSection />
+        <TemplatesSection />
         <SecuritySection />
         <RemindersSection />
         <ApiTokensSection />

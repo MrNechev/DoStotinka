@@ -517,6 +517,24 @@ export const bg: Record<string, string> = {
   years: 'години',
   Done: 'Готово',
   Select: 'Избери',
+  // ─── Templates ───
+  Templates: 'Шаблони',
+  'Save as template': 'Запази като шаблон',
+  'Templates appear at the top of the record editor and fill in all values with one tap.':
+    'Шаблоните се показват в началото на формата за запис и попълват всички стойности с едно докосване.',
+  'Template saved': 'Шаблонът е запазен',
+  'Record templates': 'Шаблони за записи',
+  'Save frequent records as templates with “Save as template” in the record editor.':
+    'Запазвайте честите записи като шаблони с „Запази като шаблон“ във формата за запис.',
+  'No templates yet.': 'Все още няма шаблони.',
+  Rename: 'Преименувай',
+  'Delete template “{name}”?': 'Да се изтрие ли шаблонът „{name}“?',
+  'Rename template': 'Преименуване на шаблон',
+  'Template not found': 'Шаблонът не е намерен',
+  'You can have at most 100 templates': 'Можете да имате най-много 100 шаблона',
+  'Unknown account': 'Непозната сметка',
+  'Unknown category': 'Непозната категория',
+  'Unknown label': 'Непознат етикет',
   // ─── Accounts ───
   'Cannot be changed once the account has records.':
     'Не може да се променя, след като сметката има записи.',

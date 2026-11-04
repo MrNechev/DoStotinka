@@ -34,6 +34,9 @@ leaves it.
   balance and currency. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
+- **Templates** for records you enter often (“Morning coffee”, “Move to savings”) – one tap fills
+  in account, category, amount, payee, note and labels. Frequent combinations are also suggested
+  automatically.
 - **Receipts & files** – attach photos of receipts or PDF invoices to any record. Photos are
   scaled down in the browser before uploading; files are stored in the database (so they are part
   of the database backup).
@@ -296,9 +299,8 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 - [ ] More languages (contributions welcome)
 - [ ] Mobile app that connects to your own server
 - [ ] Shared accounts / households
-- [x] Attachments (receipts)
+- [x] Attachments (receipts) and record templates
 - [x] Notifications for upcoming payments
-- [ ] Record templates
 
 Ideas and pull requests are welcome – see [CONTRIBUTING.md](CONTRIBUTING.md).
 

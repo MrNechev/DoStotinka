@@ -200,6 +200,20 @@ export interface BudgetStatus extends Budget {
   elapsed: number;
 }
 
+export interface RecordTemplate {
+  id: string;
+  name: string;
+  type: RecordType;
+  accountId: string | null;
+  toAccountId: string | null;
+  categoryId: string | null;
+  amount: number | null;
+  note: string | null;
+  payee: string | null;
+  labelIds: string[];
+  createdAt: string;
+}
+
 export interface Goal {
   id: string;
   name: string;

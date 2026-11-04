@@ -305,6 +305,29 @@ export const exchangeRates = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.currency] })],
 );
 
+/** Saved record values the user can apply in the record editor. */
+export const recordTemplates = pgTable(
+  'record_templates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    type: recordTypeEnum('type').notNull(),
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    toAccountId: uuid('to_account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    /** Positive amount in the account currency (minor units); null = entered each time. */
+    amount: money('amount'),
+    note: text('note'),
+    payee: text('payee'),
+    labelIds: jsonb('label_ids').$type<string[]>().notNull().default([]),
+    ...timestamps,
+  },
+  (t) => [index('record_templates_user_idx').on(t.userId)],
+);
+
 /**
  * Files (receipts, invoices) attached to records. There is deliberately no foreign key to
  * `records`: editing a record replaces its rows (keeping their ids), which would cascade. Orphans
@@ -355,3 +378,4 @@ export type BudgetRow = typeof budgets.$inferSelect;
 export type LabelRow = typeof labels.$inferSelect;
 export type GoalRow = typeof goals.$inferSelect;
 export type AttachmentRow = typeof attachments.$inferSelect;
+export type RecordTemplateRow = typeof recordTemplates.$inferSelect;

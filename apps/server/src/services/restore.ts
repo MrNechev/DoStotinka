@@ -20,6 +20,7 @@ import {
   plannedPayments,
   recordLabels,
   records,
+  recordTemplates,
   type UserRow,
   users,
 } from '../db/schema';
@@ -158,6 +159,22 @@ export const backupSchema = z.object({
     )
     .max(1000)
     .default([]),
+  templates: z
+    .array(
+      z.object({
+        name: z.string().min(1).max(60),
+        type: z.enum(['expense', 'income', 'transfer']),
+        accountId: nullableId,
+        toAccountId: nullableId,
+        categoryId: nullableId,
+        amount: money.nullable().optional(),
+        note: text.nullable().optional(),
+        payee: text.nullable().optional(),
+        labelIds: z.array(id).max(20).default([]),
+      }),
+    )
+    .max(1000)
+    .default([]),
   exchangeRates: z
     .array(
       z.object({
@@ -178,6 +195,7 @@ export interface RestoreResult {
   plannedPayments: number;
   budgets: number;
   goals: number;
+  templates: number;
 }
 
 /** Replaces all data of `user` with the contents of a backup (all IDs are re-generated). */
@@ -190,6 +208,7 @@ export async function restoreBackup(
     // Attachments are not part of a JSON backup; they belong to records that are replaced.
     for (const table of [
       attachments,
+      recordTemplates,
       records,
       plannedPayments,
       budgets,
@@ -367,6 +386,22 @@ export async function restoreBackup(
       (c) => tx.insert(goals).values(c),
     );
 
+    await chunked(
+      backup.templates.map((t) => ({
+        userId: user.id,
+        name: t.name,
+        type: t.type,
+        accountId: acc.get(t.accountId),
+        toAccountId: acc.get(t.toAccountId),
+        categoryId: cat.get(t.categoryId),
+        amount: t.amount && t.amount > 0 ? t.amount : null,
+        note: t.note ?? null,
+        payee: t.payee ?? null,
+        labelIds: t.labelIds.map((x) => lab.get(x)).filter((x): x is string => !!x),
+      })),
+      (c) => tx.insert(recordTemplates).values(c),
+    );
+
     const rates = backup.exchangeRates.filter(
       (r) => r.currency !== (backup.user?.baseCurrency ?? user.baseCurrency),
     );
@@ -391,6 +426,7 @@ export async function restoreBackup(
       plannedPayments: plannedRows.length,
       budgets: backup.budgets.length,
       goals: backup.goals.length,
+      templates: backup.templates.length,
     };
   });
 }

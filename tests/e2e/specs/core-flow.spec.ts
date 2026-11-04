@@ -69,4 +69,11 @@ test('the demo account shows a filled dashboard', async ({ page }) => {
   await expect(page.getByText('Spending this month')).toBeVisible();
   await page.goto('/statistics?period=6m');
   await expect(page.getByText('Report')).toBeVisible();
+
+  // Templates fill in the record editor.
+  await page.getByRole('button', { name: 'Add record' }).first().click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('button', { name: /Morning coffee/ }).click();
+  await expect(dialog.getByLabel('Payee')).toHaveValue('Corner Café');
+  await expect(dialog.locator('#amount')).toHaveValue('2.40');
 });

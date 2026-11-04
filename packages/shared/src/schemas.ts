@@ -411,6 +411,23 @@ export const goalContributionInput = z.object({
   amount: minorAmount.refine((v) => v !== 0, 'Amount cannot be zero'),
 });
 
+// ───────────────────────────── Record templates ─────────────────────────────
+
+/** A saved set of record values ("Coffee at work", "Rent") applied in the record editor. */
+export const templateInput = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(60),
+  type: z.enum(RECORD_TYPES),
+  accountId: uuid.nullable().optional(),
+  toAccountId: uuid.nullable().optional(),
+  categoryId: uuid.nullable().optional(),
+  /** Positive amount in the account currency; empty = enter it each time. */
+  amount: positiveMinorAmount.nullable().optional(),
+  note: optionalText(500),
+  payee: optionalText(120),
+  labelIds: z.array(uuid).max(20).default([]),
+});
+export type TemplateInput = z.input<typeof templateInput>;
+
 // ───────────────────────────── Administration ─────────────────────────────
 
 export const adminCreateUserInput = z.object({

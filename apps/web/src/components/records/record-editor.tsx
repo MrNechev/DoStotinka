@@ -7,6 +7,7 @@ import {
   parseAmountToMinor,
   type RecordInput,
   type RecordItem,
+  type RecordTemplate,
   type RecordType,
 } from '@slavotax/shared';
 import { ArrowDown, Copy, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
@@ -51,6 +52,7 @@ import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 import { AttachmentsField } from './attachments-field';
+import { SaveTemplateButton, TemplateChips } from './templates';
 
 export interface RecordDefaults {
   type?: RecordType;
@@ -389,6 +391,50 @@ function RecordEditorDialog({
     }
   };
 
+  /** Fills the form with a saved template (unknown or archived accounts are kept as chosen). */
+  const applyTemplate = (tpl: RecordTemplate) => {
+    const usable = (id: string | null) =>
+      id && accounts.some((a) => a.id === id && !a.archived) ? id : null;
+    setPayCurrency(null);
+    setForm((f) => {
+      const accountId = usable(tpl.accountId) ?? f.accountId;
+      const accountCurrency = accounts.find((a) => a.id === accountId)?.currency ?? currency;
+      return {
+        ...f,
+        type: tpl.type,
+        accountId,
+        toAccountId:
+          tpl.type === 'transfer' ? (usable(tpl.toAccountId) ?? f.toAccountId) : f.toAccountId,
+        categoryId: tpl.type === 'transfer' ? null : tpl.categoryId,
+        amount: tpl.amount ? minorToInputString(tpl.amount, accountCurrency) : '',
+        toAmount: '',
+        toAmountTouched: false,
+        payee: tpl.payee ?? '',
+        note: tpl.note ?? '',
+        labelIds: tpl.labelIds.filter((id) => labels.some((l) => l.id === id)),
+      };
+    });
+    requestAnimationFrame(() =>
+      tpl.amount ? amountRef.current?.select() : amountRef.current?.focus(),
+    );
+  };
+
+  /** The current values as a template (the name is asked for separately). */
+  const templateInput = () => ({
+    type: form.type,
+    accountId: form.accountId || null,
+    toAccountId: form.type === 'transfer' ? form.toAccountId || null : null,
+    categoryId: form.type === 'transfer' ? null : form.categoryId,
+    amount: !foreign && parsedAmount && parsedAmount > 0 ? parsedAmount : null,
+    note: form.note || null,
+    payee: form.type === 'transfer' ? null : form.payee || null,
+    labelIds: form.labelIds,
+  });
+  const suggestedTemplateName =
+    form.type === 'transfer'
+      ? `${account?.name ?? ''} → ${toAccount?.name ?? ''}`
+      : form.payee || (form.categoryId ? categoryIndex.nameOf(form.categoryId) : '');
+
   /** Opens a new record pre-filled with the current values (dated now). */
   const duplicate = () => {
     const amount = parsedAmount ?? undefined;
@@ -483,8 +529,11 @@ function RecordEditorDialog({
             e.preventDefault();
             void submit(false);
           }}
-          className="grid gap-4"
+          // grid-cols-1 = minmax(0, 1fr): the scrolling chip rows must not widen the dialog.
+          className="grid grid-cols-1 gap-4"
         >
+          {!isEdit && <TemplateChips categories={categoryIndex} onApply={applyTemplate} />}
+
           {!isEdit && !form.amount && suggestions.length > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('Quick add')}</p>
@@ -801,6 +850,8 @@ function RecordEditorDialog({
               </div>
             </Field>
           )}
+
+          <SaveTemplateButton input={templateInput} suggestedName={suggestedTemplateName} />
 
           {error && (
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">

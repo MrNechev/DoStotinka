@@ -34,6 +34,7 @@ import { metaRoutes } from './routes/meta';
 import { plannedRoutes } from './routes/planned';
 import { recordRoutes } from './routes/records';
 import { statsRoutes } from './routes/stats';
+import { templateRoutes } from './routes/templates';
 
 export async function buildApp(config: Config, db: Database) {
   const app = Fastify({
@@ -151,6 +152,7 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(plannedRoutes, { prefix: '/planned-payments' });
         await authed.register(budgetRoutes, { prefix: '/budgets' });
         await authed.register(goalRoutes, { prefix: '/goals' });
+        await authed.register(templateRoutes, { prefix: '/templates' });
         await authed.register(statsRoutes, { prefix: '/stats' });
         await authed.register(currencyRoutes, { prefix: '/currencies' });
         await authed.register(exportRoutes, { prefix: '/export' });

@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Record templates: save the values of a record as a template (“Save as template” in the record
+  editor) and apply it with one tap; manage them in Settings. Templates are part of the JSON backup.
 - Attach receipts and other files (photos, PDFs) to records. Photos are scaled down in the browser
   before uploading; a paperclip in the record list marks records with files.
 

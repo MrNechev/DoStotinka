@@ -12,6 +12,7 @@ import {
   plannedPayments,
   recordLabels,
   records,
+  recordTemplates,
 } from '../db/schema';
 import { toLocalDate, zonedTimeToUtc } from '../lib/dates';
 import { seedDefaultCategories } from '../services/categories';
@@ -57,6 +58,7 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
   await tx.delete(plannedPayments).where(eq(plannedPayments.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
   await tx.delete(goals).where(eq(goals.userId, userId));
+  await tx.delete(recordTemplates).where(eq(recordTemplates.userId, userId));
   await tx.delete(labels).where(eq(labels.userId, userId));
   await tx.delete(accounts).where(eq(accounts.userId, userId));
   await tx.delete(categories).where(eq(categories.userId, userId));
@@ -898,6 +900,51 @@ export async function generateDemoData(tx: Tx, userId: string, now = new Date())
     const links = chunk.flatMap((r) => r.labels.map((labelId) => ({ recordId: r.id, labelId })));
     if (links.length) await tx.insert(recordLabels).values(links);
   }
+
+  await tx.insert(recordTemplates).values([
+    {
+      userId,
+      name: 'Morning coffee',
+      type: 'expense',
+      accountId: acc.cash,
+      categoryId: C('food.cafe'),
+      amount: 2_40,
+      payee: 'Corner Café',
+    },
+    {
+      userId,
+      name: 'Lunch at work',
+      type: 'expense',
+      accountId: acc.card,
+      categoryId: C('food.canteen'),
+      amount: 8_50,
+      labelIds: [lab.work],
+    },
+    {
+      userId,
+      name: 'Fuel',
+      type: 'expense',
+      accountId: acc.card,
+      categoryId: C('vehicle.fuel'),
+      labelIds: [lab.car],
+    },
+    {
+      userId,
+      name: 'Bus ticket',
+      type: 'expense',
+      accountId: acc.cash,
+      categoryId: C('transport.public'),
+      amount: 1_60,
+    },
+    {
+      userId,
+      name: 'Move to savings',
+      type: 'transfer',
+      accountId: acc.bank,
+      toAccountId: acc.savings,
+      amount: 200_00,
+    },
+  ]);
 
   const nextSummer = `${Number(today.slice(0, 4)) + (today.slice(5, 7) > '06' ? 1 : 0)}-07-01`;
   await tx.insert(goals).values([

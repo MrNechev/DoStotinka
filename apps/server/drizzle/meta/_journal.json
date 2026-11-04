@@ -57,6 +57,13 @@
       "when": 1793765463023,
       "tag": "0007_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793766642122,
+      "tag": "0008_record_templates",
+      "breakpoints": true
     }
   ]
 }

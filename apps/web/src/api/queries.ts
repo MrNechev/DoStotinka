@@ -27,10 +27,12 @@ import type {
   RecordInput,
   RecordItem,
   RecordPage,
+  RecordTemplate,
   RegisterInput,
   ServerConfig,
   Session,
   StatsSummary,
+  TemplateInput,
   TimeseriesResponse,
   UpcomingOccurrence,
   UpdateProfileInput,
@@ -784,6 +786,33 @@ export function useRefreshRates() {
 }
 
 // ───────────────────────────── Goals ─────────────────────────────
+
+export function useTemplates() {
+  return useQuery({
+    queryKey: ['templates'],
+    queryFn: () => api<RecordTemplate[]>('/templates'),
+    staleTime: 60_000,
+  });
+}
+
+export function useSaveTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: TemplateInput }) =>
+      id
+        ? api<RecordTemplate>(`/templates/${id}`, { method: 'PUT', body: input })
+        : api<RecordTemplate>('/templates', { method: 'POST', body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  });
+}
+
+export function useDeleteTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/templates/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  });
+}
 
 export function useGoals() {
   return useQuery({ queryKey: ['goals'], queryFn: () => api<Goal[]>('/goals') });

@@ -35,6 +35,7 @@ All tables (except the shared `reference_rates` cache) carry a `user_id`; every 
 | `categories` | Two-level tree (`parent_id`). `kind` is `expense` or `income`. `system_key` links rows to the default template (e.g. `food.groceries`). Subcategories usually inherit the parent colour (`color = null`). |
 | `records` | One row per account movement. `amount` is **signed** (negative = money out) in the account currency. A transfer is two rows sharing `transfer_group_id`, each pointing at the other account via `counterpart_account_id`. |
 | `labels`, `record_labels` | Free tags for records. |
+| `record_templates` | Saved record values (type, accounts, category, optional amount, payee, note, label ids) applied in the record editor. |
 | `attachments` | Files of a record (receipts, invoices) stored as `bytea`. No foreign key to `records` because editing a record re-creates its rows with the same ids; files are deleted with their record and orphans are swept periodically. Both sides of a transfer share the files of the outgoing row. |
 | `planned_payments` | Recurrence rule (`frequency`, `interval`, `start_date`, `end_date`) plus `next_due_date` – the next unpaid occurrence. Paying creates a record linked via `planned_payment_id` and advances `next_due_date`; skipping only advances it. |
 | `budgets` | Limit per week/month/year for a set of categories (parents include their subcategories) and accounts (empty = all). |

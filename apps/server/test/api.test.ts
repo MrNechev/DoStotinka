@@ -1529,3 +1529,86 @@ describe('weekly statistics', () => {
     ]);
   });
 });
+
+describe('record templates', () => {
+  it('saves, updates, deletes and backs up templates', async () => {
+    const { call } = await registerUser(ctx.app);
+    const color = '#22C55E';
+    const cash = (
+      await call('POST', '/api/accounts', { name: 'Cash', type: 'cash', currency: 'EUR', color })
+    ).body;
+    const bank = (
+      await call('POST', '/api/accounts', {
+        name: 'Bank',
+        type: 'checking',
+        currency: 'EUR',
+        color,
+      })
+    ).body;
+    const cats = (await call<any[]>('GET', '/api/categories')).body;
+    const cafe = cats.find((c) => c.systemKey === 'food.cafe')!;
+    const label = (await call('POST', '/api/labels', { name: 'Work', color: '#3B82F6' })).body;
+
+    const created = await call('POST', '/api/templates', {
+      name: 'Coffee',
+      type: 'expense',
+      accountId: cash.id,
+      categoryId: cafe.id,
+      amount: 240,
+      payee: 'Corner Café',
+      labelIds: [label.id, label.id],
+    });
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({ name: 'Coffee', amount: 240, labelIds: [label.id] });
+
+    // Transfers keep no category or payee.
+    const transfer = await call('POST', '/api/templates', {
+      name: 'Savings',
+      type: 'transfer',
+      accountId: bank.id,
+      toAccountId: cash.id,
+      categoryId: cafe.id,
+      payee: 'x',
+    });
+    expect(transfer.body).toMatchObject({ categoryId: null, payee: null, amount: null });
+
+    const updated = await call('PUT', `/api/templates/${created.body.id}`, {
+      name: 'Coffee to go',
+      type: 'expense',
+      accountId: cash.id,
+      categoryId: cafe.id,
+      amount: 260,
+    });
+    expect(updated.body).toMatchObject({ name: 'Coffee to go', amount: 260, labelIds: [] });
+    expect((await call<any[]>('GET', '/api/templates')).body.map((t) => t.name)).toEqual([
+      'Coffee to go',
+      'Savings',
+    ]);
+
+    // Someone else's account cannot be used, and others cannot touch the template.
+    const other = await registerUser(ctx.app);
+    expect(
+      (
+        await other.call('POST', '/api/templates', {
+          name: 'X',
+          type: 'expense',
+          accountId: cash.id,
+        })
+      ).status,
+    ).toBe(400);
+    expect((await other.call('DELETE', `/api/templates/${created.body.id}`)).status).toBe(404);
+
+    // Templates travel with the backup and point at the restored accounts.
+    const backup = (await call('GET', '/api/export/backup.json')).body;
+    expect(backup.templates).toHaveLength(2);
+    const restored = await other.call('POST', '/api/me/restore', backup);
+    expect(restored.status).toBe(200);
+    const otherTemplates = (await other.call<any[]>('GET', '/api/templates')).body;
+    const otherAccounts = (await other.call<any[]>('GET', '/api/accounts')).body;
+    const coffee = otherTemplates.find((t) => t.name === 'Coffee to go')!;
+    expect(otherAccounts.find((a) => a.id === coffee.accountId)?.name).toBe('Cash');
+
+    expect((await call('DELETE', `/api/templates/${created.body.id}`)).status).toBe(204);
+    expect((await call<any[]>('GET', '/api/templates')).body).toHaveLength(1);
+  });
+});
