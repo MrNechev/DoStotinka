@@ -584,6 +584,8 @@ export const bg: Record<string, string> = {
   'Start the setup first': 'Първо започнете настройката',
   'Two-factor login is not enabled': 'Двуфакторният вход не е включен',
   // ─── Debts ───
+  '{n} debt is overdue': '{n} дълг е просрочен',
+  '{n} debts are overdue': '{n} дълга са просрочени',
   'part of a debt – not counted as income or expense':
     'част от дълг – не се отчита като приход или разход',
   'Borrowed from {name}': 'Заем от {name}',

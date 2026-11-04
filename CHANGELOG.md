@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- Dashboard card with open debts (owed to me / I owe) and overdue ones.
 - Single sign-on with OpenID Connect (Authentik, Authelia, Keycloak, Google …): configure
   `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `PUBLIC_URL`.
 

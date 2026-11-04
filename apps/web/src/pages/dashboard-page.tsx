@@ -7,6 +7,7 @@ import {
   useAccounts,
   useBudgets,
   useCurrencies,
+  useDebts,
   useGoals,
   useRecords,
   useUser,
@@ -26,7 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Card, CardHeader, EmptyState, ProgressBar, Skeleton } from '@/components/ui/misc';
-import { t } from '@/i18n';
+import { t, tn } from '@/i18n';
 import { fmt } from '@/lib/date';
 import { money, percent } from '@/lib/format';
 
@@ -36,6 +37,51 @@ function greeting() {
   if (h < 12) return t('Good morning');
   if (h < 18) return t('Good afternoon');
   return t('Good evening');
+}
+
+/** Open debts at a glance: what others owe me and what I owe (base currency). */
+function DebtsSummary() {
+  const user = useUser();
+  const { data: debts = [] } = useDebts();
+  const { data: currencies } = useCurrencies();
+  const open = debts.filter((d) => !d.closedAt && d.outstanding > 0);
+  if (!open.length) return null;
+  const rates: Record<string, number> = { [user.baseCurrency]: 1 };
+  for (const r of currencies?.rates ?? []) rates[r.currency] = r.rate;
+  const sum = (direction: 'lent' | 'borrowed') =>
+    open
+      .filter((d) => d.direction === direction)
+      .reduce((s, d) => s + convertMinor(d.outstanding, d.currency, user.baseCurrency, rates), 0);
+  const overdue = open.filter((d) => d.dueDate && d.dueDate < fmt(new Date(), 'yyyy-MM-dd')).length;
+  return (
+    <Card>
+      <CardHeader
+        title={t('Debts')}
+        description={
+          overdue ? tn(overdue, '{n} debt is overdue', '{n} debts are overdue') : undefined
+        }
+        action={
+          <Link to="/debts" className="text-sm font-medium text-primary hover:underline">
+            {t('All')}
+          </Link>
+        }
+      />
+      <div className="grid grid-cols-2 gap-3 px-5 pb-5">
+        <div>
+          <p className="text-xs text-muted-foreground">{t('Owed to me')}</p>
+          <p className="tabular text-lg font-semibold text-income">
+            {money(sum('lent'), user.baseCurrency)}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{t('I owe')}</p>
+          <p className="tabular text-lg font-semibold text-expense">
+            {money(sum('borrowed'), user.baseCurrency)}
+          </p>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 export default function DashboardPage() {
@@ -272,6 +318,8 @@ export default function DashboardPage() {
               </ul>
             </Card>
           )}
+
+          <DebtsSummary />
 
           <Card>
             <CardHeader
