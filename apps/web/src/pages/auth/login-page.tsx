@@ -1,12 +1,49 @@
-import { Sparkles } from 'lucide-react';
+import { KeyRound, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ApiError, errorMessage } from '@/api/client';
 import { useDemoLogin, useLogin, useServerConfig } from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { t } from '@/i18n';
 import { AuthLayout } from './auth-layout';
+
+/** Message for the `sso_error` the server adds when single sign-on fails. */
+function ssoErrorMessage(code: string | null): string | null {
+  switch (code) {
+    case null:
+      return null;
+    case 'not_allowed':
+      return t('There is no Slavotax account for this login. Ask your administrator to add you.');
+    case 'no_email':
+      return t('Your login provider did not share an e-mail address.');
+    case 'expired':
+      return t('The login took too long. Please try again.');
+    case 'cancelled':
+      return t('The login was cancelled.');
+    case 'unavailable':
+      return t('The login provider cannot be reached right now.');
+    default:
+      return t('Single sign-on failed. Please try again.');
+  }
+}
+
+export function SsoButton({ text }: { text: string }) {
+  return (
+    <>
+      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="h-px flex-1 bg-border" /> {t('or')}{' '}
+        <div className="h-px flex-1 bg-border" />
+      </div>
+      <Button variant="outline" size="lg" className="w-full" asChild>
+        {/* A full page navigation: the server redirects to the login provider. */}
+        <a href="/api/auth/oidc/start">
+          <KeyRound /> {text === 'Log in with SSO' ? t('Log in with SSO') : text}
+        </a>
+      </Button>
+    </>
+  );
+}
 
 export function LoginPage() {
   const { data: config } = useServerConfig();
@@ -15,7 +52,8 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const [error, setError] = useState<string | null>(() => ssoErrorMessage(params.get('sso_error')));
   // Two-factor login: the server asks for the authenticator code after a correct password.
   const [needsCode, setNeedsCode] = useState(false);
   const [code, setCode] = useState('');
@@ -101,12 +139,18 @@ export function LoginPage() {
         </Button>
       </form>
 
+      {config?.sso.enabled && <SsoButton text={config.sso.buttonText} />}
+
       {config?.demo.enabled && (
         <>
-          <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> {t('or')}{' '}
-            <div className="h-px flex-1 bg-border" />
-          </div>
+          {config.sso.enabled ? (
+            <div className="h-3" />
+          ) : (
+            <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" /> {t('or')}{' '}
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          )}
           <Button
             variant="outline"
             size="lg"

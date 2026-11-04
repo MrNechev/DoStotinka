@@ -185,10 +185,31 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `EXCHANGE_RATES_AUTO_UPDATE` | `true` | Fetch the daily ECB reference rates. |
 | `EXCHANGE_RATES_URL` | ECB daily XML | Alternative source in the same format. |
 | `NOTIFICATIONS_ENABLED` | `true` | Allow users to send payment reminders to a URL of their choice (ntfy, Gotify, Discord, Slack, webhook). Disable on servers with untrusted users. |
+| `PUBLIC_URL` | – | Public address of the app (e.g. `https://money.example.com`); used for single sign-on redirects. |
+| `OIDC_ISSUER_URL` | – | OpenID Connect provider (issuer URL) – enables single sign-on, see below. |
+| `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | – | Client credentials registered at the provider. |
+| `OIDC_SCOPE` | `openid email profile` | Requested scopes. |
+| `OIDC_BUTTON_TEXT` | `Log in with SSO` | Label of the login button. |
+| `OIDC_AUTO_REGISTER` | `true` | Create a user on the first SSO login (otherwise only existing users can log in). |
 | `API_DOCS` | `true` | Serve the OpenAPI documentation at `/api/docs`. |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | Login / registration attempts per IP and minute. |
 | `LOG_LEVEL` | `info` | `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`. |
 | `TZ` | `UTC` | Time zone of the container. |
+
+### Single sign-on (OpenID Connect)
+
+Slavotax can use your identity provider (Authentik, Authelia, Keycloak, Zitadel, Pocket ID, Google
+…) for logins:
+
+1. Create an OAuth2 / OpenID Connect application (confidential client) at the provider with the
+   redirect URI `https://money.example.com/api/auth/oidc/callback`.
+2. Set `PUBLIC_URL`, `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` in `.env` and
+   restart the container.
+
+The login page then shows a “Log in with SSO” button. On the first login Slavotax links the
+identity to the user with the same (verified) e-mail address or creates a new user
+(`OIDC_AUTO_REGISTER`; independent of `ALLOW_REGISTRATION`). Password logins keep working. Two-factor
+login is left to the provider for SSO logins.
 
 ### Reverse proxy
 

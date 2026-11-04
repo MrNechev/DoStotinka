@@ -66,6 +66,8 @@ export const users = pgTable(
     language: varchar('language', { length: 5 }).notNull().default('en'),
     isDemo: boolean('is_demo').notNull().default(false),
     isAdmin: boolean('is_admin').notNull().default(false),
+    /** `sub` claim of the linked single sign-on (OpenID Connect) identity. */
+    oidcSubject: text('oidc_subject').unique(),
     /** Two-factor authentication (TOTP): the active secret (base32) – null = disabled. */
     totpSecret: text('totp_secret'),
     /** Secret shown during setup, activated once a code from it is confirmed. */

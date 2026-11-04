@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- Single sign-on with OpenID Connect (Authentik, Authelia, Keycloak, Google …): configure
+  `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` and `PUBLIC_URL`.
+
+### Fixed
+- Docker Compose passes every setting from `.env` to the app (previously only some were
+  forwarded, e.g. `NOTIFICATIONS_ENABLED` had no effect).
+
 ## [0.4.0] – 2026-11-04
 
 ### Added

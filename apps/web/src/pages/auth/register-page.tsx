@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/input';
 import { t } from '@/i18n';
 import { AuthLayout } from './auth-layout';
+import { SsoButton } from './login-page';
 
 export function RegisterPage() {
   const { data: config } = useServerConfig();
@@ -112,6 +113,7 @@ export function RegisterPage() {
           {t('Sign up')}
         </Button>
       </form>
+      {config?.sso.enabled && <SsoButton text={config.sso.buttonText} />}
       <p className="mt-8 text-center text-sm text-muted-foreground">
         {t('Already have an account?')}{' '}
         <Link to="/login" className="font-medium text-primary hover:underline">

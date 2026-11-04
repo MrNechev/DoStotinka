@@ -32,6 +32,7 @@ import { importRoutes } from './routes/import';
 import { labelRoutes } from './routes/labels';
 import { meRoutes } from './routes/me';
 import { metaRoutes } from './routes/meta';
+import { oidcRoutes } from './routes/oidc';
 import { plannedRoutes } from './routes/planned';
 import { recordRoutes } from './routes/records';
 import { statsRoutes } from './routes/stats';
@@ -143,6 +144,7 @@ export async function buildApp(config: Config, db: Database) {
     async (api) => {
       await api.register(metaRoutes);
       await api.register(authRoutes, { prefix: '/auth' });
+      await api.register(oidcRoutes, { prefix: '/auth/oidc' });
       await api.register(async (authed) => {
         authed.addHook('preHandler', requireAuth);
         await authed.register(meRoutes, { prefix: '/me' });

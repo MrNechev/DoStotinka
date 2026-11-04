@@ -54,6 +54,22 @@ const envSchema = z.object({
   /** Allow users to send planned-payment reminders to a URL of their choice (ntfy, Gotify …). */
   NOTIFICATIONS_ENABLED: bool(true),
 
+  /** Public address of the app (e.g. https://money.example.com), used for SSO redirects. */
+  PUBLIC_URL: z
+    .string()
+    .url()
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+
+  /** Single sign-on with an OpenID Connect provider (Authentik, Authelia, Keycloak, Google …). */
+  OIDC_ISSUER_URL: z.string().optional(),
+  OIDC_CLIENT_ID: z.string().optional(),
+  OIDC_CLIENT_SECRET: z.string().optional(),
+  OIDC_SCOPE: z.string().default('openid email profile'),
+  OIDC_BUTTON_TEXT: z.string().default('Log in with SSO'),
+  /** Create a Slavotax user on the first SSO login (otherwise only existing users may log in). */
+  OIDC_AUTO_REGISTER: bool(true),
+
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().min(1).default(20),

@@ -640,6 +640,17 @@ export const bg: Record<string, string> = {
   'Show all records': 'Покажи всички записи',
   'Debt not found': 'Дългът не е намерен',
   'The due date cannot be before the date': 'Крайният срок не може да е преди датата',
+  // ─── Single sign-on ───
+  'There is no Slavotax account for this login. Ask your administrator to add you.':
+    'Няма профил в Slavotax за този вход. Помолете администратора да ви добави.',
+  'Your login provider did not share an e-mail address.':
+    'Доставчикът на вход не предостави имейл адрес.',
+  'The login took too long. Please try again.': 'Входът отне твърде дълго. Опитайте отново.',
+  'The login was cancelled.': 'Входът беше отказан.',
+  'The login provider cannot be reached right now.': 'Доставчикът на вход в момента не е достъпен.',
+  'Single sign-on failed. Please try again.': 'Единният вход не успя. Опитайте отново.',
+  'Log in with SSO': 'Вход чрез SSO',
+  'Single sign-on is not configured': 'Единният вход не е настроен',
   // ─── Accounts ───
   'Cannot be changed once the account has records.':
     'Не може да се променя, след като сметката има записи.',

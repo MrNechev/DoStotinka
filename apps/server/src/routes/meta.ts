@@ -2,6 +2,7 @@ import type { ServerConfig } from '@slavotax/shared';
 import { CURRENCIES } from '@slavotax/shared';
 import { sql } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { oidcEnabled } from '../services/oidc';
 import { registrationOpen } from '../services/settings';
 
 export const metaRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -30,6 +31,7 @@ export const metaRoutes: FastifyPluginAsyncZod = async (app) => {
           enabled: app.config.DEMO_ENABLED,
           email: app.config.DEMO_ENABLED ? app.config.DEMO_EMAIL : null,
         },
+        sso: { enabled: oidcEnabled(app.config), buttonText: app.config.OIDC_BUTTON_TEXT },
       };
       return body;
     },

@@ -8,6 +8,8 @@ export interface ServerConfig {
   registrationEnabled: boolean;
   notificationsEnabled: boolean;
   demo: { enabled: boolean; email: string | null };
+  /** Single sign-on via OpenID Connect (`GET /api/auth/oidc/start`). */
+  sso: { enabled: boolean; buttonText: string };
 }
 
 export interface User {

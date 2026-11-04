@@ -24,6 +24,7 @@
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.8",
     "fastify-type-provider-zod": "^7.0.0",
+    "openid-client": "6.8.9",
     "postgres": "^3.4.9",
     "zod": "^4.6.7"
   },

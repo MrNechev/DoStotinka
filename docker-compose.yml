@@ -13,6 +13,10 @@ services:
     restart: unless-stopped
     ports:
       - "${SLAVOTAX_PORT:-3000}:3000"
+    # Every setting from .env reaches the app (see the README); the values below take precedence.
+    env_file:
+      - path: .env
+        required: false
     environment:
       DB_HOST: database
       DB_USERNAME: ${DB_USERNAME:-slavotax}
