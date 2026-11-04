@@ -84,6 +84,8 @@ leaves it.
 - **REST API** with interactive OpenAPI documentation at `/api/docs` and personal API tokens –
   ready for automations and a future mobile app.
 
+The [user guide](docs/USER_GUIDE.md) explains every feature in detail.
+
 ## Screenshots
 
 | Statistics | Spending by category |
