@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ─────────────────────────────── Build ───────────────────────────────
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0
@@ -22,7 +22,7 @@ RUN pnpm --filter @dostotinka/web build \
  && pnpm --filter @dostotinka/server deploy --prod --legacy /out
 
 # ─────────────────────────────── Runtime ───────────────────────────────
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 ARG APP_VERSION=dev
 LABEL org.opencontainers.image.title="DoStotinka" \
       org.opencontainers.image.description="Self-hosted personal budget & money manager" \
