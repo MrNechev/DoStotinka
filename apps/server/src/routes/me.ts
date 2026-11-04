@@ -30,8 +30,14 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req) => {
       const user = currentUser(req);
       const input = req.body;
-      if (user.isDemo && input.email && input.email !== user.email) {
-        throw forbidden('The e-mail of the demo account cannot be changed');
+      if (user.isDemo) {
+        // The demo account is shared by all visitors: its profile stays as it is. The theme is
+        // applied in the browser only.
+        const { theme: _theme, ...rest } = input;
+        if (Object.values(rest).some((v) => v !== undefined)) {
+          throw forbidden('The settings of the shared demo account cannot be changed');
+        }
+        return { user: toUser(user) };
       }
       if (input.timezone !== undefined && !isValidTimeZone(input.timezone)) {
         throw badRequest('Unknown time zone');
@@ -81,7 +87,12 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     const rows = await app.db
       .select()
       .from(sessions)
-      .where(eq(sessions.userId, user.id))
+      .where(
+        // Demo visitors share one user – they must not see each other's sessions.
+        user.isDemo
+          ? and(eq(sessions.userId, user.id), eq(sessions.id, req.sessionId ?? ''))
+          : eq(sessions.userId, user.id),
+      )
       .orderBy(desc(sessions.lastUsedAt));
     return rows.map(
       (s): Session => ({
@@ -157,6 +168,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(sessions)
         .where(eq(sessions.userId, user.id));
       const match = rows.find((s) => s.id.startsWith(req.params.id));
+      if (user.isDemo && match && match.id !== req.sessionId) throw notFound('Session');
       if (!match) throw notFound('Session');
       await app.db.delete(sessions).where(eq(sessions.id, match.id));
       return reply.status(204).send();

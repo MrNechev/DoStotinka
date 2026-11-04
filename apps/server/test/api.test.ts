@@ -1185,3 +1185,36 @@ describe('backup & restore', () => {
     expect((await call('POST', '/api/me/restore', { hello: 'world' })).status).toBe(400);
   });
 });
+
+describe('demo account', () => {
+  it('keeps visitors apart and the shared profile unchanged', async () => {
+    const demo = await createTestApp({
+      DEMO_ENABLED: 'true',
+      DEMO_EMAIL: `demo${Date.now()}@example.com`,
+    });
+    const { ensureDemo } = await import('../src/demo/seed');
+    await ensureDemo(demo.db, demo.config, true);
+    const login = async () => {
+      const res = await demo.app.inject({ method: 'POST', url: '/api/auth/demo', payload: {} });
+      const cookie = res.cookies.find((c) => c.name === 'slavotax_session')!.value;
+      return (method: string, url: string, payload?: unknown) =>
+        demo.app.inject({
+          method: method as 'GET',
+          url,
+          payload: payload as never,
+          cookies: { slavotax_session: cookie },
+        });
+    };
+    const visitorA = await login();
+    const visitorB = await login();
+    const sessions = (await visitorA('GET', '/api/me/sessions')).json();
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].current).toBe(true);
+    expect((await visitorB('PATCH', '/api/me', { baseCurrency: 'USD' })).statusCode).toBe(403);
+    expect((await visitorB('PATCH', '/api/me', { theme: 'dark' })).statusCode).toBe(200);
+    expect((await visitorA('GET', '/api/me')).json().user.theme).toBe('system');
+    const accounts = (await visitorA('GET', '/api/accounts')).json();
+    expect(accounts.length).toBeGreaterThan(3);
+    await demo.close();
+  });
+});

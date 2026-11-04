@@ -76,48 +76,50 @@ function ProfileSection() {
   const [email, setEmail] = useState(user.email);
   return (
     <Section title="Profile">
-      <form
-        className="grid gap-4 sm:grid-cols-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          update.mutate(
-            { name, email },
-            {
-              onSuccess: () => toast.success('Profile saved'),
-              onError: (err) => toast.error(errorMessage(err)),
-            },
-          );
-        }}
-      >
-        <Field label="Name" htmlFor="s-name">
-          <Input
-            id="s-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            maxLength={100}
-          />
-        </Field>
-        <Field label="E-mail" htmlFor="s-email">
-          <Input
-            id="s-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={user.isDemo}
-          />
-        </Field>
-        <div className="sm:col-span-2">
-          <Button
-            type="submit"
-            loading={update.isPending}
-            disabled={name === user.name && email === user.email}
-          >
-            Save profile
-          </Button>
-        </div>
-      </form>
+      <fieldset disabled={user.isDemo} className="contents">
+        <form
+          className="grid gap-4 sm:grid-cols-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            update.mutate(
+              { name, email },
+              {
+                onSuccess: () => toast.success('Profile saved'),
+                onError: (err) => toast.error(errorMessage(err)),
+              },
+            );
+          }}
+        >
+          <Field label="Name" htmlFor="s-name">
+            <Input
+              id="s-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              maxLength={100}
+            />
+          </Field>
+          <Field label="E-mail" htmlFor="s-email">
+            <Input
+              id="s-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={user.isDemo}
+            />
+          </Field>
+          <div className="sm:col-span-2">
+            <Button
+              type="submit"
+              loading={update.isPending}
+              disabled={name === user.name && email === user.email}
+            >
+              Save profile
+            </Button>
+          </div>
+        </form>
+      </fieldset>
     </Section>
   );
 }
@@ -142,85 +144,87 @@ function PreferencesSection() {
   const detected = browserTimeZone();
   return (
     <Section title="Preferences">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Main currency"
-          htmlFor="p-cur"
-          hint="Totals, statistics and budgets are shown in this currency."
-        >
-          <Select
-            id="p-cur"
-            value={user.baseCurrency}
-            onChange={(e) => save({ baseCurrency: e.target.value }, 'Main currency changed')}
+      <fieldset disabled={user.isDemo} className="contents">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Main currency"
+            htmlFor="p-cur"
+            hint="Totals, statistics and budgets are shown in this currency."
           >
-            {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.code} – {c.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Theme" htmlFor="p-theme">
-          <Select
-            id="p-theme"
-            value={user.theme}
-            onChange={(e) => {
-              applyTheme(e.target.value as ThemePref);
-              save({ theme: e.target.value as ThemePref });
-            }}
+            <Select
+              id="p-cur"
+              value={user.baseCurrency}
+              onChange={(e) => save({ baseCurrency: e.target.value }, 'Main currency changed')}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code} – {c.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Theme" htmlFor="p-theme">
+            <Select
+              id="p-theme"
+              value={user.theme}
+              onChange={(e) => {
+                applyTheme(e.target.value as ThemePref);
+                save({ theme: e.target.value as ThemePref });
+              }}
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </Select>
+          </Field>
+          <Field label="Week starts on" htmlFor="p-week">
+            <Select
+              id="p-week"
+              value={user.weekStartsOn}
+              onChange={(e) => save({ weekStartsOn: Number(e.target.value) as 0 | 1 | 6 })}
+            >
+              <option value={1}>Monday</option>
+              <option value={0}>Sunday</option>
+              <option value={6}>Saturday</option>
+            </Select>
+          </Field>
+          <Field label="Number format" htmlFor="p-locale">
+            <Select
+              id="p-locale"
+              value={user.locale === 'en' ? 'auto' : user.locale}
+              onChange={(e) => save({ locale: e.target.value })}
+            >
+              {LOCALES.map((l) => (
+                <option key={l.value} value={l.value}>
+                  {l.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field
+            label="Time zone"
+            htmlFor="p-tz"
+            className="sm:col-span-2"
+            hint={
+              detected !== user.timezone
+                ? `Your browser reports ${detected}.`
+                : 'Used for background jobs and exports.'
+            }
           >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </Select>
-        </Field>
-        <Field label="Week starts on" htmlFor="p-week">
-          <Select
-            id="p-week"
-            value={user.weekStartsOn}
-            onChange={(e) => save({ weekStartsOn: Number(e.target.value) as 0 | 1 | 6 })}
-          >
-            <option value={1}>Monday</option>
-            <option value={0}>Sunday</option>
-            <option value={6}>Saturday</option>
-          </Select>
-        </Field>
-        <Field label="Number format" htmlFor="p-locale">
-          <Select
-            id="p-locale"
-            value={user.locale === 'en' ? 'auto' : user.locale}
-            onChange={(e) => save({ locale: e.target.value })}
-          >
-            {LOCALES.map((l) => (
-              <option key={l.value} value={l.value}>
-                {l.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field
-          label="Time zone"
-          htmlFor="p-tz"
-          className="sm:col-span-2"
-          hint={
-            detected !== user.timezone
-              ? `Your browser reports ${detected}.`
-              : 'Used for background jobs and exports.'
-          }
-        >
-          <Select
-            id="p-tz"
-            value={user.timezone}
-            onChange={(e) => save({ timezone: e.target.value })}
-          >
-            {timeZones.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </div>
+            <Select
+              id="p-tz"
+              value={user.timezone}
+              onChange={(e) => save({ timezone: e.target.value })}
+            >
+              {timeZones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+      </fieldset>
     </Section>
   );
 }
@@ -380,6 +384,7 @@ function SecuritySection() {
   const change = useChangePassword();
   const { data: sessions = [] } = useSessions();
   const revoke = useRevokeSession();
+  const [showAllSessions, setShowAllSessions] = useState(false);
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   return (
@@ -436,6 +441,7 @@ function SecuritySection() {
       <ul className="divide-y divide-border rounded-xl border border-border">
         {sessions
           .filter((s) => !s.name)
+          .slice(0, showAllSessions ? undefined : 6)
           .map((s) => (
             <li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
               <Laptop className="size-5 shrink-0 text-muted-foreground" />
@@ -456,6 +462,17 @@ function SecuritySection() {
             </li>
           ))}
       </ul>
+      {sessions.filter((x) => !x.name).length > 6 && (
+        <button
+          type="button"
+          className="mt-2 text-sm font-medium text-primary hover:underline"
+          onClick={() => setShowAllSessions((v) => !v)}
+        >
+          {showAllSessions
+            ? 'Show fewer'
+            : `Show all ${sessions.filter((x) => !x.name).length} sessions`}
+        </button>
+      )}
     </Section>
   );
 }
@@ -761,12 +778,24 @@ function DangerSection() {
   );
 }
 
+function DemoNotice() {
+  const user = useUser();
+  if (!user.isDemo) return null;
+  return (
+    <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning">
+      You are using the shared demo account: its profile and preferences are read-only, and all data
+      is reset regularly. Create your own account to try everything.
+    </p>
+  );
+}
+
 export default function SettingsPage() {
   const { data: config } = useServerConfig();
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader title="Settings" />
       <div className="grid gap-6">
+        <DemoNotice />
         <ProfileSection />
         <PreferencesSection />
         <CurrenciesSection />

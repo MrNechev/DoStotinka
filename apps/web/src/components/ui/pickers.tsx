@@ -15,7 +15,7 @@ export function ColorPicker({ value, onChange }: { value: string; onChange: (c: 
           type="button"
           onClick={() => onChange(c)}
           aria-label={`Colour ${c}`}
-          className="flex size-7 cursor-pointer items-center justify-center rounded-full ring-offset-2 ring-offset-card transition-transform hover:scale-110"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-full ring-1 ring-black/10 transition-transform hover:scale-110 dark:ring-white/20"
           style={{
             backgroundColor: c,
             boxShadow:
