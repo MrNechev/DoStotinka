@@ -2,6 +2,7 @@
 
 export const ACCOUNT_TYPES = [
   'cash',
+  'food_voucher',
   'checking',
   'savings',
   'credit_card',
@@ -14,6 +15,7 @@ export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   cash: 'Cash',
+  food_voucher: 'Food vouchers',
   checking: 'Bank account',
   savings: 'Savings account',
   credit_card: 'Credit card',

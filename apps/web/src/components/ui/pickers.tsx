@@ -2,9 +2,10 @@ import { COLOR_PALETTE } from '@dostotinka/shared';
 import { Check, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { t } from '@/i18n';
+import { BRANDS } from '@/lib/brand-icons';
 import { ICON_NAMES } from '@/lib/icon-registry';
 import { cn } from '@/lib/utils';
-import { Icon } from './category-icon';
+import { Icon, IconBadge } from './category-icon';
 import { Input } from './input';
 
 export function ColorPicker({ value, onChange }: { value: string; onChange: (c: string) => void }) {
@@ -50,18 +51,50 @@ export function IconPicker({
   value,
   onChange,
   color,
+  brands = false,
 }: {
   value: string;
   onChange: (i: string) => void;
   color: string;
+  /** Offer bank and voucher logos first (for accounts). */
+  brands?: boolean;
 }) {
   const [search, setSearch] = useState('');
   const icons = useMemo(() => {
     const q = search.trim().toLowerCase();
     return q ? ICON_NAMES.filter((n) => n.includes(q)) : ICON_NAMES;
   }, [search]);
+  const brandList = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? BRANDS.filter((b) => b.name.toLowerCase().includes(q)) : BRANDS;
+  }, [search]);
   return (
     <div>
+      {brands && brandList.length > 0 && (
+        <div className="mb-3">
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {t('Banks & food vouchers')}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {brandList.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => onChange(b.id)}
+                className={cn(
+                  'flex w-16 cursor-pointer flex-col items-center gap-1 rounded-xl p-1.5 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                  value === b.id && 'bg-muted text-foreground',
+                )}
+                aria-pressed={value === b.id}
+              >
+                <IconBadge icon={b.id} color={value === b.id ? color : 'var(--border)'} size="lg" />
+                <span className="w-full truncate text-center">{b.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {brands && <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t('Icons')}</p>}
       <div className="relative mb-2">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input

@@ -31,9 +31,16 @@ The dashboard shows a checklist until these steps are done. Coming from another 
 
 ## Accounts
 
-An account has a name, a type (cash, checking, savings, credit card, deposit, investment, loan,
-other), a currency and a colour. Its **balance** is the starting balance plus all records of the
-account.
+An account has a name, a type (cash, food vouchers, bank account, savings, credit card, deposit,
+investment, loan, other), a currency, a colour and an icon. Its **balance** is the starting balance
+plus all records of the account.
+
+- **Icon:** tap the round icon next to the name. Besides general icons you can pick the logo of your
+  bank or voucher provider (currently DSK Bank, UBB, Revolut, Pluxee and Edenred). The logo is
+  shown on a white disc with a ring in the account's colour.
+- **Food vouchers** (meal vouchers such as Pluxee or Edenred cards) are money your employer gives
+  you that can only be spent on food. Give them their own account so they don't mix with your
+  bank money; groceries paid with them are normal expenses from that account.
 
 - **Adjust balance** sets the balance to what your bank shows – DoStotinka adds a correction record
   for the difference.
@@ -180,5 +187,25 @@ two-factor login for a user who lost their phone, grant administrator rights and
 
 - <kbd>N</kbd> – add a record (anywhere outside text fields).
 - <kbd>Enter</kbd> in the record editor saves; **Save & add another** keeps the dialog open.
-- DoStotinka can be installed as an app on phones and desktops (browser menu → *Install* / *Add to
-  home screen*).
+- DoStotinka can be installed as an app on phones and desktops – see below.
+
+## Using DoStotinka on your phone
+
+Open DoStotinka in the phone's browser and add it to the home screen. It then starts full-screen
+like a normal app, without the browser's address bar and tabs:
+
+- **Chrome, Vivaldi, Edge, Samsung Internet (Android):** browser menu → *Install app* or *Add to
+  home screen*.
+- **Safari (iPhone/iPad):** share button → *Add to Home Screen*.
+
+**HTTP or HTTPS?** Browsers only allow a *full* installation (with the app icon in the app drawer and
+a faster start through offline caching) when the address starts with `https://`, or is `localhost`.
+If you open DoStotinka with a plain `http://` address (e.g. `http://192.168.1.10:8742` or a Tailscale
+`http://…ts.net:8742` address), the menu may say the app cannot be installed. *Add to home screen*
+still works and opens DoStotinka full-screen. For the full installation, serve it over HTTPS, e.g.
+with a [reverse proxy](../README.md#reverse-proxy) or, on a Tailscale network, with
+`tailscale serve --bg --https=8443 http://localhost:8742`. Then open
+`https://<machine>.<tailnet>.ts.net:8443` and set `TRUST_PROXY=true`.
+
+On touch screens the category picker doesn't open the keyboard by itself – tap the search field
+if you want to type, or just tap through the groups.

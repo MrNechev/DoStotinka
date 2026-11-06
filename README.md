@@ -31,8 +31,9 @@ leaves it.
 - **Multiple users** – everyone has their own private data. The first user becomes the
   administrator and can add users, reset passwords and close sign-ups from the web UI.
 - **Two-factor login** with any authenticator app (TOTP) and one-time recovery codes.
-- **Accounts** – cash, bank, savings, credit cards, deposits, investments, loans … each with its own
-  balance and currency. Set or adjust balances at any time, archive old accounts, reorder them.
+- **Accounts** – cash, food vouchers, bank, savings, credit cards, deposits, investments, loans …
+  each with its own balance, currency, colour and icon – including the logos of DSK Bank, UBB,
+  Revolut, Pluxee and Edenred. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
 - **Templates** for records you enter often (“Morning coffee”, “Move to savings”) – one tap fills

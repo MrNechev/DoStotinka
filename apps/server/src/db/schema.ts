@@ -36,6 +36,7 @@ const bytea = customType<{ data: Buffer; driverData: Buffer }>({
 
 export const accountTypeEnum = pgEnum('account_type', [
   'cash',
+  'food_voucher',
   'checking',
   'savings',
   'credit_card',

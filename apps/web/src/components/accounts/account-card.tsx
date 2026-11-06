@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 
 export const ACCOUNT_TYPE_ICONS: Record<string, string> = {
   cash: 'wallet',
+  food_voucher: 'shopping-basket',
   checking: 'landmark',
   savings: 'piggy-bank',
   credit_card: 'credit-card',

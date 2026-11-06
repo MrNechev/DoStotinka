@@ -105,7 +105,9 @@ export function AccountFormDialog({
               />
             </Field>
           </div>
-          {showIcons && <IconPicker value={effectiveIcon} onChange={setIcon} color={color} />}
+          {showIcons && (
+            <IconPicker value={effectiveIcon} onChange={setIcon} color={color} brands />
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('Type')} htmlFor="acc-type">
               <Select

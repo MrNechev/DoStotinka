@@ -15,3 +15,9 @@ export function useMediaQuery(query: string) {
 }
 
 export const useIsDesktop = () => useMediaQuery('(min-width: 1024px)');
+
+/**
+ * True when the main input is a mouse/trackpad. Phones and tablets report a coarse pointer – there
+ * focusing a text field opens the on-screen keyboard, so search fields should not grab focus.
+ */
+export const useHasFinePointer = () => useMediaQuery('(pointer: fine)');

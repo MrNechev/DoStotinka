@@ -6,6 +6,26 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.5.2] – 2026-11-06
+
+Upgrading: pull the new image and restart (`docker compose pull && docker compose up -d`). A small
+database migration (the new account type) runs automatically on start; it changes no existing data.
+
+### Added
+- **Bank and voucher logos as account icons:** DSK Bank, UBB, Revolut, Pluxee and Edenred. They are
+  shown on a white disc with a ring in the account's colour, so the colour still tells accounts
+  apart. More banks can be added easily (see `apps/web/src/assets/brands/README.md`).
+- **Food vouchers** account type for meal vouchers (Pluxee, Edenred …).
+
+### Fixed
+- Adding DoStotinka to the home screen of a phone now opens it full-screen even when it is served
+  over plain `http://` (e.g. on a LAN or a Tailscale address). Before, browsers such as Vivaldi
+  said the app could not be installed and opened it with the browser's address bar and tabs. The
+  web app manifest now uses PNG icons only (with a 192 px maskable icon) and has an `id`. The user
+  guide explains the difference between HTTP and HTTPS installs.
+- On phones and tablets the category picker no longer focuses the search field, so the on-screen
+  keyboard doesn't cover the category list. With a mouse it still does.
+
 ### Documentation
 - Research on **automatic transaction import** (open banking via PSD2 for DSK, UBB and Revolut,
   phone notifications, Google Pay / Gmail, bank e-mails) and a proposed design:
@@ -183,7 +203,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/MrNechev/DoStotinka/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/MrNechev/DoStotinka/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/MrNechev/DoStotinka/compare/v0.3.0...v0.4.0

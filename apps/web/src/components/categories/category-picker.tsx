@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useCategories } from '@/api/queries';
 import { IconBadge } from '@/components/ui/category-icon';
 import { Input } from '@/components/ui/input';
+import { useHasFinePointer } from '@/hooks/use-media';
 import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
 import { cn, storage } from '@/lib/utils';
@@ -35,6 +36,8 @@ export function CategoryPickerPanel({
 }) {
   const { data: categories = [] } = useCategories();
   const index = useMemo(() => buildCategoryIndex(categories), [categories]);
+  // On touch devices the keyboard would cover half the list – tapping through groups is faster.
+  const focusSearch = useHasFinePointer();
   const [search, setSearch] = useState('');
   const [showOtherKind, setShowOtherKind] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(() => index.rootOf(value));
@@ -100,7 +103,8 @@ export function CategoryPickerPanel({
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            autoFocus
+            autoFocus={focusSearch}
+            enterKeyHint="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('Search categories…')}

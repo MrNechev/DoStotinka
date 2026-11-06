@@ -291,6 +291,8 @@ export const bg: Record<string, string> = {
   Saved: 'Запазено',
   'Search categories…': 'Търсене на категории…',
   'Search icons…': 'Търсене на икони…',
+  'Banks & food vouchers': 'Банки и ваучери за храна',
+  Icons: 'Икони',
   'Search notes, payees, categories…': 'Търсене в бележки, получатели, категории…',
   'Search…': 'Търсене…',
   Security: 'Сигурност',
@@ -1089,6 +1091,7 @@ export const bg: Record<string, string> = {
 
   // ─── Account types ───
   Cash: 'В брой',
+  'Food vouchers': 'Ваучери за храна',
   'Bank account': 'Банкова сметка',
   'Savings account': 'Спестовна сметка',
   'Credit card': 'Кредитна карта',

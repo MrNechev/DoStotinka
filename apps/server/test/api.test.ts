@@ -282,6 +282,25 @@ describe('accounts and records', () => {
     expect(rec.status).toBe(404);
     expect((await b.call<any[]>('GET', '/api/accounts')).body).toHaveLength(0);
   });
+
+  it('supports food voucher accounts with a brand logo as icon', async () => {
+    const { call } = await registerUser(ctx.app);
+    const created = await call('POST', '/api/accounts', {
+      name: 'Pluxee card',
+      type: 'food_voucher',
+      currency: 'EUR',
+      initialBalance: 20000,
+      color: '#221C46',
+      icon: 'brand-pluxee',
+    });
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({ type: 'food_voucher', icon: 'brand-pluxee' });
+    const edited = await call('PATCH', `/api/accounts/${created.body.id}`, {
+      icon: 'brand-edenred',
+    });
+    expect(edited.status).toBe(200);
+    expect(edited.body.icon).toBe('brand-edenred');
+  });
 });
 
 describe('statistics', () => {
