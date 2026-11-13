@@ -87,9 +87,12 @@ leaves it.
   [Automatic import](docs/USER_GUIDE.md#automatic-import).
 - **Import from CSV** – step-by-step import with column, account and category mapping. Exports of
   *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
-  bank statements work too. Duplicates are skipped. See
+  bank statements work too, and import profiles remember the settings per bank. Duplicates are
+  skipped. See
   [Moving from Wallet](docs/MIGRATING_FROM_WALLET.md).
 - **Export & restore** – CSV export of records, a full JSON backup and restoring it.
+- **Android app** – your own server full-screen, with built-in import of payment notifications
+  (no extra automation app needed). See [apps/android](apps/android/README.md).
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
 - **English and Bulgarian** interface (including the category tree and dates) – more languages are
@@ -351,13 +354,14 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 **Next**
 
 - [ ] More languages (contributions welcome)
-- [ ] Mobile app that connects to your own server (with a built-in notification listener for the
-  automatic import)
 - [ ] Shared accounts / households
-- [ ] Automatic import: bank e-mails (IMAP / Gmail) and saved CSV import profiles per bank
+- [ ] Automatic import from bank e-mails (IMAP / Gmail)
 
 **Done**
 
+- [x] **Android app** that connects to your own server, with a built-in notification listener for
+  the automatic import (0.7.0)
+- [x] Saved CSV import profiles per bank (0.7.0)
 - [x] **Automatic transaction import** – phone notifications and open banking with an inbox for
   review (0.6.0). Background and research: [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
 - [x] CSV import (from Wallet and bank statements)

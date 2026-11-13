@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="listener_name">DoStotinka – известия за плащания</string>
+    <string name="setup_title">Свържете се със своя сървър</string>
+    <string name="setup_text">Въведете адреса на вашия DoStotinka сървър, напр. http://192.168.1.10:8742 или https://money.example.com.</string>
+    <string name="setup_hint">Адрес на сървъра</string>
+    <string name="connect">Свържи</string>
+    <string name="setup_error">Там не беше открит DoStotinka сървър (%1$s).</string>
+    <string name="offline_title">Сървърът не е достъпен</string>
+    <string name="retry">Опитай отново</string>
+    <string name="change_server">Смени сървъра</string>
+    <string name="downloading">Изтегляне на %1$s…</string>
+</resources>

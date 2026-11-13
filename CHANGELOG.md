@@ -6,6 +6,23 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.7.0] – 2026-11-13
+
+Upgrading the server: `docker compose pull && docker compose up -d` (a small migration adds the
+import profiles). The Android app is new – see below.
+
+### Added
+- **Android app** ([apps/android](apps/android/README.md)): your own server full-screen without
+  browser bars – asks for the server address on the first start (plain `http://` works) – with file
+  uploads, downloads and the bank pages opening in the browser. It **imports payment
+  notifications by itself**: in *Settings → Automatic import* tap **Use this phone**, allow
+  notification access and choose the banking apps to forward; notifications are retried when the
+  server is not reachable. *Settings → App* shows and changes the server. Release APKs are signed
+  and attached to GitHub releases.
+- In Android browsers *Settings* links to the app.
+- **CSV import profiles:** save the column mapping, date format and accounts of an import; files with
+  the same columns get them automatically next time.
+
 ## [0.6.0] – 2026-11-13
 
 Upgrading: `docker compose pull && docker compose up -d`. The database migration (new tables for
@@ -238,7 +255,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/MrNechev/DoStotinka/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/MrNechev/DoStotinka/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/MrNechev/DoStotinka/compare/v0.5.0...v0.5.1

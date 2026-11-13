@@ -26,6 +26,8 @@ import type {
   DebtUpdateInput,
   Goal,
   GoalInput,
+  ImportProfile,
+  ImportProfileInput,
   InboxConfirmInput,
   InboxCounts,
   InboxItem,
@@ -1120,3 +1122,31 @@ export const useInboxBulk = () =>
   useInboxMutation((body: { ids: string[]; action: 'confirm' | 'dismiss' }) =>
     api<{ done: number; skipped: number }>('/inbox/bulk', { method: 'POST', body }),
   );
+
+// ───────────────────────────── CSV import profiles ─────────────────────────────
+
+const profilesKey = ['import-profiles'] as const;
+
+export function useImportProfiles() {
+  return useQuery({
+    queryKey: profilesKey,
+    queryFn: () => api<ImportProfile[]>('/import/profiles'),
+  });
+}
+
+export function useSaveImportProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ImportProfileInput) =>
+      api<ImportProfile>('/import/profiles', { method: 'POST', body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profilesKey }),
+  });
+}
+
+export function useDeleteImportProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/import/profiles/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profilesKey }),
+  });
+}

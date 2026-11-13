@@ -1929,3 +1929,31 @@ describe('debt records', () => {
     expect((await call('GET', `/api/attachments/${up.json().id}`)).status).toBe(200);
   });
 });
+
+describe('import profiles', () => {
+  it('saves, replaces by name, keeps users apart and deletes', async () => {
+    const a = await registerUser(ctx.app);
+    const profile = {
+      name: 'DSK statement',
+      headers: ['Дата', 'Сума', 'Описание'],
+      settings: { mapping: { date: 0, amount: 1, note: 2 }, dateFormat: 'dmy', accounts: {} },
+    };
+    const created = await a.call('POST', '/api/import/profiles', profile);
+    expect(created.status).toBe(201);
+    expect(created.body.settings.skipDuplicates).toBe(true);
+    const replaced = await a.call('POST', '/api/import/profiles', {
+      ...profile,
+      settings: { ...profile.settings, dateFormat: 'ymd' },
+    });
+    expect(replaced.body.id).toBe(created.body.id);
+    const list = (await a.call<any[]>('GET', '/api/import/profiles')).body;
+    expect(list).toHaveLength(1);
+    expect(list[0].settings.dateFormat).toBe('ymd');
+
+    const b = await registerUser(ctx.app);
+    expect((await b.call<any[]>('GET', '/api/import/profiles')).body).toHaveLength(0);
+    expect((await b.call('DELETE', `/api/import/profiles/${created.body.id}`)).status).toBe(404);
+    expect((await a.call('DELETE', `/api/import/profiles/${created.body.id}`)).status).toBe(204);
+    expect((await a.call<any[]>('GET', '/api/import/profiles')).body).toHaveLength(0);
+  });
+});

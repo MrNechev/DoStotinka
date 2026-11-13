@@ -366,6 +366,21 @@ export const importInput = z.object({
   skipDuplicates: z.boolean().default(true),
 });
 export type ImportInput = z.input<typeof importInput>;
+
+/** Saved settings of a CSV import, applied again to files with the same columns. */
+export const importProfileInput = z.object({
+  name: z.string().trim().min(1).max(60),
+  /** Header row of the file – files with the same headers use this profile automatically. */
+  headers: z.array(z.string().max(200)).min(1).max(100),
+  settings: z.object({
+    mapping: z.record(z.string().max(20), z.number().int().min(-1).max(200)),
+    dateFormat: z.enum(['auto', 'ymd', 'dmy', 'mdy']),
+    /** Account names/keys in the file → existing DoStotinka account. */
+    accounts: z.record(z.string().max(200), uuid).default({}),
+    skipDuplicates: z.boolean().default(true),
+  }),
+});
+export type ImportProfileInput = z.input<typeof importProfileInput>;
 export type ImportRecordInput = z.input<typeof importRecordInput>;
 
 export interface ImportResult {

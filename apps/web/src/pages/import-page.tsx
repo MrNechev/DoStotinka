@@ -5,6 +5,7 @@ import {
   CURRENCIES,
   type CurrenciesResponse,
   convertMinor,
+  type ImportProfile,
   type ImportRecordInput,
   type ImportResult,
   isSupportedCurrency,
@@ -14,6 +15,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileUp, Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { toast } from 'sonner';
 import { api, errorMessage } from '@/api/client';
 import {
   invalidateFinancialData,
@@ -21,10 +23,13 @@ import {
   useAccounts,
   useCategories,
   useCurrencies,
+  useDeleteImportProfile,
+  useImportProfiles,
+  useSaveImportProfile,
   useUser,
 } from '@/api/queries';
 import { Button } from '@/components/ui/button';
-import { Field, Select } from '@/components/ui/input';
+import { Field, Input, Select } from '@/components/ui/input';
 import { Badge, Card, Checkbox, PageHeader } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
@@ -34,10 +39,12 @@ import { money, plural } from '@/lib/format';
 import {
   type ColumnMapping,
   type DateFormat,
+  EMPTY_MAPPING,
   guessMapping,
   isWalletExport,
   parseAmountValue,
   parseDateValue,
+  sameHeaders,
   suggestCategory,
   typeFromValue,
 } from '@/lib/import-formats';
@@ -218,6 +225,31 @@ export default function ImportPage() {
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const { data: profiles = [] } = useImportProfiles();
+  const saveProfile = useSaveImportProfile();
+  const deleteProfile = useDeleteImportProfile();
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState('');
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  /** Applies a saved profile: column mapping, date format, duplicates and known accounts. */
+  const applyProfile = (profile: ImportProfile, headers: string[]) => {
+    const next = { ...EMPTY_MAPPING };
+    for (const key of Object.keys(next) as (keyof ColumnMapping)[]) {
+      const idx = profile.settings.mapping[key];
+      next[key] = typeof idx === 'number' && idx < headers.length ? idx : -1;
+    }
+    setMapping(next);
+    setDateFormat(profile.settings.dateFormat);
+    setSkipDuplicates(profile.settings.skipDuplicates);
+    const choices: Record<string, AccountChoice> = {};
+    for (const [key, id] of Object.entries(profile.settings.accounts)) {
+      if (accounts.some((a) => a.id === id)) choices[key] = { mode: 'existing', id };
+    }
+    setAccountChoices(choices);
+    setProfileId(profile.id);
+    setProfileName(profile.name);
+  };
 
   const built = useMemo(
     () =>
@@ -263,6 +295,14 @@ export default function ImportPage() {
     setFile({ name: f.name, headers, rows: rows.slice(1) });
     setWallet(isWalletExport(headers));
     setMapping(guessMapping(headers));
+    setProfileId(null);
+    setProfileSaved(false);
+    setProfileName(f.name.replace(/\.[^.]+$/, '').slice(0, 60));
+    const sameLayout = profiles.find((p) => sameHeaders(p.headers, headers));
+    if (sameLayout) {
+      applyProfile(sameLayout, headers);
+      toast.success(t('Import profile “{name}” applied', { name: sameLayout.name }));
+    }
     setStep('columns');
   };
 
@@ -513,6 +553,43 @@ export default function ImportPage() {
             <Badge>{tn(file.rows.length, '{n} row', '{n} rows')}</Badge>
             {wallet && <Badge tone="success">{t('Wallet export detected')}</Badge>}
           </div>
+          {profiles.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-end gap-2 rounded-xl bg-muted/60 p-3">
+              <Field label={t('Import profile')} className="min-w-48 flex-1">
+                <Select
+                  value={profileId ?? ''}
+                  onChange={(e) => {
+                    const p = profiles.find((x) => x.id === e.target.value);
+                    if (p) applyProfile(p, file.headers);
+                    else setProfileId(null);
+                  }}
+                >
+                  <option value="">{t('No profile')}</option>
+                  {profiles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              {profileId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    deleteProfile.mutate(profileId, {
+                      onSuccess: () => {
+                        setProfileId(null);
+                        toast.success(t('Profile deleted'));
+                      },
+                    })
+                  }
+                >
+                  {t('Delete profile')}
+                </Button>
+              )}
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             {FIELDS.map((f) => (
               <Field key={f.key} label={`${f.label}${f.required ? ' *' : ''}`} hint={f.hint}>
@@ -834,6 +911,57 @@ export default function ImportPage() {
               'Tip: check the balances of the imported accounts and use “Adjust balance” if they differ from reality.',
             )}
           </p>
+          {file && mapping && !wallet && (
+            <form
+              className="mt-6 grid w-full max-w-md gap-2 rounded-xl border border-border p-4 text-left"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const known: Record<string, string> = {};
+                for (const [key, c] of Object.entries(accountChoices)) {
+                  if (c.mode === 'existing') known[key] = c.id;
+                }
+                saveProfile.mutate(
+                  {
+                    name: profileName,
+                    headers: file.headers,
+                    settings: {
+                      mapping: { ...mapping },
+                      dateFormat,
+                      accounts: known,
+                      skipDuplicates,
+                    },
+                  },
+                  {
+                    onSuccess: () => setProfileSaved(true),
+                    onError: (err) => toast.error(errorMessage(err)),
+                  },
+                );
+              }}
+            >
+              <p className="text-sm font-medium">{t('Save these settings for next time')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Files with the same columns (e.g. next month’s statement of this bank) then get the same mapping and accounts automatically.',
+                )}
+              </p>
+              {profileSaved ? (
+                <p className="text-sm text-income">{t('Profile saved')}</p>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder={t('Name, e.g. “DSK statement”')}
+                    maxLength={60}
+                    required
+                  />
+                  <Button type="submit" variant="outline" loading={saveProfile.isPending}>
+                    {t('Save')}
+                  </Button>
+                </div>
+              )}
+            </form>
+          )}
           <div className="mt-6 flex gap-2">
             <Button asChild variant="outline">
               <Link to="/accounts">{t('Check accounts')}</Link>

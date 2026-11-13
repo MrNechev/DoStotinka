@@ -51,6 +51,7 @@ import { Badge, Card, CardHeader, PageHeader, Spinner, Switch } from '@/componen
 import { t } from '@/i18n';
 import { ago } from '@/lib/date';
 import { longDate, money } from '@/lib/format';
+import { nativeApp, useNativeInfo } from '@/lib/native-app';
 import { cn } from '@/lib/utils';
 
 const COUNTRIES = [
@@ -306,6 +307,150 @@ function AppRow({ app, accounts }: { app: NotificationApp; accounts: Account[] }
   );
 }
 
+/** Shown inside the Android app: forwards this phone's notifications without extra apps. */
+function ThisPhoneCard({ state }: { state: AutomaticImportState }) {
+  const [info, refresh] = useNativeInfo();
+  const create = useCreatePhone();
+  const deletePhone = useDeletePhone();
+  if (!nativeApp || !info) return null;
+  const bridge = nativeApp;
+  const known = info.connected && state.sources.some((s) => s.id === info.sourceId);
+  const removed = info.connected && !known;
+  const watched = new Set(info.watched);
+  const toggle = (app: string, on: boolean) => {
+    const next = new Set(watched);
+    if (on) next.add(app);
+    else next.delete(app);
+    bridge.setWatched(JSON.stringify([...next]));
+    refresh();
+  };
+  const connect = () =>
+    create.mutate(info.device, {
+      onSuccess: (c) => {
+        if (bridge.connect(c.token, c.id, c.name)) {
+          toast.success(t('This phone now sends payment notifications'));
+        }
+        refresh();
+      },
+      onError: (e) => toast.error(errorMessage(e)),
+    });
+
+  return (
+    <div className="grid gap-3 rounded-xl border border-primary/40 bg-primary-soft/40 p-3">
+      <div>
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <Smartphone className="size-4" /> {t('This phone')}
+        </p>
+        <p className="truncate pl-6 text-xs text-muted-foreground">{info.device}</p>
+      </div>
+      {!info.connected || removed ? (
+        <div className="grid gap-2 text-sm">
+          <p className="text-muted-foreground">
+            {removed
+              ? t('This phone was removed in DoStotinka. Connect it again to keep importing.')
+              : t(
+                  'The DoStotinka app can read the payment notifications of your banking apps itself – no other app needed.',
+                )}
+          </p>
+          <div>
+            <Button size="sm" loading={create.isPending} onClick={connect}>
+              {t('Use this phone')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span>
+              {t('Notification access')}{' '}
+              {info.notificationAccess ? (
+                <Badge tone="success">{t('allowed')}</Badge>
+              ) : (
+                <Badge tone="danger">{t('not allowed')}</Badge>
+              )}
+            </span>
+            {!info.notificationAccess && (
+              <Button size="sm" onClick={() => bridge.openNotificationAccess()}>
+                {t('Allow notification access')}
+              </Button>
+            )}
+          </div>
+          {!info.notificationAccess && (
+            <p className="text-xs text-muted-foreground">
+              {t(
+                'If Android says the setting is restricted: open the app info, tap ⋮ (top right) and choose “Allow restricted settings”, then try again.',
+              )}{' '}
+              <button
+                type="button"
+                className="cursor-pointer font-medium text-primary hover:underline"
+                onClick={() => bridge.openAppInfo()}
+              >
+                {t('Open app info')}
+              </button>
+            </p>
+          )}
+          <div>
+            <p className="mb-1 text-sm font-medium">{t('Forward notifications of')}</p>
+            {info.recent.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+                {t(
+                  'Apps appear here after they showed a notification on this phone – e.g. after your next card payment.',
+                )}
+              </p>
+            ) : (
+              <ul className="divide-y divide-border rounded-lg border border-border bg-card">
+                {info.recent.map((r) => (
+                  <li key={r.app}>
+                    <label className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm">{r.label}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {r.app}
+                        </span>
+                      </span>
+                      <Switch
+                        checked={watched.has(r.app)}
+                        onCheckedChange={(on) => toggle(r.app, on)}
+                      />
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t(
+                'Only the chosen apps are forwarded; of all others the app keeps nothing but their name.',
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>
+              {info.sentCount > 0
+                ? t('{n} notifications sent, the last {when}', {
+                    n: info.sentCount,
+                    when: ago(new Date(info.lastSentAt)),
+                  })
+                : t('Nothing sent yet')}
+              {info.lastError && <span className="text-destructive"> · {info.lastError}</span>}
+            </span>
+            <Button
+              size="xs"
+              variant="destructive-ghost"
+              onClick={() => {
+                if (info.sourceId) deletePhone.mutate(info.sourceId);
+                bridge.disconnect();
+                refresh();
+              }}
+            >
+              {t('Stop using this phone')}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function NotificationsSection({
   state,
   accounts,
@@ -345,6 +490,7 @@ function NotificationsSection({
       />
       {state.notificationsEnabled && (
         <div className="grid gap-5 px-5 pt-2 pb-5">
+          <ThisPhoneCard state={state} />
           <div>
             <p className="mb-2 text-sm font-medium">{t('Phones')}</p>
             {state.sources.length > 0 && (

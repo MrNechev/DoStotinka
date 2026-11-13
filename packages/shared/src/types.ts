@@ -372,3 +372,17 @@ export interface ReminderSettings {
   hour: number;
   lastSentOn: string | null;
 }
+
+export interface ImportProfile {
+  id: string;
+  name: string;
+  headers: string[];
+  settings: {
+    mapping: Record<string, number>;
+    dateFormat: 'auto' | 'ymd' | 'dmy' | 'mdy';
+    accounts: Record<string, string>;
+    skipDuplicates: boolean;
+  };
+  lastUsedAt: string | null;
+  createdAt: string;
+}

@@ -398,6 +398,23 @@ export const attachments = pgTable(
   ],
 );
 
+/** Saved CSV import settings (column mapping, date format, accounts) per bank/file layout. */
+export const importProfiles = pgTable(
+  'import_profiles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    headers: jsonb('headers').$type<string[]>().notNull(),
+    settings: jsonb('settings').$type<Record<string, unknown>>().notNull(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex('import_profiles_user_name_idx').on(t.userId, t.name)],
+);
+
 // ───────────────────────────── Automatic import ─────────────────────────────
 
 /** A phone (or any automation) that posts payment notifications with its own secret token. */

@@ -162,6 +162,9 @@ rates by hand (Settings → Currencies) – manual rates are kept until you upda
   automatically (see [Moving from Wallet](MIGRATING_FROM_WALLET.md)), and any bank statement with
   date and amount columns works too. You map the columns, accounts and categories step by step;
   duplicates are skipped.
+- **Import profiles:** after an import, **Save these settings for next time** remembers the column
+  mapping, date format and accounts. The next file with the same columns – e.g. next month's
+  statement of the same bank – gets them automatically (or choose a profile by hand).
 - **Export CSV** on the Records page exports the filtered records.
 - **Backup** (Settings → Your data) downloads all your data as JSON, which you can **restore** –
   also on another DoStotinka server. Attached files are not part of this backup (they are part of
@@ -266,6 +269,26 @@ two-factor login for a user who lost their phone, grant administrator rights and
 - DoStotinka can be installed as an app on phones and desktops – see below.
 
 ## Using DoStotinka on your phone
+
+### The Android app
+
+The DoStotinka app for Android shows your own server full-screen – no address bar, no tabs – and
+can import payment notifications by itself:
+
+1. Download `dostotinka-<version>.apk` from the
+   [releases page](https://github.com/MrNechev/DoStotinka/releases) on your phone and install it
+   (Android asks once to allow installing apps from your browser).
+2. Enter the address of your server, e.g. `http://192.168.1.10:8742` or your Tailscale address, and
+   log in as usual.
+3. For the automatic import open **Settings → Automatic import**, switch on *Payment notifications
+   from your phone* and tap **Use this phone**. Allow notification access when asked (on Android
+   13+ apps installed from an APK first need *App info → ⋮ → Allow restricted settings*).
+4. After your banking apps showed a notification they appear under **Forward notifications of** –
+   switch on the ones to import. Only these are sent, and only to your server.
+
+**Settings → App** shows the server the app is connected to and lets you change it.
+
+### In the browser
 
 Open DoStotinka in the phone's browser and add it to the home screen. It then starts full-screen
 like a normal app, without the browser's address bar and tabs:

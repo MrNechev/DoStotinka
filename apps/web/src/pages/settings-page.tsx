@@ -51,6 +51,7 @@ import { applyTheme, type ThemePref } from '@/hooks/use-theme';
 import { LANGUAGES, type Language, language, setLanguage, t, tn } from '@/i18n';
 import { ago } from '@/lib/date';
 import { longDate, numberFmt } from '@/lib/format';
+import { nativeApp, useNativeInfo } from '@/lib/native-app';
 import { browserTimeZone, downloadUrl } from '@/lib/utils';
 
 function Section({
@@ -813,6 +814,59 @@ function RemindersSection() {
   );
 }
 
+const APP_DOWNLOAD = 'https://github.com/MrNechev/DoStotinka/releases/latest';
+
+/** Inside the Android app: which server it is connected to. In Android browsers: get the app. */
+function AppSection() {
+  const [info] = useNativeInfo();
+  const confirm = useConfirm();
+  if (!nativeApp && /Android/i.test(navigator.userAgent)) {
+    return (
+      <Section
+        title={t('Android app')}
+        description={t(
+          'Your server full-screen without browser bars – and it can import the payment notifications of your banking apps by itself.',
+        )}
+      >
+        <Button asChild variant="outline">
+          <a href={APP_DOWNLOAD} target="_blank" rel="noreferrer">
+            <Download /> {t('Download the app')}
+          </a>
+        </Button>
+      </Section>
+    );
+  }
+  if (!nativeApp || !info) return null;
+  const bridge = nativeApp;
+  return (
+    <Section
+      title={t('App')}
+      description={t('DoStotinka {version} for Android', { version: info.appVersion })}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-0 break-all text-sm text-muted-foreground">
+          {t('Server')}: <code>{info.server}</code>
+        </p>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            if (
+              await confirm({
+                title: t('Connect to another server?'),
+                description: t('This phone stops sending notifications to this server.'),
+                confirmLabel: t('Change server'),
+              })
+            )
+              bridge.changeServer();
+          }}
+        >
+          {t('Change server')}
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
 function AutomaticImportSection() {
   const user = useUser();
   const { data: config } = useServerConfig();
@@ -1016,6 +1070,7 @@ export default function SettingsPage() {
         <TemplatesSection />
         <SecuritySection />
         <RemindersSection />
+        <AppSection />
         <AutomaticImportSection />
         <ApiTokensSection />
         <DataSection />

@@ -1528,4 +1528,49 @@ export const bg: Record<string, string> = {
   'Let transactions arrive on their own – from the payment notifications on your phone and/or straight from your bank.':
     'Нека трансакциите пристигат сами – от известията за плащания на телефона и/или директно от банката.',
   'On: {what}': 'Включено: {what}',
+
+  // ─── Import profiles ───
+  'Import profile “{name}” applied': 'Приложен е профилът за импорт „{name}“',
+  'Import profile': 'Профил за импорт',
+  'No profile': 'Без профил',
+  'Delete profile': 'Изтрий профила',
+  'Profile deleted': 'Профилът е изтрит',
+  'Save these settings for next time': 'Запази тези настройки за следващия път',
+  'Files with the same columns (e.g. next month’s statement of this bank) then get the same mapping and accounts automatically.':
+    'Файловете със същите колони (напр. извлечението от тази банка за следващия месец) ще получат автоматично същите колони и сметки.',
+  'Name, e.g. “DSK statement”': 'Име, напр. „Извлечение ДСК“',
+
+  // ─── Android app ───
+  'Android app': 'Приложение за Android',
+  'Your server full-screen without browser bars – and it can import the payment notifications of your banking apps by itself.':
+    'Вашият сървър на цял екран без лентите на браузъра – и може сам да импортира известията за плащания на банковите ви приложения.',
+  'Download the app': 'Изтегли приложението',
+  'This phone now sends payment notifications': 'Този телефон вече изпраща известията за плащания',
+  'This phone': 'Този телефон',
+  'This phone was removed in DoStotinka. Connect it again to keep importing.':
+    'Този телефон е премахнат в DoStotinka. Свържете го отново, за да продължи импортът.',
+  'The DoStotinka app can read the payment notifications of your banking apps itself – no other app needed.':
+    'Приложението DoStotinka може само да чете известията за плащания на банковите ви приложения – не е нужно друго приложение.',
+  'Use this phone': 'Използвай този телефон',
+  'Notification access': 'Достъп до известията',
+  allowed: 'разрешен',
+  'not allowed': 'не е разрешен',
+  'Allow notification access': 'Разреши достъп до известията',
+  'If Android says the setting is restricted: open the app info, tap ⋮ (top right) and choose “Allow restricted settings”, then try again.':
+    'Ако Android каже, че настройката е ограничена: отворете информацията за приложението, натиснете ⋮ (горе вдясно), изберете „Разрешаване на ограничени настройки“ и опитайте отново.',
+  'Open app info': 'Отвори информацията за приложението',
+  'Forward notifications of': 'Препращай известията на',
+  'Apps appear here after they showed a notification on this phone – e.g. after your next card payment.':
+    'Приложенията се появяват тук, след като покажат известие на този телефон – напр. след следващото плащане с карта.',
+  'Only the chosen apps are forwarded; of all others the app keeps nothing but their name.':
+    'Препращат се само избраните приложения; за всички останали се пази единствено името им.',
+  '{n} notifications sent, the last {when}': 'Изпратени известия: {n}, последното {when}',
+  'Nothing sent yet': 'Още нищо не е изпратено',
+  'Stop using this phone': 'Спри използването на този телефон',
+  App: 'Приложение',
+  'DoStotinka {version} for Android': 'DoStotinka {version} за Android',
+  'Connect to another server?': 'Свързване с друг сървър?',
+  'This phone stops sending notifications to this server.':
+    'Този телефон спира да изпраща известия към този сървър.',
+  'Change server': 'Смени сървъра',
 };

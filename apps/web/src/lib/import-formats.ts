@@ -236,6 +236,11 @@ export function guessMapping(headers: string[]): ColumnMapping {
   return mapping;
 }
 
+/** Same file layout: the same column names in the same order (case and spacing ignored). */
+export function sameHeaders(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((h, i) => normalize(h) === normalize(b[i] ?? ''));
+}
+
 /** True when the header row looks like an export of Wallet by BudgetBakers. */
 export function isWalletExport(headers: string[]): boolean {
   const h = new Set(headers.map((x) => x.trim().toLowerCase()));
