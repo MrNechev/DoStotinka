@@ -30,7 +30,14 @@ jobs:
       - name: Use Java 21
         run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
       - name: Build the debug app and run Android lint
-        run: ./gradlew --no-daemon assembleDebug lintDebug
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon assembleDebug lintDebug 2>&1 | tee "$RUNNER_TEMP/gradle.log" || {
+            # Make the reason visible as annotations (readable without downloading the logs).
+            grep -E "error|Error|FAILURE|What went wrong|> " "$RUNNER_TEMP/gradle.log" | tail -25 |
+              while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          }
       - uses: actions/upload-artifact@v7
         with:
           name: dostotinka-debug-apk
