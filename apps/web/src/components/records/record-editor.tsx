@@ -1,5 +1,6 @@
 import {
   type Account,
+  applyRules,
   CURRENCIES,
   convertMinor,
   getCurrency,
@@ -32,6 +33,7 @@ import {
   useLabels,
   usePayees,
   useRecordSuggestions,
+  useRules,
   useSaveRecord,
   useUploadAttachments,
   useUser,
@@ -224,6 +226,9 @@ function RecordEditorDialog({
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
+  const { data: rules = [] } = useRules();
+  /** The category chosen by a rule (replaced while typing, unlike one the user picked). */
+  const ruleCategory = useRef<string | null>(null);
 
   const isEdit = state.mode === 'edit';
   // Lending, borrowing and repayments belong to a debt: their type and category are fixed.
@@ -246,6 +251,29 @@ function RecordEditorDialog({
   }, [accounts, state]);
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  // Rules suggest the category from the payee and note of a new record.
+  useEffect(() => {
+    if (isEdit || form.type === 'transfer' || !rules.length) return;
+    if (form.categoryId && form.categoryId !== ruleCategory.current) return;
+    const next = applyRules(
+      rules,
+      { type: form.type, accountId: form.accountId, payee: form.payee, note: form.note },
+      (id) => categoryIndex.byId.get(id)?.kind,
+    ).categoryId;
+    if (next === form.categoryId || (!next && !ruleCategory.current)) return;
+    ruleCategory.current = next;
+    setForm((f) => ({ ...f, categoryId: next }));
+  }, [
+    rules,
+    isEdit,
+    form.type,
+    form.accountId,
+    form.payee,
+    form.note,
+    form.categoryId,
+    categoryIndex,
+  ]);
 
   const activeAccounts = accounts.filter(
     (a) => !a.archived || a.id === form.accountId || a.id === form.toAccountId,

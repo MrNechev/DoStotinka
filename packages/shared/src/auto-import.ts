@@ -29,6 +29,9 @@ export interface InboxItem {
   description: string | null;
   status: InboxStatus;
   categoryId: string | null;
+  /** Note and labels for the record (from rules). */
+  note: string | null;
+  labelIds: string[];
   recordId: string | null;
   /** An existing record that may be the same transaction. */
   match: { recordId: string; occurredAt: string; payee: string | null; note: string | null } | null;

@@ -365,6 +365,8 @@ export const importInput = z.object({
   records: z.array(importRecordInput).min(1).max(50_000),
   /** Skip rows that already exist (same account, time and amount). */
   skipDuplicates: z.boolean().default(true),
+  /** Fill in category, payee, note and labels with the rules. */
+  applyRules: z.boolean().default(true),
 });
 export type ImportInput = z.input<typeof importInput>;
 

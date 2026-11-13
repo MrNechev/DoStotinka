@@ -37,6 +37,7 @@ import { metaRoutes } from './routes/meta';
 import { oidcRoutes } from './routes/oidc';
 import { plannedRoutes } from './routes/planned';
 import { recordRoutes } from './routes/records';
+import { payeeRoutes, ruleRoutes } from './routes/rules';
 import { statsRoutes } from './routes/stats';
 import { templateRoutes } from './routes/templates';
 
@@ -177,6 +178,8 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(automaticImportRoutes, { prefix: '/automatic-import' });
         await authed.register(inboxRoutes, { prefix: '/inbox' });
         await authed.register(householdRoutes, { prefix: '/household' });
+        await authed.register(ruleRoutes, { prefix: '/rules' });
+        await authed.register(payeeRoutes, { prefix: '/payees' });
       });
       await api.register(async (admin) => {
         admin.addHook('preHandler', requireAdmin);

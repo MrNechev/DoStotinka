@@ -600,6 +600,9 @@ export const inboxItems = pgTable(
     /** pending · confirmed · dismissed · duplicate · ignored */
     status: text('status').notNull().default('pending'),
     categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    /** Note and labels for the record (filled in by rules). */
+    note: text('note'),
+    labelIds: jsonb('label_ids').$type<string[]>().notNull().default([]),
     /** The record created from (or matched to) this item. */
     recordId: uuid('record_id').references(() => records.id, { onDelete: 'set null' }),
     /** An existing record that looks like the same transaction (asks the user). */
@@ -633,6 +636,33 @@ export const referenceRates = pgTable('reference_rates', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Rules that fill in imported transactions (see packages/shared/src/rules.ts). */
+export const rules = pgTable(
+  'rules',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull().default(''),
+    enabled: boolean('enabled').notNull().default(true),
+    position: integer('position').notNull().default(0),
+    /** any · payee · note */
+    field: text('field').notNull().default('any'),
+    /** contains · starts · equals */
+    match: text('match').notNull().default('contains'),
+    pattern: text('pattern').notNull(),
+    recordType: text('record_type'),
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'cascade' }),
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    setPayee: text('set_payee'),
+    setNote: text('set_note'),
+    labelIds: jsonb('label_ids').$type<string[]>().notNull().default([]),
+    ...timestamps,
+  },
+  (t) => [index('rules_user_idx').on(t.userId)],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type AccountRow = typeof accounts.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
@@ -649,3 +679,4 @@ export type NotificationAppRow = typeof notificationApps.$inferSelect;
 export type BankConnectionRow = typeof bankConnections.$inferSelect;
 export type BankAccountRow = typeof bankAccounts.$inferSelect;
 export type InboxItemRow = typeof inboxItems.$inferSelect;
+export type RuleRow = typeof rules.$inferSelect;

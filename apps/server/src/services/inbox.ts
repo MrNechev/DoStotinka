@@ -15,12 +15,14 @@ import {
   categories,
   type InboxItemRow,
   inboxItems,
+  labels,
   records,
   type UserRow,
 } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { getRateMap } from './rates';
 import { insertRecordRows, type RecordInputParsed } from './records';
+import { ruleOutcome } from './rules';
 
 type Tx = Parameters<Parameters<Database['transaction']>[0]>[0] | Database;
 
@@ -103,6 +105,8 @@ export async function toInboxItems(db: Tx, rows: InboxItemRow[]): Promise<InboxI
       description: r.description,
       status: r.status as InboxStatus,
       categoryId: r.categoryId,
+      note: r.note,
+      labelIds: r.labelIds,
       recordId: r.recordId,
       match: m
         ? { recordId: m.id, occurredAt: m.occurredAt.toISOString(), payee: m.payee, note: m.note }
@@ -307,8 +311,17 @@ export async function addInboxItem(
     return { status: 'duplicate', item };
   }
 
+  // Rules first (category, payee, note, labels), then the category learned from the payee.
+  const type = item.type as 'expense' | 'income';
+  const ruled = await ruleOutcome(db, user.id, {
+    type,
+    accountId: item.accountId,
+    payee: item.payee,
+    description: item.description,
+  });
+  const payee = ruled?.payee?.slice(0, 200) ?? item.payee;
   const [categoryId, pairId, matchId] = await Promise.all([
-    suggestCategory(db, user.id, item.payee, item.type as 'expense' | 'income'),
+    ruled?.categoryId ?? suggestCategory(db, user.id, payee, type),
     findPair(db, user.id, item),
     findMatchingRecord(db, user.id, item),
   ]);
@@ -316,7 +329,14 @@ export async function addInboxItem(
     (
       await db
         .update(inboxItems)
-        .set({ categoryId, pairItemId: pairId, matchRecordId: matchId })
+        .set({
+          categoryId,
+          payee,
+          note: ruled?.note ?? null,
+          labelIds: ruled?.labelIds ?? [],
+          pairItemId: pairId,
+          matchRecordId: matchId,
+        })
         .where(eq(inboxItems.id, item.id))
         .returning()
     )[0] ?? item;
@@ -420,6 +440,16 @@ async function clearPair(tx: Tx, item: InboxItemRow) {
   }
 }
 
+/** The labels that still exist (a rule may name a label deleted since). */
+async function existingLabels(tx: Tx, userId: string, ids: string[]): Promise<string[]> {
+  if (!ids.length) return [];
+  const rows = await tx
+    .select({ id: labels.id })
+    .from(labels)
+    .where(and(eq(labels.userId, userId), inArray(labels.id, ids)));
+  return rows.map((r) => r.id);
+}
+
 /** Creates the record for an inbox item. */
 export async function confirmInboxItem(
   db: Database,
@@ -440,7 +470,7 @@ export async function confirmInboxItem(
     if (item.amount === null && input.amount === undefined) throw badRequest('Enter the amount');
 
     let amount = input.amount ?? item.amount!;
-    let note = input.note !== undefined ? input.note : null;
+    let note = input.note !== undefined ? input.note : item.note;
     if (input.amount === undefined && item.currency && item.currency !== account.currency) {
       const rates = await getRateMap(tx, user.id, user.baseCurrency);
       amount = Math.abs(convertMinor(item.amount!, item.currency, account.currency, rates));
@@ -458,7 +488,7 @@ export async function confirmInboxItem(
       categoryId: input.categoryId !== undefined ? input.categoryId : item.categoryId,
       payee: payee ? payee.slice(0, 120) : null,
       note: note ? note.slice(0, 500) : null,
-      labelIds: [],
+      labelIds: await existingLabels(tx, user.id, item.labelIds),
     };
     const [row] = await insertRecordRows(tx, user, record);
     await clearPair(tx, item);

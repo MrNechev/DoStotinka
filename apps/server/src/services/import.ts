@@ -1,11 +1,18 @@
 import { randomUUID } from 'node:crypto';
-import { convertMinor, type ImportResult, type importInput } from '@dostotinka/shared';
+import {
+  applyRules,
+  convertMinor,
+  type ImportResult,
+  type importInput,
+  type Rule,
+} from '@dostotinka/shared';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db';
 import { accounts, categories, labels, recordLabels, records, type UserRow } from '../db/schema';
 import { badRequest, notFound } from '../lib/errors';
 import { ensureRate, getRateMap } from './rates';
+import { listRules } from './rules';
 
 type ImportParsed = z.output<typeof importInput>;
 
@@ -72,6 +79,26 @@ export async function importRecords(
           .returning();
         labelByName.set(name.toLowerCase(), created!.id);
         labelsCreated++;
+      }
+    }
+
+    // ─── Rules ───
+    let rules: Rule[] = [];
+    const kinds = new Map<string, 'expense' | 'income'>();
+    const labelExists = new Set<string>();
+    if (input.applyRules) {
+      rules = await listRules(tx, user.id);
+      if (rules.length) {
+        for (const c of await tx
+          .select({ id: categories.id, kind: categories.kind })
+          .from(categories)
+          .where(eq(categories.userId, user.id)))
+          kinds.set(c.id, c.kind);
+        for (const l of await tx
+          .select({ id: labels.id })
+          .from(labels)
+          .where(eq(labels.userId, user.id)))
+          labelExists.add(l.id);
       }
     }
 
@@ -176,16 +203,34 @@ export async function importRecords(
           continue;
         }
         const id = randomUUID();
+        const ruled = rules.length
+          ? applyRules(
+              rules,
+              {
+                type: r.type,
+                accountId: account.id,
+                payee: base.payee,
+                note: base.note,
+                categoryId: r.categoryId,
+              },
+              (c) => kinds.get(c),
+            )
+          : null;
         rows.push({
           ...base,
+          ...(ruled ? { payee: ruled.payee?.slice(0, 120) ?? null, note: ruled.note } : {}),
           id,
           accountId: account.id,
           type: r.type,
           amount,
           currency: account.currency,
-          categoryId: r.categoryId ?? null,
+          categoryId: ruled ? ruled.categoryId : (r.categoryId ?? null),
         });
-        for (const labelId of labelIds) links.push({ recordId: id, labelId });
+        const allLabels = new Set([
+          ...labelIds,
+          ...(ruled?.labelIds.filter((l) => labelExists.has(l)) ?? []),
+        ]);
+        for (const labelId of allLabels) links.push({ recordId: id, labelId });
       }
     }
     for (let i = 0; i < rows.length; i += 1000)

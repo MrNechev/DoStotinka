@@ -5,6 +5,8 @@ import {
   CATEGORY_KINDS,
   FREQUENCIES,
   RECORD_TYPES,
+  RULE_FIELDS,
+  RULE_MATCHES,
 } from '@dostotinka/shared';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -22,6 +24,7 @@ import {
   recordLabels,
   records,
   recordTemplates,
+  rules,
   type UserRow,
   users,
 } from '../db/schema';
@@ -194,6 +197,24 @@ export const backupSchema = z.object({
     )
     .max(1000)
     .default([]),
+  rules: z
+    .array(
+      z.object({
+        name: z.string().max(60).default(''),
+        enabled: z.boolean().default(true),
+        field: z.enum(RULE_FIELDS).default('any'),
+        match: z.enum(RULE_MATCHES).default('contains'),
+        pattern: z.string().min(1).max(120),
+        recordType: z.enum(['expense', 'income']).nullable().optional(),
+        accountId: nullableId,
+        categoryId: nullableId,
+        setPayee: text.nullable().optional(),
+        setNote: text.nullable().optional(),
+        labelIds: z.array(id).max(20).default([]),
+      }),
+    )
+    .max(1000)
+    .default([]),
   exchangeRates: z
     .array(
       z.object({
@@ -216,6 +237,7 @@ export interface RestoreResult {
   goals: number;
   templates: number;
   debts: number;
+  rules: number;
 }
 
 /** Replaces all data of `user` with the contents of a backup (all IDs are re-generated). */
@@ -228,6 +250,7 @@ export async function restoreBackup(
     // Attachments are not part of a JSON backup; they belong to records that are replaced.
     for (const table of [
       attachments,
+      rules,
       recordTemplates,
       records,
       debts,
@@ -441,6 +464,28 @@ export async function restoreBackup(
       (c) => tx.insert(recordTemplates).values(c),
     );
 
+    await chunked(
+      backup.rules
+        // A rule for an account that is not in the backup would apply to all accounts.
+        .filter((r) => !r.accountId || acc.get(r.accountId))
+        .map((r, i) => ({
+          userId: user.id,
+          name: r.name,
+          enabled: r.enabled,
+          position: i + 1,
+          field: r.field,
+          match: r.match,
+          pattern: r.pattern,
+          recordType: r.recordType ?? null,
+          accountId: r.accountId ? acc.get(r.accountId) : null,
+          categoryId: cat.get(r.categoryId),
+          setPayee: r.setPayee ?? null,
+          setNote: r.setNote ?? null,
+          labelIds: r.labelIds.map((x) => lab.get(x)).filter((x): x is string => !!x),
+        })),
+      (c) => tx.insert(rules).values(c),
+    );
+
     const rates = backup.exchangeRates.filter(
       (r) => r.currency !== (backup.user?.baseCurrency ?? user.baseCurrency),
     );
@@ -467,6 +512,7 @@ export async function restoreBackup(
       goals: backup.goals.length,
       templates: backup.templates.length,
       debts: backup.debts.length,
+      rules: backup.rules.length,
     };
   });
 }

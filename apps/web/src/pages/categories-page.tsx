@@ -11,8 +11,10 @@ import {
   Search,
   Tag,
   Trash2,
+  Wand2,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
 import {
@@ -230,9 +232,16 @@ export default function CategoriesPage() {
           'A detailed category tree for everything you spend on or earn. Customize it as you like.',
         )}
         actions={
-          <Button onClick={() => setEditing({ defaults: { kind } })}>
-            <Plus /> {t('New category')}
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <Link to="/rules">
+                <Wand2 /> {t('Rules')}
+              </Link>
+            </Button>
+            <Button onClick={() => setEditing({ defaults: { kind } })}>
+              <Plus /> {t('New category')}
+            </Button>
+          </>
         }
       />
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_320px]">

@@ -2,6 +2,7 @@ import type {
   Account,
   AccountInput,
   AccountUpdateInput,
+  ApplyRuleResult,
   Attachment,
   AuthResponse,
   AutomaticImportState,
@@ -36,6 +37,7 @@ import type {
   Label,
   LabelInput,
   LoginInput,
+  PayeeUsage,
   PlannedPayment,
   PlannedPaymentInput,
   RecordInput,
@@ -43,6 +45,8 @@ import type {
   RecordPage,
   RecordTemplate,
   RegisterInput,
+  Rule,
+  RuleInput,
   ServerConfig,
   Session,
   StatsSummary,
@@ -925,6 +929,85 @@ export function useDeleteTemplate() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/templates/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  });
+}
+
+// ───────────────────────────── Rules & payees ─────────────────────────────
+
+export function useRules() {
+  return useQuery({
+    queryKey: ['rules'],
+    queryFn: () => api<Rule[]>('/rules'),
+    staleTime: 60_000,
+  });
+}
+
+export function useSaveRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: RuleInput }) =>
+      id
+        ? api<Rule>(`/rules/${id}`, { method: 'PUT', body: input })
+        : api<Rule>('/rules', { method: 'POST', body: input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rules'] }),
+  });
+}
+
+export function useDeleteRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/rules/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rules'] }),
+  });
+}
+
+export function useReorderRules() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => api<Rule[]>('/rules/order', { method: 'POST', body: { ids } }),
+    onSuccess: (rules) => qc.setQueryData(['rules'], rules),
+  });
+}
+
+export function useApplyRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      dryRun,
+      overwriteCategory,
+    }: {
+      id: string;
+      dryRun: boolean;
+      overwriteCategory: boolean;
+    }) =>
+      api<ApplyRuleResult>(`/rules/${id}/apply`, {
+        method: 'POST',
+        body: { dryRun, overwriteCategory },
+      }),
+    onSuccess: (_r, vars) => {
+      if (!vars.dryRun) void invalidateFinancialData(qc);
+    },
+  });
+}
+
+export function usePayeeUsage() {
+  return useQuery({
+    queryKey: ['payees'],
+    queryFn: () => api<PayeeUsage[]>('/payees'),
+  });
+}
+
+export function useRenamePayee() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { from: string; to: string }) =>
+      api<{ changed: number }>('/payees/rename', { method: 'POST', body: input }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payees'] });
+      qc.invalidateQueries({ queryKey: ['templates'] });
+      void invalidateFinancialData(qc);
+    },
   });
 }
 

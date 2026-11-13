@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Settings2,
   Smartphone,
+  Wand2,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -104,6 +105,11 @@ function PendingCard({ item, accounts }: { item: InboxItem; accounts: Account[] 
       {item.description && item.description !== item.payee && (
         <p className="mt-2 line-clamp-2 break-words rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs text-muted-foreground">
           {item.description}
+        </p>
+      )}
+      {item.note && (
+        <p className="mt-2 truncate text-sm">
+          <span className="text-muted-foreground">{t('Note')}:</span> {item.note}
         </p>
       )}
 
@@ -320,11 +326,18 @@ export default function InboxPage() {
           'Transactions imported automatically – check them and add them to your records.',
         )}
         actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to="/automatic-import">
-              <Settings2 /> {t('Automatic import')}
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/rules">
+                <Wand2 /> {t('Rules')}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/automatic-import">
+                <Settings2 /> {t('Automatic import')}
+              </Link>
+            </Button>
+          </>
         }
       />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
