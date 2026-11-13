@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 
-/** What the Android app (apps/android) exposes to the web app as `window.DoStotinkaApp`. */
+/**
+ * What the Android app (apps/android) and the iPhone app (apps/ios) expose to the web app as
+ * `window.DoStotinkaApp`.
+ */
 interface NativeBridge {
   getInfo(): string;
   connect(token: string, sourceId: string, name: string): boolean;
@@ -9,9 +12,13 @@ interface NativeBridge {
   openNotificationAccess(): void;
   openAppInfo(): void;
   changeServer(): void;
+  /** iPhone: opens the Shortcuts app. */
+  openShortcuts?(): void;
 }
 
 export interface NativeInfo {
+  /** Missing in Android app versions before 0.9. */
+  platform?: 'android' | 'ios';
   appVersion: string;
   device: string;
   server: string | null;
@@ -24,9 +31,11 @@ export interface NativeInfo {
   lastSentAt: number;
   sentCount: number;
   lastError: string | null;
+  /** iPhone: payments waiting to be sent. */
+  pending?: number;
 }
 
-/** The bridge when DoStotinka runs inside the Android app, otherwise undefined. */
+/** The bridge when DoStotinka runs inside the Android or iPhone app, otherwise undefined. */
 export const nativeApp: NativeBridge | undefined =
   typeof window !== 'undefined'
     ? (window as unknown as { DoStotinkaApp?: NativeBridge }).DoStotinkaApp

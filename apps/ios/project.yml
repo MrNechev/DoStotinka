@@ -1,0 +1,66 @@
+# Xcode project definition – generate the project with `xcodegen generate` (see README.md).
+name: DoStotinka
+options:
+  bundleIdPrefix: app.dostotinka
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+packages:
+  DoStotinkaCore:
+    path: Core
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.9.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  DoStotinka:
+    type: application
+    platform: iOS
+    sources:
+      - path: DoStotinka
+    dependencies:
+      - package: DoStotinkaCore
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: DoStotinka
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, bg]
+        LSRequiresIPhoneOS: true
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # Your own server is often plain http:// (home network, Tailscale).
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+        NSLocalNetworkUsageDescription: DoStotinka connects to your own server in your local network.
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.dostotinka.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_PREVIEWS: NO
+schemes:
+  DoStotinka:
+    build:
+      targets:
+        DoStotinka: all
+    run:
+      config: Debug
+    archive:
+      config: Release

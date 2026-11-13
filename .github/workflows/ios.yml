@@ -1,0 +1,97 @@
+name: iOS app
+
+# Builds the iPhone app (apps/ios) on macOS and tests its core logic. For version tags it also
+# attaches an unsigned .ipa to the GitHub release (install it with AltStore / SideStore, or build
+# the app yourself in Xcode – see apps/ios/README.md).
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - "apps/ios/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "apps/ios/**"
+      - ".github/workflows/ios.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  core:
+    name: Core tests (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
+    defaults:
+      run:
+        working-directory: apps/ios/Core
+    steps:
+      - uses: actions/checkout@v7
+      - run: swift test
+
+  build:
+    name: Build
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/ios
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate the Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project DoStotinka.xcodeproj -scheme DoStotinka -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build/sim \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$RUNNER_TEMP/build.log" | grep -E "error:|warning: .*(deprecated|never)|BUILD" || true
+          if ! grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/build.log"; then
+            # Make the reason visible as annotations (readable without downloading the logs).
+            grep -E "error:" "$RUNNER_TEMP/build.log" | sort -u | head -15 |
+              while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+      - name: Build the unsigned app for iPhones
+        run: |
+          set -o pipefail
+          xcodebuild -project DoStotinka.xcodeproj -scheme DoStotinka -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build/device \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 |
+            tee "$RUNNER_TEMP/device.log" | grep -E "error:|BUILD" || true
+          if ! grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/device.log"; then
+            grep -E "error:" "$RUNNER_TEMP/device.log" | sort -u | head -15 |
+              while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+          mkdir -p Payload
+          cp -R build/device/Build/Products/Release-iphoneos/DoStotinka.app Payload/
+          zip -qr DoStotinka-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dostotinka-ios-unsigned
+          path: apps/ios/DoStotinka-unsigned.ipa
+
+  release:
+    name: Attach the app to the release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [core, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dostotinka-ios-unsigned
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # The release is created by the "Release" workflow at the same time – wait for it.
+          for i in $(seq 1 30); do
+            gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break
+            sleep 10
+          done
+          mv DoStotinka-unsigned.ipa "dostotinka-${GITHUB_REF_NAME#v}-unsigned.ipa"
+          gh release upload "$GITHUB_REF_NAME" "dostotinka-${GITHUB_REF_NAME#v}-unsigned.ipa" --clobber

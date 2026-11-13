@@ -51,7 +51,7 @@ import { Badge, Card, CardHeader, PageHeader, Spinner, Switch } from '@/componen
 import { t } from '@/i18n';
 import { ago } from '@/lib/date';
 import { longDate, money } from '@/lib/format';
-import { nativeApp, useNativeInfo } from '@/lib/native-app';
+import { type NativeInfo, nativeApp, useNativeInfo } from '@/lib/native-app';
 import { cn } from '@/lib/utils';
 
 const COUNTRIES = [
@@ -315,6 +315,32 @@ function ThisPhoneCard({ state }: { state: AutomaticImportState }) {
   if (!nativeApp || !info) return null;
   const bridge = nativeApp;
   const known = info.connected && state.sources.some((s) => s.id === info.sourceId);
+  if (info.platform === 'ios') {
+    return (
+      <ThisIPhone
+        info={info}
+        known={known}
+        connecting={create.isPending}
+        onConnect={() =>
+          create.mutate(info.device, {
+            onSuccess: (c) => {
+              if (bridge.connect(c.token, c.id, c.name)) {
+                toast.success(t('This iPhone can now send card payments'));
+              }
+              refresh();
+            },
+            onError: (e) => toast.error(errorMessage(e)),
+          })
+        }
+        onStop={() => {
+          if (info.sourceId) deletePhone.mutate(info.sourceId);
+          bridge.disconnect();
+          refresh();
+        }}
+        onOpenShortcuts={() => bridge.openShortcuts?.()}
+      />
+    );
+  }
   const removed = info.connected && !known;
   const watched = new Set(info.watched);
   const toggle = (app: string, on: boolean) => {
@@ -443,6 +469,91 @@ function ThisPhoneCard({ state }: { state: AutomaticImportState }) {
               }}
             >
               {t('Stop using this phone')}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Inside the iPhone app: iOS does not let apps read notifications – instead the Wallet
+ * "Transaction" automation of the Shortcuts app passes every card payment to the app.
+ */
+function ThisIPhone({
+  info,
+  known,
+  connecting,
+  onConnect,
+  onStop,
+  onOpenShortcuts,
+}: {
+  info: NativeInfo;
+  known: boolean;
+  connecting: boolean;
+  onConnect: () => void;
+  onStop: () => void;
+  onOpenShortcuts: () => void;
+}) {
+  const removed = info.connected && !known;
+  return (
+    <div className="grid gap-3 rounded-xl border border-primary/40 bg-primary-soft/40 p-3">
+      <div>
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <Smartphone className="size-4" /> {t('This iPhone')}
+        </p>
+        <p className="truncate pl-6 text-xs text-muted-foreground">{info.device}</p>
+      </div>
+      {!info.connected || removed ? (
+        <div className="grid gap-2 text-sm">
+          <p className="text-muted-foreground">
+            {removed
+              ? t('This iPhone was removed in DoStotinka. Connect it again to keep importing.')
+              : t(
+                  'Card payments can arrive by themselves: an automation of the Shortcuts app passes every Apple Pay payment to DoStotinka.',
+                )}
+          </p>
+          <div>
+            <Button size="sm" loading={connecting} onClick={onConnect}>
+              {t('Use this iPhone')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <ol className="grid gap-1.5 pl-5 text-sm [list-style:decimal]">
+            <li>{t('Open the Shortcuts app → Automation → New automation.')}</li>
+            <li>{t('Choose “Transaction” (Wallet), select your cards and “Run immediately”.')}</li>
+            <li>
+              {t(
+                'Add the action “Add payment to DoStotinka” and fill in Amount, Merchant and Card from the transaction.',
+              )}
+            </li>
+          </ol>
+          <div>
+            <Button size="sm" variant="outline" onClick={onOpenShortcuts}>
+              {t('Open Shortcuts')}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t(
+              'Each card appears as its own app below – choose the account it belongs to. Payments that cannot be sent wait on the iPhone.',
+            )}
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>
+              {info.sentCount > 0
+                ? t('{n} payments sent, the last {when}', {
+                    n: info.sentCount,
+                    when: ago(new Date(info.lastSentAt)),
+                  })
+                : t('Nothing sent yet')}
+              {!!info.pending && ` · ${t('{n} waiting', { n: info.pending })}`}
+              {info.lastError && <span className="text-destructive"> · {info.lastError}</span>}
+            </span>
+            <Button size="xs" variant="destructive-ghost" onClick={onStop}>
+              {t('Stop using this iPhone')}
             </Button>
           </div>
         </>

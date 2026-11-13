@@ -1075,7 +1075,11 @@ function AppSection() {
   return (
     <Section
       title={t('App')}
-      description={t('DoStotinka {version} for Android', { version: info.appVersion })}
+      description={
+        info.platform === 'ios'
+          ? t('DoStotinka {version} for iPhone', { version: info.appVersion })
+          : t('DoStotinka {version} for Android', { version: info.appVersion })
+      }
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="min-w-0 break-all text-sm text-muted-foreground">

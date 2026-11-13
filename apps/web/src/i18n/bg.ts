@@ -1810,4 +1810,25 @@ export const bg: Record<string, string> = {
   'The server cannot be reached – the record is sent as soon as it is.':
     'Сървърът не е достъпен – записът ще бъде изпратен веднага щом стане достъпен.',
   'This record id is taken': 'Този идентификатор на запис е зает',
+  // ─── iPhone app ───
+  'This iPhone can now send card payments': 'Този iPhone вече може да изпраща плащания с карта',
+  'This iPhone': 'Този iPhone',
+  'This iPhone was removed in DoStotinka. Connect it again to keep importing.':
+    'Този iPhone е премахнат в DoStotinka. Свържете го отново, за да продължи импортът.',
+  'Card payments can arrive by themselves: an automation of the Shortcuts app passes every Apple Pay payment to DoStotinka.':
+    'Плащанията с карта могат да пристигат сами: автоматизация в приложението Бързи команди предава всяко плащане с Apple Pay на DoStotinka.',
+  'Use this iPhone': 'Използвай този iPhone',
+  'Open the Shortcuts app → Automation → New automation.':
+    'Отворете Бързи команди → Автоматизация → Нова автоматизация.',
+  'Choose “Transaction” (Wallet), select your cards and “Run immediately”.':
+    'Изберете „Трансакция“ (Wallet), изберете картите си и „Изпълни веднага“.',
+  'Add the action “Add payment to DoStotinka” and fill in Amount, Merchant and Card from the transaction.':
+    'Добавете действието „Добави плащане в DoStotinka“ и попълнете Сума, Търговец и Карта от трансакцията.',
+  'Open Shortcuts': 'Отвори Бързи команди',
+  'Each card appears as its own app below – choose the account it belongs to. Payments that cannot be sent wait on the iPhone.':
+    'Всяка карта се появява по-долу като отделно приложение – изберете сметката ѝ. Плащанията, които не могат да бъдат изпратени, чакат на iPhone.',
+  '{n} payments sent, the last {when}': 'Изпратени плащания: {n}, последното {when}',
+  '{n} waiting': '{n} чакат',
+  'Stop using this iPhone': 'Спри да използваш този iPhone',
+  'DoStotinka {version} for iPhone': 'DoStotinka {version} за iPhone',
 };
