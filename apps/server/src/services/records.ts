@@ -194,6 +194,15 @@ async function getRecordGroup(tx: Tx, userId: string, id: string): Promise<Recor
     .where(and(eq(records.userId, userId), eq(records.transferGroupId, row.transferGroupId)));
 }
 
+/** A record and its transfer counterpart, as returned when it was created. */
+export async function getRecordWithCounterpart(
+  db: Database,
+  userId: string,
+  id: string,
+): Promise<RecordItem[]> {
+  return decorate(db, await getRecordGroup(db, userId, id));
+}
+
 export async function getRecord(db: Database, userId: string, id: string): Promise<RecordItem> {
   const group = await getRecordGroup(db, userId, id);
   const items = await decorate(db, group);

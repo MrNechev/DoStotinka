@@ -14,6 +14,7 @@ import { Spinner } from './components/ui/misc';
 import { useThemeSync } from './hooks/use-theme';
 import { language } from './i18n';
 import { setNumberLocale } from './lib/format';
+import { keepListsOffline } from './lib/offline';
 import { LoginPage } from './pages/auth/login-page';
 import { RegisterPage } from './pages/auth/register-page';
 import { NotFoundPage } from './pages/not-found-page';
@@ -45,9 +46,17 @@ const queryClient = new QueryClient({
       staleTime: 30_000,
       refetchOnWindowFocus: true,
       retry: (count, err) => !(err instanceof ApiError && err.status < 500) && count < 2,
+      // Try even when the device says it is offline (the server may be in the local network);
+      // without a connection the saved lists are used (offline entry).
+      networkMode: 'offlineFirst',
     },
+    // Never wait silently: a record that cannot be sent is kept on the device instead.
+    mutations: { networkMode: 'always' },
   },
 });
+
+// Lists for offline entry are kept on the device (see lib/offline.ts).
+keepListsOffline(queryClient);
 
 setUnauthorizedHandler(() => {
   queryClient.setQueryData(qk.me, null);

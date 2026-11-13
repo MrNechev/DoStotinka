@@ -72,3 +72,58 @@ describe('templates', () => {
     expect(tpl.body.note).toBe('Lidl');
   });
 });
+
+describe('offline entry', () => {
+  it('creates a record sent twice with the same client id only once', async () => {
+    const u = await userWithAccount();
+    const clientId = crypto.randomUUID();
+    const first = await u.expense(1500, 'Coffee', { clientId });
+    expect(first.status).toBe(201);
+    expect(first.body[0].id).toBe(clientId);
+    const again = await u.expense(1500, 'Coffee', { clientId });
+    expect(again.status).toBe(200);
+    expect(again.body[0].id).toBe(clientId);
+    expect((await u.call<any>('GET', '/api/records')).body.items).toHaveLength(1);
+
+    // Transfers: both sides come back.
+    const savings = (
+      await u.call('POST', '/api/accounts', {
+        name: 'Savings',
+        type: 'savings',
+        currency: 'EUR',
+        color: '#22C55E',
+      })
+    ).body;
+    const transfer = {
+      type: 'transfer',
+      accountId: u.account.id,
+      toAccountId: savings.id,
+      amount: 1000,
+      occurredAt: new Date().toISOString(),
+      clientId: crypto.randomUUID(),
+    };
+    expect((await u.call('POST', '/api/records', transfer)).status).toBe(201);
+    const repeated = await u.call<any[]>('POST', '/api/records', transfer);
+    expect(repeated.status).toBe(200);
+    expect(repeated.body).toHaveLength(2);
+
+    // Another user cannot use (or learn about) the id.
+    const other = await registerUser(ctx.app);
+    const otherAccount = (
+      await other.call('POST', '/api/accounts', {
+        name: 'Cash',
+        type: 'cash',
+        currency: 'EUR',
+        color: '#3B82F6',
+      })
+    ).body;
+    const stolen = await other.call('POST', '/api/records', {
+      type: 'expense',
+      accountId: otherAccount.id,
+      amount: 100,
+      occurredAt: new Date().toISOString(),
+      clientId,
+    });
+    expect(stolen.status).toBe(409);
+  });
+});

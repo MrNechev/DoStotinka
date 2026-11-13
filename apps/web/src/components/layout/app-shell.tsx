@@ -47,6 +47,7 @@ import { t, tn } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { useRecordEditor } from '../records/record-editor';
 import { Logo, LogoMark } from './logo';
+import { PendingRecordsBanner } from './pending-records';
 
 const NAV = [
   { to: '/', label: t('Dashboard'), icon: LayoutDashboard, end: true },
@@ -327,6 +328,7 @@ export function AppShell() {
             {t('Shared demo account – visible to others and reset regularly.')}
           </div>
         )}
+        <PendingRecordsBanner />
         <Outlet />
       </main>
 

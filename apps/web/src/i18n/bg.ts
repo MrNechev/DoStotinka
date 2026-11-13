@@ -1792,4 +1792,22 @@ export const bg: Record<string, string> = {
     'Обновяването на цени е изключено (PRICE_UPDATES)',
   'The price service could not be reached – try again later':
     'Услугата за цени не е достъпна – опитайте по-късно',
+  // ─── Offline entry ───
+  'The server still cannot be reached.': 'Сървърът все още не е достъпен.',
+  'Send now': 'Изпрати сега',
+  'A record saved on this device was refused by the server: {error}':
+    'Сървърът отказа запис, запазен на това устройство: {error}',
+  Discard: 'Откажи',
+  '{n} saved record sent': 'Изпратен е {n} запазен запис',
+  '{n} saved records sent': 'Изпратени са {n} запазени записа',
+  '{n} record is saved on this device and waits for the server.':
+    '{n} запис е запазен на това устройство и чака сървъра.',
+  '{n} records are saved on this device and wait for the server.':
+    '{n} записа са запазени на това устройство и чакат сървъра.',
+  'Saved on this device': 'Запазено на това устройство',
+  'The server cannot be reached – the record is sent later, without the files.':
+    'Сървърът не е достъпен – записът ще бъде изпратен по-късно, без файловете.',
+  'The server cannot be reached – the record is sent as soon as it is.':
+    'Сървърът не е достъпен – записът ще бъде изпратен веднага щом стане достъпен.',
+  'This record id is taken': 'Този идентификатор на запис е зает',
 };

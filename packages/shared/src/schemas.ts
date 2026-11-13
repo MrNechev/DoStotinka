@@ -172,6 +172,11 @@ const recordCommon = {
   note: optionalText(500),
   payee: optionalText(120),
   labelIds: z.array(uuid).max(20).optional(),
+  /**
+   * Id chosen by the client for a new record (offline entry): sending the same record twice
+   * creates it only once.
+   */
+  clientId: uuid.optional(),
 };
 
 export const expenseIncomeInput = z.object({

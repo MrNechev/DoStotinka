@@ -17,6 +17,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var setup: View
     private lateinit var offline: View
+    private lateinit var offlineFiles: OfflineFiles
     @Volatile private var currentUrl: String? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
 
@@ -58,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         prefs = Prefs(this)
+        offlineFiles = OfflineFiles(this)
         webView = findViewById(R.id.web)
         setup = findViewById(R.id.setup)
         offline = findViewById(R.id.offline)
@@ -72,10 +75,7 @@ class MainActivity : AppCompatActivity() {
         configureWebView()
         configureSetup()
         findViewById<Button>(R.id.retry).setOnClickListener { loadServer() }
-        findViewById<Button>(R.id.change_server).setOnClickListener {
-            prefs.resetServer()
-            showSetup()
-        }
+        findViewById<Button>(R.id.change_server).setOnClickListener { changeServer() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -144,6 +144,13 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView, url: String) {
                 currentUrl = url
                 CookieManager.getInstance().flush()
+            }
+
+            // The web app's files come from the copy in the app's storage when the server cannot
+            // be reached (offline entry).
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                val server = prefs.serverUrl ?: return null
+                return offlineFiles.intercept(request, server)
             }
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
@@ -221,6 +228,13 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
         button.setOnClickListener { checkServer(input.text.toString()) }
+    }
+
+    /** Forgets the server (and the copy of its web app) and asks for a new address. */
+    fun changeServer() {
+        prefs.resetServer()
+        offlineFiles.clear()
+        showSetup()
     }
 
     fun showSetup() {

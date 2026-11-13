@@ -97,7 +97,6 @@ class AppBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun changeServer() {
         if (!allowed()) return
-        prefs.resetServer()
-        activity.runOnUiThread { activity.showSetup() }
+        activity.runOnUiThread { activity.changeServer() }
     }
 }

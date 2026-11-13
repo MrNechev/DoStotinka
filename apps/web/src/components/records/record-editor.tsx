@@ -384,7 +384,18 @@ function RecordEditorDialog({
       };
     }
     try {
-      const saved = await save.mutateAsync({ id: isEdit ? state.record.id : undefined, input });
+      const { items: saved, queued } = await save.mutateAsync({
+        id: isEdit ? state.record.id : undefined,
+        input,
+      });
+      if (queued) {
+        toast.message(t('Saved on this device'), {
+          description: pendingFiles.length
+            ? t('The server cannot be reached – the record is sent later, without the files.')
+            : t('The server cannot be reached – the record is sent as soon as it is.'),
+        });
+        setPendingFiles([]);
+      }
       if (!isEdit && pendingFiles.length && saved[0]) {
         try {
           await uploadFiles.mutateAsync({ recordId: saved[0].id, files: pendingFiles });
@@ -399,15 +410,16 @@ function RecordEditorDialog({
       }
       lastAccount.set(form.accountId);
       if (form.type !== 'transfer') rememberCategory(form.type, form.categoryId);
-      toast.success(
-        isEdit
-          ? t('Record updated')
-          : form.type === 'transfer'
-            ? t('Transfer saved')
-            : form.type === 'expense'
-              ? t('Expense saved')
-              : t('Income saved'),
-      );
+      if (!queued)
+        toast.success(
+          isEdit
+            ? t('Record updated')
+            : form.type === 'transfer'
+              ? t('Transfer saved')
+              : form.type === 'expense'
+                ? t('Expense saved')
+                : t('Income saved'),
+        );
       if (addAnother) {
         setForm((f) => ({
           ...f,

@@ -72,6 +72,7 @@ import {
 import { language, t } from '@/i18n';
 import { prepareUpload } from '@/lib/attachments';
 import type { NoteSuggestion } from '@/lib/notes';
+import { cachedUser, clearOfflineData, isOffline, queueRecord, uuid } from '@/lib/offline';
 import { browserTimeZone } from '@/lib/utils';
 import { ApiError, api } from './client';
 
@@ -122,6 +123,9 @@ export function useMe() {
         return (await api<{ user: User }>('/me')).user;
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) return null;
+        // Server not reachable: continue with the user saved on this device (offline entry).
+        const saved = isOffline(err) ? cachedUser() : null;
+        if (saved) return saved;
         throw err;
       }
     },
@@ -180,6 +184,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api<void>('/auth/logout', { method: 'POST' }),
     onSettled: () => {
+      clearOfflineData();
       qc.clear();
       qc.setQueryData(qk.me, null);
     },
@@ -485,14 +490,42 @@ export function useNoteSuggestions(enabled: boolean) {
   });
 }
 
+/**
+ * Saves a record. A new record that cannot reach the server is kept on this device and sent later
+ * (`queued`); its client id makes sure it is created only once.
+ */
 export function useSaveRecord() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id?: string; input: RecordInput }) =>
-      id
-        ? api<RecordItem[]>(`/records/${id}`, { method: 'PUT', body: input })
-        : api<RecordItem[]>('/records', { method: 'POST', body: input }),
-    onSuccess: () => invalidateFinancialData(qc),
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id?: string;
+      input: RecordInput;
+    }): Promise<{ items: RecordItem[]; queued: boolean }> => {
+      if (id) {
+        return {
+          items: await api<RecordItem[]>(`/records/${id}`, { method: 'PUT', body: input }),
+          queued: false,
+        };
+      }
+      const withId = { ...input, clientId: input.clientId ?? uuid() };
+      try {
+        return {
+          items: await api<RecordItem[]>('/records', { method: 'POST', body: withId }),
+          queued: false,
+        };
+      } catch (err) {
+        const me = qc.getQueryData<User | null>(qk.me);
+        if (!isOffline(err) || !me) throw err;
+        queueRecord(me.id, withId);
+        return { items: [], queued: true };
+      }
+    },
+    onSuccess: (res) => {
+      if (!res.queued) void invalidateFinancialData(qc);
+    },
   });
 }
 

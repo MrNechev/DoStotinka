@@ -1,6 +1,9 @@
 import { bulkUpdateInput, recordInput, recordListQuery } from '@dostotinka/shared';
+import { eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { records } from '../db/schema';
+import { conflict } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
 import {
   bulkUpdateRecords,
@@ -8,6 +11,7 @@ import {
   deleteRecord,
   deleteRecords,
   getRecord,
+  getRecordWithCounterpart,
   listNotes,
   listPayees,
   listRecords,
@@ -85,7 +89,25 @@ export const recordRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const items = await createRecord(db, currentUser(req), req.body);
+      const user = currentUser(req);
+      const { clientId } = req.body;
+      if (clientId) {
+        // Sent again (e.g. from the offline queue after a lost answer): return the record.
+        const [existing] = await db
+          .select({ userId: records.userId })
+          .from(records)
+          .where(eq(records.id, clientId));
+        if (existing && existing.userId !== user.id) throw conflict('This record id is taken');
+        if (existing) {
+          return reply.status(200).send(await getRecordWithCounterpart(db, user.id, clientId));
+        }
+      }
+      const items = await createRecord(
+        db,
+        user,
+        req.body,
+        clientId ? { ids: { main: clientId } } : {},
+      );
       return reply.status(201).send(items);
     },
   );
