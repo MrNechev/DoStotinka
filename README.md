@@ -28,6 +28,9 @@ leaves it.
 
 ## Features
 
+- **Households** – share your money with your partner or family: everybody logs in with their own
+  account (own password, two-factor login, language) and works with the same accounts, records and
+  budgets. Invite by e-mail; leaving brings back your own data.
 - **Multiple users** – everyone has their own private data. The first user becomes the
   administrator and can add users, reset passwords and close sign-ups from the web UI.
 - **Two-factor login** with any authenticator app (TOTP) and one-time recovery codes.
@@ -354,7 +357,6 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 **Next**
 
 - [ ] More languages (contributions welcome)
-- [ ] Shared accounts / households
 - [ ] Automatic import from bank e-mails (IMAP / Gmail)
 
 **Done**
@@ -362,6 +364,7 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 - [x] **Android app** that connects to your own server, with a built-in notification listener for
   the automatic import (0.7.0)
 - [x] Saved CSV import profiles per bank (0.7.0)
+- [x] Households – shared data for several users
 - [x] **Automatic transaction import** – phone notifications and open banking with an inbox for
   review (0.6.0). Background and research: [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
 - [x] CSV import (from Wallet and bank statements)

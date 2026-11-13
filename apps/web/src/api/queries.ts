@@ -26,6 +26,7 @@ import type {
   DebtUpdateInput,
   Goal,
   GoalInput,
+  HouseholdState,
   ImportProfile,
   ImportProfileInput,
   InboxConfirmInput,
@@ -1148,5 +1149,43 @@ export function useDeleteImportProfile() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/import/profiles/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: profilesKey }),
+  });
+}
+
+// ───────────────────────────── Household ─────────────────────────────
+
+export function useHousehold(enabled = true) {
+  return useQuery({
+    queryKey: ['household'],
+    queryFn: () => api<HouseholdState>('/household'),
+    enabled,
+  });
+}
+
+type HouseholdAction =
+  | { kind: 'invite'; email: string }
+  | { kind: 'decline'; id: string }
+  | { kind: 'accept'; id: string }
+  | { kind: 'remove'; id: string }
+  | { kind: 'leave' };
+
+export function useHouseholdAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (a: HouseholdAction) => {
+      switch (a.kind) {
+        case 'invite':
+          return api('/household/invites', { method: 'POST', body: { email: a.email } });
+        case 'decline':
+          return api(`/household/invites/${a.id}`, { method: 'DELETE' });
+        case 'accept':
+          return api(`/household/invites/${a.id}/accept`, { method: 'POST' });
+        case 'remove':
+          return api(`/household/members/${a.id}`, { method: 'DELETE' });
+        default:
+          return api('/household/leave', { method: 'POST' });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['household'] }),
   });
 }

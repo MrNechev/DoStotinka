@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   customType,
@@ -86,6 +87,13 @@ export const users = pgTable(
     importNotifications: boolean('import_notifications').notNull().default(false),
     /** Automatic import: fetch transactions from banks (open banking). */
     importBank: boolean('import_bank').notNull().default(false),
+    /**
+     * Member of the household of this user: works with the owner's data (accounts, records …).
+     * The member's own data stays untouched and comes back when they leave.
+     */
+    householdOwnerId: uuid('household_owner_id').references((): AnyPgColumn => users.id, {
+      onDelete: 'set null',
+    }),
     ...timestamps,
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],
@@ -396,6 +404,20 @@ export const attachments = pgTable(
     index('attachments_record_idx').on(t.recordId),
     index('attachments_user_idx').on(t.userId),
   ],
+);
+
+/** Invitation to share the inviting user's data (household), addressed by e-mail. */
+export const householdInvites = pgTable(
+  'household_invites',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ownerId: uuid('owner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('household_invites_owner_email_idx').on(t.ownerId, t.email)],
 );
 
 /** Saved CSV import settings (column mapping, date format, accounts) per bank/file layout. */

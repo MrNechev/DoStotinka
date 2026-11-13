@@ -11,7 +11,10 @@ const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
 
 declare module 'fastify' {
   interface FastifyRequest {
+    /** The person who is logged in. */
     user: UserRow | null;
+    /** Whose data the request works with: the household owner for members, otherwise `user`. */
+    dataUser: UserRow | null;
     sessionId: string | null;
   }
 }
@@ -25,6 +28,7 @@ function readToken(req: FastifyRequest): string | null {
 
 export function registerAuth(app: FastifyInstance, db: Database, config: Config) {
   app.decorateRequest('user', null);
+  app.decorateRequest('dataUser', null);
   app.decorateRequest('sessionId', null);
 
   app.addHook('onRequest', async (req) => {
@@ -41,6 +45,11 @@ export function registerAuth(app: FastifyInstance, db: Database, config: Config)
       .limit(1);
     if (!row) return;
     req.user = row.user;
+    req.dataUser = row.user;
+    if (row.user.householdOwnerId) {
+      const [owner] = await db.select().from(users).where(eq(users.id, row.user.householdOwnerId));
+      if (owner) req.dataUser = owner;
+    }
     req.sessionId = id;
     if (now.getTime() - row.session.lastUsedAt.getTime() > TOUCH_INTERVAL_MS) {
       // Browser sessions slide; named API tokens keep their own (long) expiry.
@@ -61,8 +70,17 @@ export async function requireAdmin(req: FastifyRequest) {
   if (!req.user.isAdmin) throw forbidden('Administrator rights required');
 }
 
-/** Returns the authenticated user or throws 401 (for use inside protected handlers). */
+/**
+ * The user whose data a request works with (throws 401 without login). For members of a
+ * household this is the household owner – use it for accounts, records and all other data.
+ */
 export function currentUser(req: FastifyRequest): UserRow {
+  if (!req.user) throw unauthorized();
+  return req.dataUser ?? req.user;
+}
+
+/** The person who is logged in – for their profile, password, sessions and rights. */
+export function sessionUser(req: FastifyRequest): UserRow {
   if (!req.user) throw unauthorized();
   return req.user;
 }

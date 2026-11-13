@@ -8,6 +8,7 @@ import { conflict, forbidden, HttpError, unauthorized } from '../lib/errors';
 import { clearSessionCookie, createSession, setSessionCookie } from '../plugins/auth';
 import { seedDefaultCategories } from '../services/categories';
 import { toUser } from '../services/dto';
+import { dataOwnerOf } from '../services/household';
 import { realUserCount, registrationOpen } from '../services/settings';
 import { verifySecondFactor } from '../services/two-factor';
 
@@ -56,7 +57,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       });
       const session = await createSession(app.db, app.config, user.id, req);
       setSessionCookie(reply, req, app.config, session.token, session.expiresAt);
-      return reply.status(201).send({ user: toUser(user) });
+      return reply.status(201).send({ user: toUser(user, await dataOwnerOf(app.db, user)) });
     },
   );
 
@@ -80,7 +81,10 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       await verifySecondFactor(app.db, user, req.body.code);
       const session = await createSession(app.db, app.config, user.id, req);
       setSessionCookie(reply, req, app.config, session.token, session.expiresAt);
-      return { user: toUser(user), ...(issueToken ? { token: session.token } : {}) };
+      return {
+        user: toUser(user, await dataOwnerOf(app.db, user)),
+        ...(issueToken ? { token: session.token } : {}),
+      };
     },
   );
 
@@ -96,7 +100,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!user?.isDemo) throw new HttpError(503, 'The demo account is not ready yet');
       const session = await createSession(app.db, app.config, user.id, req);
       setSessionCookie(reply, req, app.config, session.token, session.expiresAt);
-      return { user: toUser(user) };
+      return { user: toUser(user, await dataOwnerOf(app.db, user)) };
     },
   );
 

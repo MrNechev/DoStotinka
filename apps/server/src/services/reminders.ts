@@ -3,6 +3,7 @@ import { and, eq, isNotNull } from 'drizzle-orm';
 import type { Database } from '../db';
 import { accounts, plannedPayments, type UserRow, users } from '../db/schema';
 import { safeTimeZone, toLocalDate } from '../lib/dates';
+import { dataOwnerOf } from './household';
 import { upcoming } from './planned';
 
 export interface ReminderMessage {
@@ -53,18 +54,20 @@ export async function buildReminder(
   db: Database,
   user: UserRow,
   now = new Date(),
+  /** Whose planned payments: the household owner for members. */
+  dataUser: UserRow = user,
 ): Promise<ReminderMessage> {
   const tz = safeTimeZone(user.timezone);
   const today = toLocalDate(now, tz);
   const tomorrow = addDays(today, 1);
-  const occurrences = (await upcoming(db, user, 2, tz)).filter((o) => o.dueDate <= tomorrow);
+  const occurrences = (await upcoming(db, dataUser, 2, tz)).filter((o) => o.dueDate <= tomorrow);
   if (!occurrences.length) return { title: 'DoStotinka', lines: [], count: 0 };
 
   const plans = await db
     .select({ plan: plannedPayments, currency: accounts.currency })
     .from(plannedPayments)
     .innerJoin(accounts, eq(accounts.id, plannedPayments.accountId))
-    .where(eq(plannedPayments.userId, user.id));
+    .where(eq(plannedPayments.userId, dataUser.id));
   const byId = new Map(plans.map((p) => [p.plan.id, p]));
   const locale =
     !user.locale || user.locale === 'en' || user.locale === 'auto' ? 'en-GB' : user.locale;
@@ -158,7 +161,8 @@ export async function processReminders(db: Database, now = new Date()): Promise<
       const tz = safeTimeZone(user.timezone);
       const today = toLocalDate(now, tz);
       if (user.lastNotifiedOn === today || localHour(now, tz) < user.notifyHour) continue;
-      const message = await buildReminder(db, user, now);
+      const dataUser = user.householdOwnerId ? await dataOwnerOf(db, user) : user;
+      const message = await buildReminder(db, user, now, dataUser);
       if (message.count > 0) {
         await sendReminder(user.notifyUrl!, user.notifyFormat as NotifyFormat, message);
         sent++;

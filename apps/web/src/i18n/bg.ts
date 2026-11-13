@@ -1573,4 +1573,35 @@ export const bg: Record<string, string> = {
   'This phone stops sending notifications to this server.':
     'Този телефон спира да изпраща известия към този сървър.',
   'Change server': 'Смени сървъра',
+
+  // ─── Household ───
+  'Set by {name} for the whole household.': 'Задава се от {name} за цялото домакинство.',
+  Household: 'Домакинство',
+  'Share your money with your partner or family: everybody logs in with their own account and works with the same accounts, records and budgets.':
+    'Споделете финансите с партньора или семейството си: всеки влиза със собствен акаунт и работи със същите сметки, записи и бюджети.',
+  'You share the data of {name} ({email}).': 'Споделяте данните на {name} ({email}).',
+  'Leave the household?': 'Да напуснете ли домакинството?',
+  'You will see your own data again. Records you added for the household stay there.':
+    'Отново ще виждате собствените си данни. Записите, които сте добавили за домакинството, остават там.',
+  Leave: 'Напусни',
+  Members: 'Членове',
+  owner: 'собственик',
+  'Remove {name} from the household?': 'Да се премахне ли {name} от домакинството?',
+  'They see their own data again. Records they added stay here.':
+    'Те отново ще виждат собствените си данни. Добавените от тях записи остават тук.',
+  '{name} ({email}) invites you to share their data.':
+    '{name} ({email}) ви кани да споделяте данните му/ѝ.',
+  'Join the household of {name}?': 'Да се присъедините ли към домакинството на {name}?',
+  'You will work with their accounts and records. Your own data is kept but hidden until you leave the household.':
+    'Ще работите с техните сметки и записи. Вашите собствени данни се пазят, но са скрити, докато не напуснете домакинството.',
+  Join: 'Присъедини се',
+  Decline: 'Откажи',
+  'Invite someone': 'Поканете някого',
+  'Invitation saved – it appears in their settings':
+    'Поканата е запазена – ще се появи в техните настройки',
+  'E-mail of their DoStotinka account': 'Имейл на техния акаунт в DoStotinka',
+  Invite: 'Покани',
+  'The person needs an account on this server (an administrator can create one). They accept the invitation in their settings.':
+    'Човекът трябва да има акаунт на този сървър (администратор може да създаде такъв). Поканата се приема в неговите настройки.',
+  invited: 'поканен',
 };

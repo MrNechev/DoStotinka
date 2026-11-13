@@ -20,7 +20,7 @@ import { generateToken, hashPassword, sha256, verifyPassword } from '../lib/cryp
 import { isValidTimeZone } from '../lib/dates';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { generateRecoveryCodes, generateSecret, otpauthUrl, verifyTotp } from '../lib/totp';
-import { clearSessionCookie, currentUser } from '../plugins/auth';
+import { clearSessionCookie, currentUser, sessionUser } from '../plugins/auth';
 import { toUser } from '../services/dto';
 import { rebaseRates } from '../services/rates';
 import { buildReminder, sendReminder, testReminder } from '../services/reminders';
@@ -28,7 +28,7 @@ import { backupSchema, restoreBackup } from '../services/restore';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/', { schema: { tags: ['user'], summary: 'Current user' } }, async (req) => ({
-    user: toUser(currentUser(req)),
+    user: toUser(sessionUser(req), currentUser(req)),
   }));
 
   app.patch(
@@ -37,7 +37,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: { tags: ['user'], summary: 'Update profile & preferences', body: updateProfileInput },
     },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       const input = req.body;
       if (user.isDemo) {
         // The demo account is shared by all visitors: its profile stays as it is. The theme is
@@ -46,12 +46,22 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         if (Object.values(rest).some((v) => v !== undefined)) {
           throw forbidden('The settings of the shared demo account cannot be changed');
         }
-        return { user: toUser(user) };
+        return { user: toUser(user, currentUser(req)) };
       }
+      if (
+        user.householdOwnerId &&
+        input.baseCurrency !== undefined &&
+        input.baseCurrency !== currentUser(req).baseCurrency
+      ) {
+        throw forbidden('The main currency is set by the owner of the household');
+      }
+      if (user.householdOwnerId) input.baseCurrency = undefined;
       if (input.timezone !== undefined && !isValidTimeZone(input.timezone)) {
         throw badRequest('Unknown time zone');
       }
-      if (Object.values(input).every((v) => v === undefined)) return { user: toUser(user) };
+      if (Object.values(input).every((v) => v === undefined)) {
+        return { user: toUser(user, currentUser(req)) };
+      }
       if (input.email && input.email !== user.email) {
         const [taken] = await app.db
           .select({ id: users.id })
@@ -66,7 +76,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         const [row] = await tx.update(users).set(input).where(eq(users.id, user.id)).returning();
         return row!;
       });
-      return { user: toUser(updated) };
+      return { user: toUser(updated, currentUser(req)) };
     },
   );
 
@@ -74,7 +84,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     '/password',
     { schema: { tags: ['user'], summary: 'Change password', body: changePasswordInput } },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.isDemo) throw forbidden('The password of the demo account cannot be changed');
       if (!(await verifyPassword(user.passwordHash, req.body.currentPassword))) {
         throw badRequest('Current password is incorrect');
@@ -92,7 +102,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.get('/sessions', { schema: { tags: ['user'], summary: 'Active sessions' } }, async (req) => {
-    const user = currentUser(req);
+    const user = sessionUser(req);
     const rows = await app.db
       .select()
       .from(sessions)
@@ -128,8 +138,11 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.isDemo) throw forbidden('Restoring a backup is not available for the demo account');
+      if (user.householdOwnerId) {
+        throw forbidden('Only the owner of the household can restore a backup');
+      }
       return restoreBackup(app.db, user, req.body);
     },
   );
@@ -148,7 +161,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   };
 
   app.get('/reminders', { schema: { tags: ['user'], summary: 'Reminder settings' } }, async (req) =>
-    reminderSettings(currentUser(req)),
+    reminderSettings(sessionUser(req)),
   );
 
   app.put(
@@ -161,7 +174,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       assertReminders(user);
       const [row] = await app.db
         .update(users)
@@ -181,10 +194,10 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     '/reminders/test',
     { schema: { tags: ['user'], summary: 'Send a test reminder now' } },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       assertReminders(user);
       if (!user.notifyUrl) throw badRequest('Save a reminder URL first');
-      const message = await buildReminder(app.db, user);
+      const message = await buildReminder(app.db, user, new Date(), currentUser(req));
       const test = message.count ? message : testReminder(user.language);
       try {
         await sendReminder(user.notifyUrl, user.notifyFormat as NotifyFormat, test);
@@ -213,7 +226,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     '/2fa/setup',
     { schema: { tags: ['user'], summary: 'Start setting up two-factor login (returns a secret)' } },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.isDemo) throw forbidden('Two-factor login is not available for the demo account');
       if (user.totpSecret) throw conflict('Two-factor login is already enabled');
       const secret = generateSecret();
@@ -233,7 +246,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.totpSecret) throw conflict('Two-factor login is already enabled');
       if (!user.totpPendingSecret) throw badRequest('Start the setup first');
       await assertPassword(user, req.body.password);
@@ -263,7 +276,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (!user.totpSecret) throw badRequest('Two-factor login is not enabled');
       await assertPassword(user, req.body.password);
       const { codes, hashes } = newRecoveryCodes();
@@ -282,7 +295,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       await assertPassword(user, req.body.password);
       await app.db
         .update(users)
@@ -296,7 +309,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
     '/oidc',
     { schema: { tags: ['user'], summary: 'Disconnect single sign-on from the account' } },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       await app.db.update(users).set({ oidcSubject: null }).where(eq(users.id, user.id));
       return reply.status(204).send();
     },
@@ -312,7 +325,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.isDemo) throw forbidden('API tokens are not available for the demo account');
       const token = generateToken();
       const id = sha256(token);
@@ -339,7 +352,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       const rows = await app.db
         .select({ id: sessions.id })
         .from(sessions)
@@ -362,7 +375,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const user = currentUser(req);
+      const user = sessionUser(req);
       if (user.isDemo) throw forbidden('The demo account cannot be deleted');
       if (!(await verifyPassword(user.passwordHash, req.body.password))) {
         throw badRequest('Password is incorrect');

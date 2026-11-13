@@ -17,12 +17,16 @@ import type {
   UserRow,
 } from '../db/schema';
 
-export function toUser(u: UserRow): User {
+/**
+ * The logged-in user as the web app sees it. `dataOwner` is the household owner for members:
+ * money is shown in the owner's main currency.
+ */
+export function toUser(u: UserRow, dataOwner?: UserRow | null): User {
   return {
     id: u.id,
     email: u.email,
     name: u.name,
-    baseCurrency: u.baseCurrency,
+    baseCurrency: dataOwner && dataOwner.id !== u.id ? dataOwner.baseCurrency : u.baseCurrency,
     timezone: u.timezone,
     weekStartsOn: (u.weekStartsOn === 0 || u.weekStartsOn === 6 ? u.weekStartsOn : 1) as 0 | 1 | 6,
     theme: (['light', 'dark'].includes(u.theme) ? u.theme : 'system') as User['theme'],
@@ -33,7 +37,12 @@ export function toUser(u: UserRow): User {
     twoFactorEnabled: !!u.totpSecret,
     ssoLinked: !!u.oidcSubject,
     recoveryCodesLeft: u.totpSecret ? u.recoveryCodes.length : 0,
-    automaticImport: { notifications: u.importNotifications, bank: u.importBank },
+    automaticImport:
+      dataOwner && dataOwner.id !== u.id
+        ? { notifications: dataOwner.importNotifications, bank: dataOwner.importBank }
+        : { notifications: u.importNotifications, bank: u.importBank },
+    householdOwner:
+      dataOwner && dataOwner.id !== u.id ? { id: dataOwner.id, name: dataOwner.name } : null,
     createdAt: u.createdAt.toISOString(),
   };
 }

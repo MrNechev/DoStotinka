@@ -29,6 +29,7 @@ import { currencyRoutes } from './routes/currencies';
 import { debtRoutes } from './routes/debts';
 import { exportRoutes } from './routes/export';
 import { goalRoutes } from './routes/goals';
+import { householdRoutes } from './routes/household';
 import { importRoutes } from './routes/import';
 import { labelRoutes } from './routes/labels';
 import { meRoutes } from './routes/me';
@@ -175,6 +176,7 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(attachmentRoutes);
         await authed.register(automaticImportRoutes, { prefix: '/automatic-import' });
         await authed.register(inboxRoutes, { prefix: '/inbox' });
+        await authed.register(householdRoutes, { prefix: '/household' });
       });
       await api.register(async (admin) => {
         admin.addHook('preHandler', requireAdmin);

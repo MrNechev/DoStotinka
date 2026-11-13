@@ -35,6 +35,8 @@ export interface User {
   recoveryCodesLeft: number;
   /** Automatic import switches (phone notifications, open banking). */
   automaticImport: { notifications: boolean; bank: boolean };
+  /** Set when this user shares the data of another user's household. */
+  householdOwner: { id: string; name: string } | null;
   createdAt: string;
 }
 
@@ -385,4 +387,21 @@ export interface ImportProfile {
   };
   lastUsedAt: string | null;
   createdAt: string;
+}
+
+export interface HouseholdPerson {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface HouseholdState {
+  /** `owner` = others share my data, `member` = I share someone's data. */
+  role: 'none' | 'owner' | 'member';
+  owner: HouseholdPerson | null;
+  members: HouseholdPerson[];
+  /** Invitations I sent (owner or future owner). */
+  invites: { id: string; email: string; createdAt: string }[];
+  /** Invitations sent to my e-mail address. */
+  incoming: { id: string; owner: HouseholdPerson; createdAt: string }[];
 }

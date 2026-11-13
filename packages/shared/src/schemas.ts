@@ -539,3 +539,9 @@ export const reminderSettingsInput = z.object({
   hour: z.number().int().min(0).max(23).default(8),
 });
 export type ReminderSettingsInput = z.input<typeof reminderSettingsInput>;
+
+// ───────────────────────────── Household ─────────────────────────────
+
+export const householdInviteInput = z.object({
+  email: z.string().trim().toLowerCase().email().max(200),
+});

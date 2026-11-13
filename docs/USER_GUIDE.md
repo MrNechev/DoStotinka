@@ -246,6 +246,22 @@ away) and shows the bank's balance next to the DoStotinka balance. About every 1
 for a new confirmation: **Renew access** (DoStotinka reminds you a week before via your reminder
 channel). Pending card payments are imported once the bank books them.
 
+## Households
+
+Several people can keep one budget together – e.g. a couple with joint and personal accounts:
+
+1. Everybody needs their own account on the server (sign up, or an administrator creates it).
+2. In **Settings → Household** the person whose data should be shared invites the others by e-mail.
+3. The invited person opens **Settings → Household** and chooses **Join**.
+
+Members then see and edit the owner's accounts, records, budgets, planned payments, goals, debts and
+categories – exactly like the owner. Personal stay: name, e-mail, password, two-factor login,
+language, theme, sessions and API tokens. The main currency is set by the owner, and only the owner
+can restore a backup over the shared data.
+
+A member's own data is not deleted when joining – it is hidden and comes back when they **leave**
+the household (or are removed by the owner). Records they added for the household stay there.
+
 ## Settings and security
 
 - **Profile and preferences** – name, e-mail, base currency, time zone, first day of the week,

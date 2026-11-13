@@ -31,6 +31,8 @@ import {
   useCreateToken,
   useCurrencies,
   useDeleteAccount,
+  useHousehold,
+  useHouseholdAction,
   useRefreshRates,
   useRemoveCurrency,
   useRevokeSession,
@@ -173,10 +175,15 @@ function PreferencesSection() {
           <Field
             label={t('Main currency')}
             htmlFor="p-cur"
-            hint={t('Totals, statistics and budgets are shown in this currency.')}
+            hint={
+              user.householdOwner
+                ? t('Set by {name} for the whole household.', { name: user.householdOwner.name })
+                : t('Totals, statistics and budgets are shown in this currency.')
+            }
           >
             <Select
               id="p-cur"
+              disabled={!!user.householdOwner}
               value={user.baseCurrency}
               onChange={(e) => save({ baseCurrency: e.target.value }, t('Main currency changed'))}
             >
@@ -816,6 +823,197 @@ function RemindersSection() {
 
 const APP_DOWNLOAD = 'https://github.com/MrNechev/DoStotinka/releases/latest';
 
+function HouseholdSection() {
+  const user = useUser();
+  const { data: state } = useHousehold(!user.isDemo);
+  const action = useHouseholdAction();
+  const confirm = useConfirm();
+  const [email, setEmail] = useState('');
+  if (user.isDemo || !state) return null;
+  const run = (body: Parameters<typeof action.mutate>[0], ok?: string) =>
+    action.mutate(body, {
+      onSuccess: () => {
+        if (ok) toast.success(ok);
+        // Joining or leaving switches all data – start fresh.
+        if (body.kind === 'accept' || body.kind === 'leave') window.location.assign('/');
+      },
+      onError: (e) => toast.error(errorMessage(e)),
+    });
+
+  return (
+    <Section
+      title={t('Household')}
+      description={t(
+        'Share your money with your partner or family: everybody logs in with their own account and works with the same accounts, records and budgets.',
+      )}
+    >
+      <div className="grid gap-4">
+        {state.role === 'member' && state.owner && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-primary-soft/50 p-3 text-sm">
+            <span>
+              {t('You share the data of {name} ({email}).', {
+                name: state.owner.name,
+                email: state.owner.email,
+              })}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: t('Leave the household?'),
+                    description: t(
+                      'You will see your own data again. Records you added for the household stay there.',
+                    ),
+                    confirmLabel: t('Leave'),
+                    destructive: true,
+                  })
+                )
+                  run({ kind: 'leave' });
+              }}
+            >
+              {t('Leave')}
+            </Button>
+          </div>
+        )}
+        {state.members.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{t('Members')}</p>
+            <ul className="divide-y divide-border rounded-xl border border-border">
+              {state.role === 'member' && state.owner && (
+                <li className="flex items-center gap-3 px-3 py-2 text-sm">
+                  <span className="min-w-0 flex-1 truncate">
+                    {state.owner.name} <span className="text-muted-foreground">· {t('owner')}</span>
+                  </span>
+                </li>
+              )}
+              {state.members.map((m) => (
+                <li key={m.id} className="flex items-center gap-3 px-3 py-2 text-sm">
+                  <span className="min-w-0 flex-1 truncate">
+                    {m.name} <span className="text-muted-foreground">· {m.email}</span>
+                  </span>
+                  {state.role === 'owner' && (
+                    <Button
+                      size="xs"
+                      variant="destructive-ghost"
+                      onClick={async () => {
+                        if (
+                          await confirm({
+                            title: t('Remove {name} from the household?', { name: m.name }),
+                            description: t(
+                              'They see their own data again. Records they added stay here.',
+                            ),
+                            confirmLabel: t('Remove'),
+                            destructive: true,
+                          })
+                        )
+                          run({ kind: 'remove', id: m.id });
+                      }}
+                    >
+                      {t('Remove')}
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {state.incoming.map((inv) => (
+          <div key={inv.id} className="grid gap-2 rounded-xl border border-primary/40 p-3 text-sm">
+            <p>
+              {t('{name} ({email}) invites you to share their data.', {
+                name: inv.owner.name,
+                email: inv.owner.email,
+              })}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                onClick={async () => {
+                  if (
+                    await confirm({
+                      title: t('Join the household of {name}?', { name: inv.owner.name }),
+                      description: t(
+                        'You will work with their accounts and records. Your own data is kept but hidden until you leave the household.',
+                      ),
+                      confirmLabel: t('Join'),
+                    })
+                  )
+                    run({ kind: 'accept', id: inv.id });
+                }}
+              >
+                {t('Join')}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => run({ kind: 'decline', id: inv.id })}
+              >
+                {t('Decline')}
+              </Button>
+            </div>
+          </div>
+        ))}
+        {state.role !== 'member' && (
+          <div>
+            <p className="mb-1.5 text-sm font-medium">{t('Invite someone')}</p>
+            <form
+              className="flex flex-wrap gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                run(
+                  { kind: 'invite', email },
+                  t('Invitation saved – it appears in their settings'),
+                );
+                setEmail('');
+              }}
+            >
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('E-mail of their DoStotinka account')}
+                className="max-w-xs"
+                required
+              />
+              <Button type="submit" variant="outline" loading={action.isPending}>
+                {t('Invite')}
+              </Button>
+            </form>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t(
+                'The person needs an account on this server (an administrator can create one). They accept the invitation in their settings.',
+              )}
+            </p>
+            {state.invites.length > 0 && (
+              <ul className="mt-2 grid gap-1 text-sm">
+                {state.invites.map((i) => (
+                  <li
+                    key={i.id}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-muted/60 px-3 py-1.5"
+                  >
+                    <span className="truncate">
+                      {i.email} <span className="text-muted-foreground">· {t('invited')}</span>
+                    </span>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => run({ kind: 'decline', id: i.id })}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}
+
 /** Inside the Android app: which server it is connected to. In Android browsers: get the app. */
 function AppSection() {
   const [info] = useNativeInfo();
@@ -964,7 +1162,7 @@ function DataSection() {
             <FileUp /> {t('Import from CSV')}
           </Link>
         </Button>
-        {!user.isDemo && (
+        {!user.isDemo && !user.householdOwner && (
           <>
             <Button variant="outline" loading={restoring} onClick={() => fileRef.current?.click()}>
               <ArchiveRestore /> {t('Restore backup')}
@@ -1070,6 +1268,7 @@ export default function SettingsPage() {
         <TemplatesSection />
         <SecuritySection />
         <RemindersSection />
+        <HouseholdSection />
         <AppSection />
         <AutomaticImportSection />
         <ApiTokensSection />

@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { accounts, records, sessions, users } from '../db/schema';
 import { hashPassword } from '../lib/crypto';
 import { badRequest, conflict, notFound } from '../lib/errors';
-import { currentUser } from '../plugins/auth';
+import { sessionUser } from '../plugins/auth';
 import { seedDefaultCategories } from '../services/categories';
 import { registrationOpen, setSetting } from '../services/settings';
 
@@ -79,8 +79,8 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
             email: input.email,
             passwordHash,
             isAdmin: input.isAdmin,
-            baseCurrency: input.baseCurrency ?? currentUser(req).baseCurrency,
-            timezone: currentUser(req).timezone,
+            baseCurrency: input.baseCurrency ?? sessionUser(req).baseCurrency,
+            timezone: sessionUser(req).timezone,
           })
           .returning();
         await seedDefaultCategories(tx, user!.id);
@@ -101,7 +101,7 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req, reply) => {
-      const me = currentUser(req);
+      const me = sessionUser(req);
       const [target] = await db.select().from(users).where(eq(users.id, req.params.id));
       if (!target) throw notFound('User');
       if (target.isDemo) throw badRequest('The demo account cannot be changed');
@@ -133,7 +133,7 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     '/users/:id',
     { schema: { tags: ['admin'], summary: 'Delete a user and all their data', params: idParams } },
     async (req, reply) => {
-      const me = currentUser(req);
+      const me = sessionUser(req);
       if (req.params.id === me.id)
         throw badRequest('Use Settings → Delete account to delete yourself');
       const [target] = await db.select().from(users).where(eq(users.id, req.params.id));

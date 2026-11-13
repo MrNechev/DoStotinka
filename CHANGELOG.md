@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- **Households:** invite other users of the server by e-mail to work with your data (accounts,
+  records, budgets …) using their own login. Personal settings, password, two-factor login and
+  tokens stay personal; the main currency and restoring backups stay with the owner. Joining hides
+  the member's own data, leaving brings it back. Reminders of members cover the shared planned
+  payments.
+
 ## [0.7.0] – 2026-11-13
 
 Upgrading the server: `docker compose pull && docker compose up -d` (a small migration adds the
