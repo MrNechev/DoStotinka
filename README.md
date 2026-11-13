@@ -354,8 +354,32 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 
 ## Roadmap
 
-**Next**
+**Next** – less typing, better answers
 
+- [ ] **Rules** – “payee contains *LIDL* → Groceries, label *Food*, rename the payee to *Lidl*”;
+  applied to the inbox, notifications, bank sync and CSV imports. Plus payee clean-up: merge and
+  rename payees across the whole history.
+- [ ] **Split records** – one receipt across several categories (a supermarket bill that is part
+  groceries, part household).
+- [ ] **Offline entry** in the Android app and the PWA – add records when the server is not
+  reachable (away from home), they are sent when it is back.
+- [ ] **Subscriptions** – recurring payments found in the history (streaming, phone, gym …), turned
+  into planned payments with one tap, with their yearly cost and price changes.
+- [ ] **Monthly review** – at the end of the month: what was different from usual, biggest
+  categories and shops, unusual payments, budget results; also sent via ntfy / webhook.
+- [ ] **Budget rollover** – money left in a monthly budget carries over to the next month (or an
+  overspend reduces it).
+- [ ] **Cash-flow forecast** – the expected balance until the next salary from planned payments
+  *and* typical spending: “safe to spend per day”.
+
+**Later**
+
+- [ ] Scan the QR code of Bulgarian fiscal receipts to fill in amount, date and time.
+- [ ] Android home-screen widget and shortcuts for adding a record.
+- [ ] Investments and net worth – holdings with prices (ETFs, stocks, crypto) and assets such as a
+  car or property in a net-worth chart.
+- [ ] Operations – “a new version is available” in the admin settings, nightly backups on by
+  default with their status in the app.
 - [ ] More languages (contributions welcome)
 - [ ] Automatic import from bank e-mails (IMAP / Gmail)
 
