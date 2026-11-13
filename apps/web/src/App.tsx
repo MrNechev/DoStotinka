@@ -32,6 +32,9 @@ const ImportPage = lazy(() => import('./pages/import-page'));
 const GoalsPage = lazy(() => import('./pages/goals-page'));
 const DebtsPage = lazy(() => import('./pages/debts-page'));
 const AdminPage = lazy(() => import('./pages/admin-page'));
+const InboxPage = lazy(() => import('./pages/inbox-page'));
+const AutomaticImportPage = lazy(() => import('./pages/automatic-import-page'));
+const BankCallbackPage = lazy(() => import('./pages/bank-callback-page'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -144,6 +147,9 @@ const router = createBrowserRouter([
           { path: 'settings', element: page(<SettingsPage />) },
           { path: 'import', element: page(<ImportPage />) },
           { path: 'admin', element: page(<AdminPage />) },
+          { path: 'inbox', element: page(<InboxPage />) },
+          { path: 'automatic-import', element: page(<AutomaticImportPage />) },
+          { path: 'bank-callback', element: page(<BankCallbackPage />) },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

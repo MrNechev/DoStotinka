@@ -33,6 +33,7 @@ export function toUser(u: UserRow): User {
     twoFactorEnabled: !!u.totpSecret,
     ssoLinked: !!u.oidcSubject,
     recoveryCodesLeft: u.totpSecret ? u.recoveryCodes.length : 0,
+    automaticImport: { notifications: u.importNotifications, bank: u.importBank },
     createdAt: u.createdAt.toISOString(),
   };
 }

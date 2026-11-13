@@ -6,6 +6,7 @@ import {
   Flag,
   FolderTree,
   Handshake,
+  Inbox,
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
@@ -21,7 +22,14 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { useLogout, useUpcoming, useUpdateProfile, useUser } from '@/api/queries';
+import {
+  useInboxCount,
+  useLogout,
+  useServerConfig,
+  useUpcoming,
+  useUpdateProfile,
+  useUser,
+} from '@/api/queries';
 import { Button } from '@/components/ui/button';
 import {
   Menu,
@@ -59,13 +67,34 @@ const MOBILE_NAV = [
   { to: '/accounts', label: t('Accounts'), icon: Wallet },
 ];
 
+/** The inbox shows up once automatic import is used (or something waits in it). */
+export function useInboxBadge() {
+  const user = useUser();
+  const { data: config } = useServerConfig();
+  const on =
+    config?.automaticImport !== false &&
+    !user.isDemo &&
+    (user.automaticImport.notifications || user.automaticImport.bank);
+  const { data } = useInboxCount(!!on);
+  const pending = data?.pending ?? 0;
+  return { visible: !!on || pending > 0, pending };
+}
+
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const user = useUser();
   const { data: upcoming } = useUpcoming(0);
   const overdue = upcoming?.filter((o) => o.overdue).length ?? 0;
-  const items = user.isAdmin
-    ? [...NAV, { to: '/admin', label: t('Administration'), icon: Shield, end: false }]
+  const inbox = useInboxBadge();
+  const base = inbox.visible
+    ? [
+        ...NAV.slice(0, 2),
+        { to: '/inbox', label: t('Inbox'), icon: Inbox, end: false },
+        ...NAV.slice(2),
+      ]
     : NAV;
+  const items = user.isAdmin
+    ? [...base, { to: '/admin', label: t('Administration'), icon: Shield, end: false }]
+    : base;
   return (
     <nav className="grid gap-0.5">
       {items.map((item) => (
@@ -83,6 +112,14 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
         >
           <item.icon className="size-[18px]" />
           {item.label}
+          {item.to === '/inbox' && inbox.pending > 0 && (
+            <span
+              className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
+              title={tn(inbox.pending, '{n} transaction to review', '{n} transactions to review')}
+            >
+              {inbox.pending}
+            </span>
+          )}
           {item.to === '/planned' && overdue > 0 && (
             <span
               className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-expense px-1.5 text-[11px] font-semibold text-white"

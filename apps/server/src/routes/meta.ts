@@ -27,6 +27,7 @@ export const metaRoutes: FastifyPluginAsyncZod = async (app) => {
         version: app.config.version,
         registrationEnabled: await registrationOpen(app.db, app.config),
         notificationsEnabled: app.config.NOTIFICATIONS_ENABLED,
+        automaticImport: app.config.AUTOMATIC_IMPORT,
         demo: {
           enabled: app.config.DEMO_ENABLED,
           email: app.config.DEMO_ENABLED ? app.config.DEMO_EMAIL : null,

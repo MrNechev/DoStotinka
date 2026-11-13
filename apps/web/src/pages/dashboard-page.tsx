@@ -1,6 +1,6 @@
 import { convertMinor } from '@dostotinka/shared';
 import { addMonths, startOfHour, startOfMonth, subDays } from 'date-fns';
-import { ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Inbox, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import {
@@ -15,6 +15,7 @@ import {
 import { AccountCard } from '@/components/accounts/account-card';
 import { MonthEndForecast } from '@/components/dashboard/forecast';
 import { GettingStarted } from '@/components/dashboard/getting-started';
+import { useInboxBadge } from '@/components/layout/app-shell';
 import { UpcomingList } from '@/components/planned/upcoming-list';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { RecordRow, useRecordLookups } from '@/components/records/record-list';
@@ -84,6 +85,24 @@ function DebtsSummary() {
   );
 }
 
+/** Imported transactions waiting for review (the phone layout has no inbox tab). */
+function InboxBanner() {
+  const { pending } = useInboxBadge();
+  if (!pending) return null;
+  return (
+    <Link
+      to="/inbox"
+      className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
+    >
+      <Inbox className="size-5 shrink-0" />
+      <span className="flex-1">
+        {tn(pending, '{n} imported transaction to review', '{n} imported transactions to review')}
+      </span>
+      <ArrowRight className="size-4" />
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
   const user = useUser();
   const { openNew } = useRecordEditor();
@@ -140,6 +159,7 @@ export default function DashboardPage() {
       </div>
 
       <GettingStarted />
+      <InboxBanner />
 
       {/* Accounts */}
       <section>

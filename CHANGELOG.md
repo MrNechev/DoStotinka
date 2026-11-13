@@ -6,6 +6,41 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.6.0] – 2026-11-13
+
+Upgrading: `docker compose pull && docker compose up -d`. The database migration (new tables for
+the automatic import) runs automatically and changes no existing data. Optionally add
+`ENCRYPTION_KEY=<long random string>` to `.env` (e.g. `openssl rand -hex 32`) **before** setting up a
+bank connection – it encrypts the bank keys stored in the database.
+
+### Added
+- **Automatic import** of transactions, off by default and switchable per user – two ways that can
+  be used together ([user guide](docs/USER_GUIDE.md#automatic-import)):
+  - **Payment notifications from your phone:** MacroDroid, Tasker, iOS Shortcuts or any tool posts
+    notifications of banking apps, Google Wallet or bank SMS to `POST /api/ingest/notification`
+    with a per-phone token that can only add notifications. A parser reads amount, currency,
+    direction and payee (English and Bulgarian, Latin-letter SMS, DSK/UBB/Revolut/Google Wallet
+    styles) and skips one-time codes, declined and cancelled payments. Each app can be mapped to an
+    account or switched off; unrecognised notifications are shown for two weeks.
+  - **Bank connection (open banking)** through the user's own [Enable Banking](https://enablebanking.com)
+    application (free for personal use): DSK, UBB, Revolut and 2,500+ European banks, read-only
+    PSD2 access confirmed at the bank. Booked transactions and balances are fetched up to four
+    times a day or on demand, consents can be renewed (reminder a week before they expire), bank
+    accounts are matched to DoStotinka accounts (pre-selected by the bank logo). Works over plain
+    http too: paste the address the bank sends you to.
+  - **Inbox** for imported transactions with category suggestions from your history, editable
+    account/type/category/payee, “add all ready”, a dashboard banner and a menu badge.
+    Duplicates are caught (repeated notifications, the bank booking of a notified payment, Google
+    Wallet + bank app), records you already entered are offered for linking, and money moving
+    between two of your accounts can be saved as one transfer. Phones and bank connections can add
+    records without review when nothing needs a decision.
+- New settings `AUTOMATIC_IMPORT` (server-wide switch) and `ENCRYPTION_KEY`.
+
+### Changed
+- The research document [docs/AUTOMATIC_IMPORT.md](docs/AUTOMATIC_IMPORT.md) describes what was
+  built and why; the roadmap moves on to more languages, the mobile app and households.
+- Request logs mask `token=` query parameters.
+
 ## [0.5.2] – 2026-11-06
 
 Upgrading: pull the new image and restart (`docker compose pull && docker compose up -d`). A small
@@ -203,7 +238,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/MrNechev/DoStotinka/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/MrNechev/DoStotinka/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/MrNechev/DoStotinka/compare/v0.4.0...v0.5.0

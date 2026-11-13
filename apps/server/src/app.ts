@@ -22,6 +22,7 @@ import { accountRoutes } from './routes/accounts';
 import { adminRoutes } from './routes/admin';
 import { attachmentRoutes } from './routes/attachments';
 import { authRoutes } from './routes/auth';
+import { automaticImportRoutes, inboxRoutes, ingestRoutes } from './routes/automatic-import';
 import { budgetRoutes } from './routes/budgets';
 import { categoryRoutes } from './routes/categories';
 import { currencyRoutes } from './routes/currencies';
@@ -47,6 +48,15 @@ export async function buildApp(config: Config, db: Database) {
             level: config.LOG_LEVEL,
             transport: undefined,
             redact: ['req.headers.authorization', 'req.headers.cookie'],
+            serializers: {
+              // Phone automations may pass their token as ?token=… – never log it.
+              req: (req: { method: string; url: string; hostname?: string; ip?: string }) => ({
+                method: req.method,
+                url: req.url.replace(/([?&]token=)[^&]*/g, '$1***'),
+                host: req.hostname,
+                remoteAddress: req.ip,
+              }),
+            },
           },
     // Fastify accepts a hop count too, but its typings only list boolean | string.
     trustProxy: config.TRUST_PROXY as boolean | string,
@@ -145,6 +155,7 @@ export async function buildApp(config: Config, db: Database) {
       await api.register(metaRoutes);
       await api.register(authRoutes, { prefix: '/auth' });
       await api.register(oidcRoutes, { prefix: '/auth/oidc' });
+      await api.register(ingestRoutes, { prefix: '/ingest' });
       await api.register(async (authed) => {
         authed.addHook('preHandler', requireAuth);
         await authed.register(meRoutes, { prefix: '/me' });
@@ -162,6 +173,8 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(exportRoutes, { prefix: '/export' });
         await authed.register(importRoutes, { prefix: '/import' });
         await authed.register(attachmentRoutes);
+        await authed.register(automaticImportRoutes, { prefix: '/automatic-import' });
+        await authed.register(inboxRoutes, { prefix: '/inbox' });
       });
       await api.register(async (admin) => {
         admin.addHook('preHandler', requireAdmin);

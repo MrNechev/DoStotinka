@@ -7,6 +7,8 @@ export interface ServerConfig {
   version: string;
   registrationEnabled: boolean;
   notificationsEnabled: boolean;
+  /** Automatic import (phone notifications, open banking) is available on this server. */
+  automaticImport: boolean;
   demo: { enabled: boolean; email: string | null };
   /** Single sign-on via OpenID Connect (`GET /api/auth/oidc/start`). */
   sso: { enabled: boolean; buttonText: string };
@@ -31,6 +33,8 @@ export interface User {
   ssoLinked: boolean;
   /** Unused recovery codes left (only when two-factor login is enabled). */
   recoveryCodesLeft: number;
+  /** Automatic import switches (phone notifications, open banking). */
+  automaticImport: { notifications: boolean; bank: boolean };
   createdAt: string;
 }
 

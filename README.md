@@ -72,6 +72,19 @@ leaves it.
   from the European Central Bank (or set manually). The fixed BGN/EUR rate is built in.
 - **Labels** to tag records across categories (e.g. “Vacation”).
 - **Bulk editing** – select many records to recategorise, move, label or delete them at once.
+- **Automatic import** (optional, off by default) – records arrive on their own, in two ways that
+  can be combined:
+  - **payment notifications from your phone** – an automation app (MacroDroid, Tasker, iOS
+    Shortcuts) forwards the notifications of your banking apps, Google Wallet or bank SMS;
+    DoStotinka reads amount, direction and shop (DSK, UBB, Revolut and Google Wallet formats
+    included). Instant, no third party.
+  - **bank connection (open banking)** – your own free [Enable Banking](https://enablebanking.com)
+    application reads booked transactions and balances from DSK, UBB, Revolut and 2,500+ European
+    banks (PSD2, read-only, your bank password never touches DoStotinka).
+
+  New transactions wait in an **inbox** with suggested categories; duplicates between sources and
+  records you entered by hand are detected, transfers between your accounts are recognised. See
+  [Automatic import](docs/USER_GUIDE.md#automatic-import).
 - **Import from CSV** – step-by-step import with column, account and category mapping. Exports of
   *Wallet by BudgetBakers* are recognised automatically (categories are matched, transfers paired),
   bank statements work too. Duplicates are skipped. See
@@ -100,6 +113,8 @@ The [user guide](docs/USER_GUIDE.md) explains every feature in detail.
 | <img src="docs/screenshots/goals.webp" alt="Savings goals" /> | <img src="docs/screenshots/debts.webp" alt="Debts" /> |
 | **Report** | **Calendar** |
 | <img src="docs/screenshots/report.webp" alt="Monthly report" /> | <img src="docs/screenshots/calendar.webp" alt="Calendar" /> |
+| **Inbox (automatic import)** | **Automatic import settings** |
+| <img src="docs/screenshots/inbox.webp" alt="Inbox of imported transactions" /> | <img src="docs/screenshots/automatic-import.webp" alt="Automatic import settings" /> |
 
 <p align="center"><img src="docs/screenshots/dashboard-dark.webp" alt="Dark mode" width="900" /></p>
 
@@ -192,7 +207,9 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `EXCHANGE_RATES_AUTO_UPDATE` | `true` | Fetch the daily ECB reference rates. |
 | `EXCHANGE_RATES_URL` | ECB daily XML | Alternative source in the same format. |
 | `NOTIFICATIONS_ENABLED` | `true` | Allow users to send payment reminders to a URL of their choice (ntfy, Gotify, Discord, Slack, webhook). Disable on servers with untrusted users. |
-| `PUBLIC_URL` | – | Public address of the app (e.g. `https://money.example.com`); used for single sign-on redirects. |
+| `PUBLIC_URL` | – | Public address of the app (e.g. `https://money.example.com`); used for single sign-on and bank redirects. |
+| `AUTOMATIC_IMPORT` | `true` | Offer the automatic import (phone notifications, open banking). Every user still switches it on for themselves. |
+| `ENCRYPTION_KEY` | – | Any long random string, used to encrypt the users' bank access keys in the database. Without it a key is generated and stored in the database itself. Keep it when moving the server. |
 | `OIDC_ISSUER_URL` | – | OpenID Connect provider (issuer URL) – enables single sign-on, see below. |
 | `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | – | Client credentials registered at the provider. |
 | `OIDC_SCOPE` | `openid email profile` | Requested scopes. |
@@ -333,20 +350,16 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 
 **Next**
 
-- [ ] **Automatic transaction import** (optional, off by default) – records appear on their own:
-  instantly from the payment notifications of your banking apps and Google Wallet, and complete from
-  your bank through open banking (PSD2, e.g. DSK, UBB and Revolut via Enable Banking), collected in an
-  inbox for review. The research behind it – what is possible with which bank, Google Pay, e-mail
-  and how other apps do it – is in [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
-
-**Later**
-
 - [ ] More languages (contributions welcome)
-- [ ] Mobile app that connects to your own server
+- [ ] Mobile app that connects to your own server (with a built-in notification listener for the
+  automatic import)
 - [ ] Shared accounts / households
+- [ ] Automatic import: bank e-mails (IMAP / Gmail) and saved CSV import profiles per bank
 
 **Done**
 
+- [x] **Automatic transaction import** – phone notifications and open banking with an inbox for
+  review (0.6.0). Background and research: [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
 - [x] CSV import (from Wallet and bank statements)
 - [x] Translations (Bulgarian first)
 - [x] Attachments (receipts) and record templates

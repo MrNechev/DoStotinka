@@ -92,6 +92,13 @@
       "when": 1794000684535,
       "tag": "0012_food_voucher_account_type",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794580683933,
+      "tag": "0013_automatic_import",
+      "breakpoints": true
     }
   ]
 }

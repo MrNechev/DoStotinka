@@ -14,6 +14,7 @@ import {
   Download,
   FileJson,
   FileUp,
+  Inbox,
   KeyRound,
   Laptop,
   RefreshCw,
@@ -812,6 +813,35 @@ function RemindersSection() {
   );
 }
 
+function AutomaticImportSection() {
+  const user = useUser();
+  const { data: config } = useServerConfig();
+  if (config?.automaticImport === false || user.isDemo) return null;
+  const on = [
+    user.automaticImport.notifications && t('phone notifications'),
+    user.automaticImport.bank && t('bank connection'),
+  ].filter(Boolean);
+  return (
+    <Section
+      title={t('Automatic import')}
+      description={t(
+        'Let transactions arrive on their own – from the payment notifications on your phone and/or straight from your bank.',
+      )}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          {on.length ? t('On: {what}', { what: on.join(', ') }) : t('Off')}
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/automatic-import">
+            <Inbox /> {t('Set up automatic import')}
+          </Link>
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
 function DataSection() {
   const user = useUser();
   const confirm = useConfirm();
@@ -986,6 +1016,7 @@ export default function SettingsPage() {
         <TemplatesSection />
         <SecuritySection />
         <RemindersSection />
+        <AutomaticImportSection />
         <ApiTokensSection />
         <DataSection />
         <DangerSection />

@@ -96,3 +96,28 @@ curl -H "Authorization: Bearer $TOKEN" \
 3. Add the shortcut to your home screen – one tap logs a cash expense.
 
 The same request works from Android automation apps such as Tasker or HTTP Shortcuts.
+
+## Sending payment notifications (automatic import)
+
+Phones and scripts post notifications to `POST /api/ingest/notification`. This endpoint does **not**
+use API tokens: create a phone in **Settings → Automatic import** and use its token (it starts with
+`dsn_` and can only add notifications). Send it as `Authorization: Bearer <token>` (or `?token=` for
+tools that cannot set headers). The body may be JSON, form fields or query parameters:
+
+| Field | Description |
+| --- | --- |
+| `app` | Package or name of the app that showed the notification – used to choose the account |
+| `title`, `text` | Raw notification text; DoStotinka reads amount, currency, direction and payee |
+| `amount`, `merchant`, `currency`, `type` | Structured data instead of text (e.g. from iOS Shortcuts); `type` is `expense` or `income` |
+| `time` | When it happened (ISO date-time or Unix milliseconds); default: now |
+
+```bash
+curl -X POST https://money.example.com/api/ingest/notification \
+  -H "Authorization: Bearer dsn_…" \
+  -d app=com.revolut.revolut -d "title=Lidl" -d "text=You paid €12.50"
+# → {"status":"created","itemId":"…"}   (or "duplicate", "ignored", "confirmed")
+```
+
+Imported transactions are listed at `GET /api/inbox` and confirmed with
+`POST /api/inbox/{id}/confirm` – see the interactive documentation (`/api/docs`, tags
+*automatic import* and *inbox*).

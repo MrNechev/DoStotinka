@@ -167,6 +167,82 @@ rates by hand (Settings → Currencies) – manual rates are kept until you upda
   also on another DoStotinka server. Attached files are not part of this backup (they are part of
   the database backup the administrator makes).
 
+## Automatic import
+
+Records can also arrive on their own. There are two ways, and you can switch each one on or off
+separately in **Settings → Automatic import** (or use both at the same time):
+
+| | Payment notifications from your phone | Bank connection (open banking) |
+| --- | --- | --- |
+| How | Your phone forwards the notifications of your banking apps, Google Wallet or bank SMS | DoStotinka reads the transactions from your bank through [Enable Banking](https://enablebanking.com) |
+| Speed | Instant | Up to four updates a day; card payments appear when the bank books them |
+| What | Everything that shows a notification | Everything: payments, transfers, fees, interest – and the bank balance |
+| Needs | An automation app (MacroDroid, Tasker) or iPhone Shortcuts | A free Enable Banking account; confirming at the bank every 180 days |
+
+New transactions land in the **Inbox** (in the menu, and as a banner on the dashboard). Check the
+account, category (suggested from your earlier records with the same payee) and payee, then tap
+**Add record** – or **Dismiss**. When everything is filled in, **Add all ready transactions** adds
+them in one go. Optionally a phone or bank can **add records without review**; transactions that need
+a decision (unknown account, possible duplicate, possible transfer) still wait in the inbox.
+
+DoStotinka avoids double entries:
+
+- the same notification sent twice, or the same bank transaction fetched again, is ignored;
+- a bank booking of a payment that already came in as a notification (or a Google Wallet
+  notification for a payment your banking app also announced) is marked **Already recorded**;
+- a transaction that looks like a record you entered by hand asks **Same transaction / Not the same**;
+- money leaving one of your accounts and arriving in another one is offered as **Save as transfer**.
+
+### Payment notifications from your phone
+
+1. Switch on **Payment notifications from your phone** and click **Add phone**. Copy the address and
+   the token that are shown (the token is shown only once and can only add notifications).
+2. Set up an automation app on the phone:
+   - **Android – MacroDroid:** trigger *Notification received* (choose your banking apps and Google
+     Wallet; or *SMS received* for SMS from your bank), action *HTTP request*: method POST, the address,
+     header `Authorization: Bearer <token>`, body *form* with the fields `app`, `title` and `text`,
+     filled with the notification's app name, title and text via the *…* (magic text) button.
+   - **Android – Tasker:** event *Notification*, task *HTTP Request* (POST) with the same address and
+     header and the body `app=…&title=…&text=…`, filled with the event values `%evtprm1`–`%evtprm3`
+     (their order differs between Tasker versions – flash `%evtprm()` once to check).
+   - **Anything else** that can send an HTTP request works too: send `title` and `text` (DoStotinka
+     reads both together, so it does not matter much which is which) or `amount` and `merchant`.
+   - **iPhone – Shortcuts:** automation *Transaction* (Wallet), action *Get Contents of URL*: POST, the
+     address and header, body *Form* with `merchant`, `amount` and `app` (Apple Pay payments only –
+     iOS does not let apps read other apps' notifications).
+3. Make a payment. The app appears under **Apps** – choose the DoStotinka account it belongs to (or
+   switch the app off). Notifications that are not payments (one-time codes, declined payments,
+   adverts) are not imported; you can see them for two weeks under **Inbox → Not recognised**.
+
+Tips: exclude the automation app from battery optimisation; on Android 13+ apps installed outside
+an app store need *Allow restricted settings* before they get notification access. The formats of
+DSK, UBB, Revolut and Google Wallet notifications are recognised; if a bank's notifications are not,
+please open an issue with an example text (with the numbers changed).
+
+### Bank connection (open banking)
+
+Banks only give account data to licensed providers. DoStotinka uses your own free
+[Enable Banking](https://enablebanking.com) application for this – no company in between, your data
+goes from the bank via Enable Banking straight to your server, and your bank password is never
+entered in DoStotinka.
+
+1. Create an account at Enable Banking and register an application (*Production*, key generated in the
+   browser – a `.pem` file is downloaded). As **redirect URL** enter the address DoStotinka shows you.
+   Enable Banking only accepts `https://` addresses: if you open DoStotinka over plain `http://`,
+   register `https://localhost/dostotinka-bank-callback` – after confirming at the bank you land on a
+   page that does not load; copy its address and paste it into DoStotinka.
+2. Click **Activate by linking accounts** in the Enable Banking control panel and log in to your banks
+   there – in the free mode only accounts linked this way can be read.
+3. In DoStotinka switch on **Bank connection**, enter the application ID and choose the `.pem` file.
+4. **Connect a bank**: choose country and bank, confirm at the bank, and pick the DoStotinka account
+   for every bank account. Only transactions from **Import from** onwards are imported (default: the
+   day you connected), so your existing records are not duplicated.
+
+DoStotinka fetches new booked transactions up to four times a day (**Update now** fetches them right
+away) and shows the bank's balance next to the DoStotinka balance. About every 180 days the bank asks
+for a new confirmation: **Renew access** (DoStotinka reminds you a week before via your reminder
+channel). Pending card payments are imported once the bank books them.
+
 ## Settings and security
 
 - **Profile and preferences** – name, e-mail, base currency, time zone, first day of the week,

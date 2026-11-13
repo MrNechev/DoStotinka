@@ -1364,4 +1364,168 @@ export const bg: Record<string, string> = {
   'Lottery & gambling wins': 'Печалби от лотарии и хазарт',
   'Loan received': 'Получен заем',
   'Found money': 'Намерени пари',
+
+  // ─── Automatic import ───
+  Inbox: 'Входящи',
+  '{n} transaction to review': '{n} трансакция за преглед',
+  '{n} transactions to review': '{n} трансакции за преглед',
+  'Copy the token now – it will not be shown again. It can only add notifications, nothing else.':
+    'Копирайте токена сега – няма да бъде показан отново. С него може само да се добавят известия, нищо друго.',
+  'Address (URL)': 'Адрес (URL)',
+  'Header “Authorization”': 'Заглавка „Authorization“',
+  'Android with MacroDroid': 'Android с MacroDroid',
+  'Trigger: “Notification received” – choose your banking apps and Google Wallet (or “SMS received” for SMS from the bank).':
+    'Тригер: „Notification received“ – изберете банковите си приложения и Google Wallet (или „SMS received“ за SMS от банката).',
+  'Action: “HTTP request”, method POST, the address above, the header above.':
+    'Действие: „HTTP request“, метод POST, адресът и заглавката отгоре.',
+  'Request body: form fields app, title and text – fill them with the notification’s app name, title and text via the “…” (magic text) button. For SMS put the message into text and SMS into app.':
+    'Тяло на заявката: полета на формуляр app, title и text – попълнете ги с името на приложението, заглавието и текста на известието чрез бутона „…“ (magic text). За SMS сложете съобщението в text и SMS в app.',
+  'Android with Tasker': 'Android с Tasker',
+  'Profile with the event “Notification” for your banking apps, task “HTTP Request” (POST) with the same address and header and the body app=…&title=…&text=… (type application/x-www-form-urlencoded) filled with the event values %evtprm1, %evtprm2, %evtprm3 – their order differs between Tasker versions, flash %evtprm() once to check.':
+    'Профил със събитие „Notification“ за банковите ви приложения, задача „HTTP Request“ (POST) със същия адрес и заглавка и тяло app=…&title=…&text=… (тип application/x-www-form-urlencoded), попълнено със стойностите %evtprm1, %evtprm2, %evtprm3 – редът им е различен в различните версии на Tasker, проверете го веднъж с Flash %evtprm().',
+  'iPhone with Shortcuts': 'iPhone с Shortcuts (Бързи команди)',
+  'Automation “Transaction” (Wallet): action “Get Contents of URL”, method POST, the address and header above, request body “Form” with merchant = Merchant, amount = Amount and app = Card. Works for Apple Pay payments.':
+    'Автоматизация „Трансакция“ (Wallet): действие „Get Contents of URL“, метод POST, адресът и заглавката отгоре, тяло „Form“ с merchant = Търговец, amount = Сума и app = Карта. Работи за плащания с Apple Pay.',
+  'Test it from a computer': 'Тест от компютър',
+  'Notifications from your phone go only to your own DoStotinka server. Every app that sends one appears below – choose its account there.':
+    'Известията от телефона отиват само към вашия собствен DoStotinka сървър. Всяко приложение, което изпрати известие, се появява по-долу – там изберете сметката му.',
+  'last notification {when}': 'последно известие {when}',
+  'Import notifications of this app': 'Импортирай известията на това приложение',
+  'Forget this app': 'Забрави приложението',
+  'Payment notifications from your phone': 'Известия за плащания от телефона',
+  'Instant: your phone forwards the notifications of your banking apps, Google Wallet or bank SMS, DoStotinka reads amount and shop.':
+    'Мигновено: телефонът препраща известията на банковите приложения, Google Wallet или SMS от банката, а DoStotinka разчита сумата и търговеца.',
+  Phones: 'Телефони',
+  'nothing received yet': 'още нищо не е получено',
+  'Remove phone': 'Премахни телефона',
+  'Remove “{name}”?': 'Да се премахне ли „{name}“?',
+  'Its token stops working immediately.': 'Токенът му спира да работи веднага.',
+  Active: 'Активно',
+  'Add records without review': 'Добавяй записи без преглед',
+  'Only when the account is known and nothing looks like a duplicate or transfer.':
+    'Само когато сметката е известна и нищо не прилича на дубликат или превод.',
+  'My phone': 'Моят телефон',
+  'Name, e.g. “My phone”': 'Име, напр. „Моят телефон“',
+  'Add phone': 'Добави телефон',
+  Apps: 'Приложения',
+  'Every app that sent a notification. Choose the account its payments belong to – or switch the app off.':
+    'Всяко приложение, изпратило известие. Изберете към коя сметка са плащанията му – или изключете приложението.',
+  'No notifications received yet.': 'Все още няма получени известия.',
+  'Set up “{name}”': 'Настройка на „{name}“',
+  'Tell your phone to send payment notifications to DoStotinka.':
+    'Настройте телефона да изпраща известията за плащания към DoStotinka.',
+  'Create a free account at Enable Banking': 'Създайте безплатен акаунт в Enable Banking',
+  'In its control panel register a new application: environment “Production”, key “Generate in the browser” (a .pem file is downloaded). As redirect URL enter:':
+    'В контролния панел регистрирайте ново приложение: среда „Production“, ключ „Generate in the browser“ (изтегля се .pem файл). Като redirect URL въведете:',
+  'Enable Banking only accepts https addresses. Because DoStotinka is opened over http here, use this address – after confirming at the bank you paste the address of the page you land on into DoStotinka. With https (e.g. a reverse proxy) use {url} instead and everything happens automatically.':
+    'Enable Banking приема само https адреси. Тъй като тук DoStotinka е отворен през http, използвайте този адрес – след потвърждението в банката поставяте в DoStotinka адреса на страницата, на която попаднете. С https (напр. reverse proxy) използвайте {url} и всичко става автоматично.',
+  'Click “Activate by linking accounts” and log in to your banks there. In the free mode only accounts linked this way can be read.':
+    'Натиснете „Activate by linking accounts“ и влезте в банките си там. В безплатния режим могат да се четат само сметки, свързани по този начин.',
+  'Saved – this is a sandbox application with test banks only':
+    'Запазено – това е тестово (sandbox) приложение само с тестови банки',
+  'Saved – now connect your bank': 'Запазено – сега свържете банката си',
+  'Enter the application ID and choose the downloaded .pem file:':
+    'Въведете ID на приложението и изберете изтегления .pem файл:',
+  'Application ID': 'ID на приложението',
+  'Choose the private key (.pem)': 'Изберете частния ключ (.pem)',
+  'Save and check': 'Запази и провери',
+  'Your bank password is never entered in DoStotinka – you confirm read-only access in your banking app. The key is stored encrypted on your server. Transactions go from the bank via Enable Banking (a licensed EU provider) directly to your server.':
+    'Паролата за банката никога не се въвежда в DoStotinka – потвърждавате достъп само за четене в банковото си приложение. Ключът се пази криптиран на вашия сървър. Трансакциите идват от банката през Enable Banking (лицензиран доставчик в ЕС) директно до вашия сървър.',
+  'Finish connecting': 'Завършване на свързването',
+  'After confirming at the bank you land on a page that may not load. Copy its complete address from the address bar and paste it here.':
+    'След потвърждението в банката попадате на страница, която може да не се зареди. Копирайте пълния ѝ адрес от адресната лента и го поставете тук.',
+  'This is not a complete address': 'Това не е пълен адрес',
+  'The address contains no state – copy the whole address':
+    'Адресът не съдържа state – копирайте целия адрес',
+  'Bank connected': 'Банката е свързана',
+  'Connect a bank': 'Свържи банка',
+  Country: 'Държава',
+  Bank: 'Банка',
+  'Loading…': 'Зареждане…',
+  'Choose your bank': 'Изберете банката си',
+  'Access expired': 'Достъпът е изтекъл',
+  Error: 'Грешка',
+  'Waiting for the bank': 'Очаква се банката',
+  'access until {date}': 'достъп до {date}',
+  'last update {when}': 'последно обновяване {when}',
+  'Renew access': 'Поднови достъпа',
+  '{n} new transactions in the inbox, {d} already known':
+    '{n} нови трансакции във входящите, {d} вече известни',
+  '{n} new transactions in the inbox': '{n} нови трансакции във входящите',
+  'Update now': 'Обнови сега',
+  'Disconnect {bank}?': 'Да се прекъсне ли връзката с {bank}?',
+  'The access is ended at the bank. Records that were already added stay.':
+    'Достъпът се прекратява в банката. Вече добавените записи остават.',
+  'Bank balance {amount}': 'Наличност в банката {amount}',
+  'DoStotinka: {amount}': 'DoStotinka: {amount}',
+  'DoStotinka account': 'Сметка в DoStotinka',
+  'Import from': 'Импорт от',
+  'Import this account': 'Импортирай тази сметка',
+  'Fetches new transactions up to four times a day.':
+    'Изтегля нови трансакции до четири пъти на ден.',
+  'Only when nothing looks like a duplicate or transfer.':
+    'Само когато нищо не прилича на дубликат или превод.',
+  'Bank connection (open banking)': 'Връзка с банка (open banking)',
+  'Complete: transactions, fees and balances come straight from your bank (DSK, UBB, Revolut and 2,500+ European banks) through Enable Banking.':
+    'Пълно: трансакции, такси и наличности идват директно от банката (ДСК, ОББ, Revolut и над 2500 европейски банки) чрез Enable Banking.',
+  'Enable Banking application': 'Приложение в Enable Banking',
+  'Redirect URL': 'Redirect URL',
+  'Paste the address from the bank': 'Постави адреса от банката',
+  'Remove the Enable Banking application?': 'Да се премахне ли приложението в Enable Banking?',
+  'All bank connections are disconnected. Records that were already added stay.':
+    'Всички връзки с банки се прекъсват. Вече добавените записи остават.',
+  'Automatic import': 'Автоматичен импорт',
+  'Records can arrive on their own – both ways can be used together. New transactions wait in the inbox until you confirm them.':
+    'Записите могат да пристигат сами – двата начина могат да се ползват заедно. Новите трансакции чакат във входящите, докато ги потвърдите.',
+  'Automatic import is not available in the shared demo account.':
+    'Автоматичният импорт не е достъпен в общия демо акаунт.',
+  'Automatic import is switched off on this server.':
+    'Автоматичният импорт е изключен на този сървър.',
+  'The bank did not return to DoStotinka correctly.': 'Банката не върна правилно към DoStotinka.',
+  '{bank} connected': '{bank} е свързана',
+  'The bank could not be connected': 'Банката не можа да бъде свързана',
+  'Back to automatic import': 'Обратно към автоматичния импорт',
+  'Connecting your bank…': 'Свързване с банката…',
+  '{n} imported transaction to review': '{n} импортирана трансакция за преглед',
+  '{n} imported transactions to review': '{n} импортирани трансакции за преглед',
+  Unknown: 'Неизвестно',
+  'Looks like a record you already entered: {what} on {date}.':
+    'Прилича на запис, който вече сте въвели: {what} на {date}.',
+  'a record': 'запис',
+  'Linked to the existing record': 'Свързано със съществуващия запис',
+  'Same transaction': 'Същата трансакция',
+  'Not the same': 'Не е същата',
+  'Looks like a transfer to {account}.': 'Прилича на превод към {account}.',
+  'Looks like a transfer from {account}.': 'Прилича на превод от {account}.',
+  'Save as transfer': 'Запази като превод',
+  Dismiss: 'Отхвърли',
+  'Choose an account first': 'Първо изберете сметка',
+  'Record added': 'Записът е добавен',
+  Added: 'Добавено',
+  Dismissed: 'Отхвърлено',
+  'Already recorded': 'Вече записано',
+  'Back to the inbox': 'Обратно във входящите',
+  'Transactions imported automatically – check them and add them to your records.':
+    'Автоматично импортирани трансакции – прегледайте ги и ги добавете към записите си.',
+  'To review': 'За преглед',
+  'Not recognised': 'Неразпознати',
+  'Nothing to review': 'Няма нищо за преглед',
+  'Nothing here yet': 'Тук още няма нищо',
+  'No unrecognised notifications': 'Няма неразпознати известия',
+  'Turn on automatic import to get transactions from your bank or from your phone’s payment notifications.':
+    'Включете автоматичния импорт, за да получавате трансакции от банката или от известията за плащания на телефона.',
+  'Notifications from your phone that were not a payment show up here for two weeks.':
+    'Известията от телефона, които не са плащане, се показват тук за две седмици.',
+  'New transactions appear here as soon as they arrive.':
+    'Новите трансакции се появяват тук веднага щом пристигнат.',
+  'Set up automatic import': 'Настрой автоматичен импорт',
+  '{n} record added': '{n} запис е добавен',
+  '{n} records added': '{n} записа са добавени',
+  'Add {n} ready transaction': 'Добави {n} готова трансакция',
+  'Add all {n} ready transactions': 'Добави всички {n} готови трансакции',
+  'phone notifications': 'известия от телефона',
+  'bank connection': 'връзка с банка',
+  'Let transactions arrive on their own – from the payment notifications on your phone and/or straight from your bank.':
+    'Нека трансакциите пристигат сами – от известията за плащания на телефона и/или директно от банката.',
+  'On: {what}': 'Включено: {what}',
 };

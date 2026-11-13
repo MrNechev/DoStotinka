@@ -82,6 +82,10 @@ export const users = pgTable(
     notifyFormat: text('notify_format').notNull().default('ntfy'),
     notifyHour: smallint('notify_hour').notNull().default(8),
     lastNotifiedOn: date('last_notified_on', { mode: 'string' }),
+    /** Automatic import: accept transactions from phone notifications. */
+    importNotifications: boolean('import_notifications').notNull().default(false),
+    /** Automatic import: fetch transactions from banks (open banking). */
+    importBank: boolean('import_bank').notNull().default(false),
     ...timestamps,
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],
@@ -394,6 +398,184 @@ export const attachments = pgTable(
   ],
 );
 
+// ───────────────────────────── Automatic import ─────────────────────────────
+
+/** A phone (or any automation) that posts payment notifications with its own secret token. */
+export const notificationSources = pgTable(
+  'notification_sources',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** SHA-256 of the token – the raw token is shown once. */
+    tokenHash: text('token_hash').notNull(),
+    enabled: boolean('enabled').notNull().default(true),
+    /** Create records right away instead of waiting in the inbox (when nothing needs a decision). */
+    autoConfirm: boolean('auto_confirm').notNull().default(false),
+    lastReceivedAt: timestamp('last_received_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    index('notification_sources_user_idx').on(t.userId),
+    uniqueIndex('notification_sources_token_idx').on(t.tokenHash),
+  ],
+);
+
+/** Which DoStotinka account the notifications of an app (bank app, Google Wallet, SMS …) belong to. */
+export const notificationApps = pgTable(
+  'notification_apps',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** Package name or app name exactly as the automation sends it. */
+    app: text('app').notNull(),
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    enabled: boolean('enabled').notNull().default(true),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('notification_apps_user_app_idx').on(t.userId, t.app)],
+);
+
+/** The user's own Enable Banking application (open banking access). */
+export const bankCredentials = pgTable('bank_credentials', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('enable_banking'),
+  applicationId: text('application_id').notNull(),
+  /** PEM private key, encrypted with the server key (see lib/secrets.ts). */
+  privateKey: text('private_key').notNull(),
+  /** SANDBOX or PRODUCTION (reported by the provider). */
+  environment: text('environment'),
+  /** Redirect URLs registered for the application. */
+  redirectUrls: jsonb('redirect_urls').$type<string[]>().notNull().default([]),
+  /** The one the bank sends the user back to. */
+  redirectUrl: text('redirect_url'),
+  ...timestamps,
+});
+
+/** One consent at one bank (an Enable Banking session). */
+export const bankConnections = pgTable(
+  'bank_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull().default('enable_banking'),
+    bankName: text('bank_name').notNull(),
+    bankCountry: varchar('bank_country', { length: 2 }).notNull(),
+    /** pending → active → expired / error. */
+    status: text('status').notNull().default('pending'),
+    /** Random value matched when the bank redirects back. */
+    authState: text('auth_state'),
+    sessionId: text('session_id'),
+    validUntil: timestamp('valid_until', { withTimezone: true }),
+    enabled: boolean('enabled').notNull().default(true),
+    autoConfirm: boolean('auto_confirm').notNull().default(false),
+    lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    /** No automatic sync before this time (after rate limits or bank errors). */
+    retryAfter: timestamp('retry_after', { withTimezone: true }),
+    /** When the "consent expires soon" reminder was sent. */
+    expiryNotifiedAt: timestamp('expiry_notified_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    index('bank_connections_user_idx').on(t.userId),
+    uniqueIndex('bank_connections_state_idx').on(t.authState),
+  ],
+);
+
+/** An account at the bank and the DoStotinka account its transactions go to. */
+export const bankAccounts = pgTable(
+  'bank_accounts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    connectionId: uuid('connection_id')
+      .notNull()
+      .references(() => bankConnections.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** Account id at the provider (valid for the current session). */
+    uid: text('uid').notNull(),
+    /** Stable identity across consents (the provider's identification hash). */
+    identity: text('identity'),
+    name: text('name'),
+    iban: text('iban'),
+    currency: varchar('currency', { length: 3 }),
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    enabled: boolean('enabled').notNull().default(true),
+    /** Transactions booked before this date are not imported. */
+    importFrom: date('import_from', { mode: 'string' }).notNull(),
+    lastBookingDate: date('last_booking_date', { mode: 'string' }),
+    /** Balance reported by the bank at the last sync (minor units of `currency`). */
+    balance: money('balance'),
+    balanceAt: timestamp('balance_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('bank_accounts_user_idx').on(t.userId),
+    uniqueIndex('bank_accounts_connection_uid_idx').on(t.connectionId, t.uid),
+  ],
+);
+
+/** A transaction that arrived automatically and waits to become a record (or was handled). */
+export const inboxItems = pgTable(
+  'inbox_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** `notification` or `bank`. */
+    origin: text('origin').notNull(),
+    notificationSourceId: uuid('notification_source_id').references(() => notificationSources.id, {
+      onDelete: 'set null',
+    }),
+    bankAccountId: uuid('bank_account_id').references(() => bankAccounts.id, {
+      onDelete: 'set null',
+    }),
+    /** App that showed the notification. */
+    app: text('app'),
+    accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    /** `expense` or `income`. */
+    type: text('type').notNull().default('expense'),
+    /** Positive amount in minor units of `currency` (null for ignored notifications). */
+    amount: money('amount'),
+    currency: varchar('currency', { length: 3 }),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    payee: text('payee'),
+    /** Bank reference text or the notification text. */
+    description: text('description'),
+    /** Unique per user and origin – the same transaction is never imported twice. */
+    externalId: text('external_id').notNull(),
+    /** pending · confirmed · dismissed · duplicate · ignored */
+    status: text('status').notNull().default('pending'),
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    /** The record created from (or matched to) this item. */
+    recordId: uuid('record_id').references(() => records.id, { onDelete: 'set null' }),
+    /** An existing record that looks like the same transaction (asks the user). */
+    matchRecordId: uuid('match_record_id').references(() => records.id, { onDelete: 'set null' }),
+    /** Earlier inbox item this one duplicates (e.g. bank + Google Wallet notification). */
+    duplicateOfId: uuid('duplicate_of_id'),
+    /** The other half of a probable transfer between two own accounts. */
+    pairItemId: uuid('pair_item_id'),
+    ...timestamps,
+  },
+  (t) => [
+    index('inbox_items_user_status_idx').on(t.userId, t.status),
+    uniqueIndex('inbox_items_external_idx').on(t.userId, t.origin, t.externalId),
+    index('inbox_items_record_idx').on(t.recordId),
+  ],
+);
+
 /** Server-wide settings changed by administrators (key → JSON value). */
 export const appSettings = pgTable('app_settings', {
   key: text('key').primaryKey(),
@@ -421,3 +603,8 @@ export type GoalRow = typeof goals.$inferSelect;
 export type AttachmentRow = typeof attachments.$inferSelect;
 export type RecordTemplateRow = typeof recordTemplates.$inferSelect;
 export type DebtRow = typeof debts.$inferSelect;
+export type NotificationSourceRow = typeof notificationSources.$inferSelect;
+export type NotificationAppRow = typeof notificationApps.$inferSelect;
+export type BankConnectionRow = typeof bankConnections.$inferSelect;
+export type BankAccountRow = typeof bankAccounts.$inferSelect;
+export type InboxItemRow = typeof inboxItems.$inferSelect;

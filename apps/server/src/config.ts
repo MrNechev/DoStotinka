@@ -79,6 +79,23 @@ const envSchema = z.object({
   /** Total size of the attached files (receipts) per user in MB; 0 = unlimited. */
   ATTACHMENT_QUOTA_MB: z.coerce.number().min(0).default(1024),
 
+  /**
+   * Automatic import of transactions (phone notifications and open banking). Every user still
+   * switches it on for themselves; `false` hides the feature on this server.
+   */
+  AUTOMATIC_IMPORT: bool(true),
+  /** Enable Banking API (only changed for tests). */
+  ENABLE_BANKING_API_URL: z.string().url().default('https://api.enablebanking.com'),
+  /**
+   * Key used to encrypt stored bank access keys. Any long random string; keep it when moving the
+   * server. Without it a key is generated and stored in the database.
+   */
+  ENCRYPTION_KEY: z
+    .string()
+    .min(16)
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().min(1).default(20),
@@ -96,5 +113,5 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const databaseUrl =
     c.DATABASE_URL ??
     `postgres://${encodeURIComponent(c.DB_USERNAME)}:${encodeURIComponent(c.DB_PASSWORD)}@${c.DB_HOST}:${c.DB_PORT}/${encodeURIComponent(c.DB_DATABASE_NAME)}`;
-  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.5.2' };
+  return { ...c, databaseUrl, version: process.env.APP_VERSION ?? '0.6.0' };
 }

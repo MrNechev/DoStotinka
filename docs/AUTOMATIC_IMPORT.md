@@ -1,9 +1,9 @@
 # Automatic transaction import – research
 
-> **Status: research, nothing is implemented yet** (November 2026). This document collects what is
-> possible, how other apps do it and how DoStotinka could do it. It is the planned next big feature
-> (see the [roadmap](../README.md#roadmap)). Like every DoStotinka feature that talks to the outside
-> world, it would be **optional and switched off by default**.
+> **Status: implemented in 0.6.0** – options 1 and 2 below, with the inbox described under
+> [Proposed design](#proposed-design-for-dostotinka). How to set it up is in the
+> [user guide](USER_GUIDE.md#automatic-import). This document keeps the research behind it
+> (November 2026): what is possible, how other apps do it and why DoStotinka does it this way.
 
 The goal: records (expenses, income, transfers) should appear in DoStotinka on their own, without
 typing them in. The banks looked at in detail are the ones the project is used with today: **DSK Bank**
@@ -88,6 +88,29 @@ can see and revoke every third-party access. Nothing in them gives private indiv
 access.
 
 ## Option 1 – Open banking (PSD2) through an aggregator
+
+### How this fits a self-hosted app
+
+A licensed provider has to sit between the app and the bank – but it does not have to be the
+author of the app. Every person who runs DoStotinka creates their **own** free Enable Banking
+application, so nobody else is in between:
+
+```
+ your browser ──► your DoStotinka server ──(your app key)──► Enable Banking ──PSD2──► your bank
+```
+
+- You confirm read-only access on the bank's own page or app – the bank password never reaches
+  Enable Banking or DoStotinka.
+- Your history is stored only in your DoStotinka database; new transactions pass through Enable
+  Banking (a regulated EU provider) on their way from the bank. If even that is too much, the
+  phone-notification option is fully local.
+- A central service run by the developer would be worse: it would need a paid business contract,
+  and everybody's bank data would flow through someone else's servers.
+- In production Enable Banking only accepts `https://` redirect URLs. Servers opened over plain
+  `http://` register an https address that does not have to load (e.g.
+  `https://localhost/dostotinka-bank-callback`) and paste the address of the page they land on into
+  DoStotinka.
+
 
 ### Aggregators a self-hoster can actually use (November 2026)
 

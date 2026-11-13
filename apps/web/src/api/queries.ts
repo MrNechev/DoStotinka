@@ -4,7 +4,10 @@ import type {
   AccountUpdateInput,
   Attachment,
   AuthResponse,
+  AutomaticImportState,
   BalanceResponse,
+  Bank,
+  BankConnection,
   Budget,
   BudgetInput,
   BudgetStatus,
@@ -14,6 +17,7 @@ import type {
   CategoryInput,
   CategoryStatsResponse,
   CategoryUpdateInput,
+  CreatedNotificationSource,
   CreatedToken,
   CurrenciesResponse,
   Debt,
@@ -22,6 +26,9 @@ import type {
   DebtUpdateInput,
   Goal,
   GoalInput,
+  InboxConfirmInput,
+  InboxCounts,
+  InboxItem,
   Interval,
   Label,
   LabelInput,
@@ -938,3 +945,178 @@ export function useDeleteGoal() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
   });
 }
+
+// ───────────────────────────── Automatic import ─────────────────────────────
+
+const autoKey = ['automatic-import'] as const;
+const inboxKey = ['inbox'] as const;
+
+export function useAutomaticImport(enabled = true) {
+  return useQuery({
+    queryKey: autoKey,
+    queryFn: () => api<AutomaticImportState>('/automatic-import'),
+    enabled,
+  });
+}
+
+/** Mutations of the automatic-import settings (they all refresh the same state). */
+function useAutoMutation<V, R = unknown>(fn: (vars: V) => Promise<R>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: autoKey });
+      void qc.invalidateQueries({ queryKey: inboxKey });
+    },
+  });
+}
+
+export function useSetAutoImport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { notificationsEnabled?: boolean; bankEnabled?: boolean }) =>
+      api('/automatic-import', { method: 'PATCH', body }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: autoKey });
+      void qc.invalidateQueries({ queryKey: qk.me });
+    },
+  });
+}
+export const useCreatePhone = () =>
+  useAutoMutation((name: string) =>
+    api<CreatedNotificationSource>('/automatic-import/sources', { method: 'POST', body: { name } }),
+  );
+export const useUpdatePhone = () =>
+  useAutoMutation(
+    ({ id, ...body }: { id: string; name?: string; enabled?: boolean; autoConfirm?: boolean }) =>
+      api(`/automatic-import/sources/${id}`, { method: 'PATCH', body }),
+  );
+export const useDeletePhone = () =>
+  useAutoMutation((id: string) => api(`/automatic-import/sources/${id}`, { method: 'DELETE' }));
+export const useUpdateNotificationApp = () =>
+  useAutoMutation(({ id, ...body }: { id: string; accountId?: string | null; enabled?: boolean }) =>
+    api(`/automatic-import/apps/${id}`, { method: 'PATCH', body }),
+  );
+export const useDeleteNotificationApp = () =>
+  useAutoMutation((id: string) => api(`/automatic-import/apps/${id}`, { method: 'DELETE' }));
+export const useSaveBankCredentials = () =>
+  useAutoMutation((body: { applicationId: string; privateKey: string }) =>
+    api<{ environment: string; active: boolean; redirectUrl: string }>(
+      '/automatic-import/bank/credentials',
+      { method: 'PUT', body },
+    ),
+  );
+export const useDeleteBankCredentials = () =>
+  useAutoMutation((_: undefined) =>
+    api('/automatic-import/bank/credentials', { method: 'DELETE' }),
+  );
+
+export function useBanks(country: string | null) {
+  return useQuery({
+    queryKey: ['banks', country],
+    queryFn: () => api<Bank[]>('/automatic-import/bank/banks', { query: { country } }),
+    enabled: !!country,
+    staleTime: 60 * 60_000,
+  });
+}
+
+export const useConnectBank = () =>
+  useAutoMutation((body: { bankName: string; country: string; renewConnectionId?: string }) =>
+    api<{ url: string; connectionId: string; redirectUrl: string }>(
+      '/automatic-import/bank/connections',
+      { method: 'POST', body },
+    ),
+  );
+export const useFinishBank = () =>
+  useAutoMutation(
+    (body: { state: string; code?: string; error?: string; errorDescription?: string }) =>
+      api<BankConnection>('/automatic-import/bank/callback', { method: 'POST', body }),
+  );
+export const useUpdateBankConnection = () =>
+  useAutoMutation(({ id, ...body }: { id: string; enabled?: boolean; autoConfirm?: boolean }) =>
+    api(`/automatic-import/bank/connections/${id}`, { method: 'PATCH', body }),
+  );
+export const useSyncBank = () =>
+  useAutoMutation((id: string) =>
+    api<{ imported: number; duplicates: number }>(`/automatic-import/bank/connections/${id}/sync`, {
+      method: 'POST',
+    }),
+  );
+export const useDeleteBankConnection = () =>
+  useAutoMutation((id: string) =>
+    api(`/automatic-import/bank/connections/${id}`, { method: 'DELETE' }),
+  );
+export const useUpdateBankAccount = () =>
+  useAutoMutation(
+    ({
+      id,
+      ...body
+    }: {
+      id: string;
+      accountId?: string | null;
+      enabled?: boolean;
+      importFrom?: string;
+    }) => api(`/automatic-import/bank/accounts/${id}`, { method: 'PATCH', body }),
+  );
+
+// ───────────────────────────── Inbox ─────────────────────────────
+
+export function useInbox(status: 'pending' | 'done' | 'ignored') {
+  return useQuery({
+    queryKey: [...inboxKey, status],
+    queryFn: () => api<InboxItem[]>('/inbox', { query: { status } }),
+  });
+}
+
+/** Number of transactions waiting for review (polled so the badge stays current). */
+export function useInboxCount(enabled = true) {
+  return useQuery({
+    queryKey: [...inboxKey, 'count'],
+    queryFn: () => api<InboxCounts>('/inbox/count'),
+    enabled,
+    refetchInterval: 60_000,
+  });
+}
+
+function useInboxMutation<V, R = unknown>(fn: (vars: V) => Promise<R>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: inboxKey });
+      void invalidateFinancialData(qc);
+    },
+  });
+}
+
+export const useConfirmInbox = () =>
+  useInboxMutation(({ id, ...body }: { id: string } & InboxConfirmInput) =>
+    api<InboxItem>(`/inbox/${id}/confirm`, { method: 'POST', body }),
+  );
+export const useUpdateInbox = () =>
+  useInboxMutation(
+    ({
+      id,
+      ...body
+    }: {
+      id: string;
+      accountId?: string | null;
+      type?: 'expense' | 'income';
+      categoryId?: string | null;
+      payee?: string | null;
+    }) => api<InboxItem>(`/inbox/${id}`, { method: 'PATCH', body }),
+  );
+export const useInboxAction = () =>
+  useInboxMutation(
+    ({
+      id,
+      action,
+    }: {
+      id: string;
+      action: 'dismiss' | 'link' | 'unmatch' | 'transfer' | 'restore';
+    }) => api(`/inbox/${id}/${action}`, { method: 'POST' }),
+  );
+export const useInboxBulk = () =>
+  useInboxMutation((body: { ids: string[]; action: 'confirm' | 'dismiss' }) =>
+    api<{ done: number; skipped: number }>('/inbox/bulk', { method: 'POST', body }),
+  );
