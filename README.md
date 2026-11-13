@@ -364,7 +364,7 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 - [x] **Android app** that connects to your own server, with a built-in notification listener for
   the automatic import (0.7.0)
 - [x] Saved CSV import profiles per bank (0.7.0)
-- [x] Households – shared data for several users
+- [x] Households – shared data for several users (0.8.0)
 - [x] **Automatic transaction import** – phone notifications and open banking with an inbox for
   review (0.6.0). Background and research: [Automatic transaction import](docs/AUTOMATIC_IMPORT.md).
 - [x] CSV import (from Wallet and bank statements)

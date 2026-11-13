@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.8.0] – 2026-11-13
+
+Upgrading: `docker compose pull && docker compose up -d` (a small
+migration adds a household column to the users and a table for invitations; no existing data
+changes).
+
 ### Added
 - **Households:** invite other users of the server by e-mail to work with your data (accounts,
   records, budgets …) using their own login. Personal settings, password, two-factor login and
@@ -262,7 +268,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/MrNechev/DoStotinka/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/MrNechev/DoStotinka/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/MrNechev/DoStotinka/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/MrNechev/DoStotinka/compare/v0.5.1...v0.5.2
