@@ -85,6 +85,10 @@ export const users = pgTable(
     notifyFormat: text('notify_format').notNull().default('ntfy'),
     notifyHour: smallint('notify_hour').notNull().default(8),
     lastNotifiedOn: date('last_notified_on', { mode: 'string' }),
+    /** Also send the monthly review (at the start of a month) to `notifyUrl`. */
+    notifyMonthlyReview: boolean('notify_monthly_review').notNull().default(false),
+    /** Month (YYYY-MM) of the last review sent. */
+    lastReviewMonth: varchar('last_review_month', { length: 7 }),
     /** Automatic import: accept transactions from phone notifications. */
     importNotifications: boolean('import_notifications').notNull().default(false),
     /** Automatic import: fetch transactions from banks (open banking). */

@@ -73,7 +73,7 @@ export function NoteField({
   };
 
   return (
-    <div>
+    <div className="relative">
       <Textarea
         {...props}
         value={value}
@@ -83,7 +83,10 @@ export function NoteField({
           setActive(-1);
         }}
         onKeyDown={onKeyDown}
-        onBlur={() => setActive(-1)}
+        onBlur={() => {
+          setActive(-1);
+          setTyping(false);
+        }}
         autoComplete="off"
         aria-autocomplete="list"
         aria-controls={matches.length ? listId : undefined}
@@ -95,7 +98,8 @@ export function NoteField({
           id={listId}
           role="listbox"
           aria-label={t('Notes you wrote before')}
-          className="scrollbar-thin -mx-1 mt-1.5 flex gap-1.5 overflow-x-auto px-1 pb-1"
+          // Above the field: stays visible with the phone keyboard open and nothing moves.
+          className="absolute inset-x-0 bottom-full z-20 mb-1 grid overflow-hidden rounded-xl border border-border bg-card p-1 shadow-lg"
         >
           {matches.map((note, i) => (
             <button
@@ -109,8 +113,8 @@ export function NoteField({
               onPointerDown={(e) => e.preventDefault()}
               onClick={() => choose(note)}
               className={cn(
-                'max-w-64 shrink-0 cursor-pointer truncate rounded-full border border-border px-3 py-1 text-xs hover:bg-muted',
-                i === active && 'border-primary bg-primary-soft',
+                'cursor-pointer truncate rounded-lg px-3 py-2 text-left text-sm hover:bg-muted',
+                i === active && 'bg-primary-soft text-primary hover:bg-primary-soft',
               )}
             >
               <Highlighted note={note} typed={value} />

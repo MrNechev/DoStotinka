@@ -736,15 +736,27 @@ function RemindersSection() {
     url: string;
     format: ReminderSettings['format'];
     hour: number;
+    monthlyReview: boolean;
   } | null>(null);
   useEffect(() => {
-    if (data && !form) setForm({ url: data.url ?? '', format: data.format, hour: data.hour });
+    if (data && !form)
+      setForm({
+        url: data.url ?? '',
+        format: data.format,
+        hour: data.hour,
+        monthlyReview: data.monthlyReview,
+      });
   }, [data, form]);
   const save = useMutation({
     mutationFn: () =>
       api<ReminderSettings>('/me/reminders', {
         method: 'PUT',
-        body: { url: form?.url.trim() || null, format: form?.format, hour: form?.hour },
+        body: {
+          url: form?.url.trim() || null,
+          format: form?.format,
+          hour: form?.hour,
+          monthlyReview: form?.monthlyReview,
+        },
       }),
     onSuccess: (res) => {
       qc.setQueryData(['reminders'], res);
@@ -810,6 +822,18 @@ function RemindersSection() {
             ))}
           </Select>
         </Field>
+        <label className="flex cursor-pointer items-center justify-between gap-3 sm:col-span-2">
+          <span className="min-w-0">
+            <span className="block text-sm font-medium">{t('Monthly review')}</span>
+            <span className="block text-xs text-muted-foreground">
+              {t('Also send a short review of the month before on the 1st of each month.')}
+            </span>
+          </span>
+          <Switch
+            checked={form.monthlyReview}
+            onCheckedChange={(v) => setForm({ ...form, monthlyReview: v })}
+          />
+        </label>
         <div className="flex flex-wrap items-end gap-2">
           <Button type="submit" loading={save.isPending}>
             {t('Save')}

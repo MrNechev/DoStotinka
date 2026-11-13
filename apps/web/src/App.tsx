@@ -34,6 +34,7 @@ const DebtsPage = lazy(() => import('./pages/debts-page'));
 const AdminPage = lazy(() => import('./pages/admin-page'));
 const InboxPage = lazy(() => import('./pages/inbox-page'));
 const RulesPage = lazy(() => import('./pages/rules-page'));
+const ReviewPage = lazy(() => import('./pages/review-page'));
 const AutomaticImportPage = lazy(() => import('./pages/automatic-import-page'));
 const BankCallbackPage = lazy(() => import('./pages/bank-callback-page'));
 
@@ -150,6 +151,7 @@ const router = createBrowserRouter([
           { path: 'admin', element: page(<AdminPage />) },
           { path: 'inbox', element: page(<InboxPage />) },
           { path: 'rules', element: page(<RulesPage />) },
+          { path: 'review', element: page(<ReviewPage />) },
           { path: 'automatic-import', element: page(<AutomaticImportPage />) },
           { path: 'bank-callback', element: page(<BankCallbackPage />) },
           { path: '*', element: <NotFoundPage /> },

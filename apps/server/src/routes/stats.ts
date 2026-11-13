@@ -2,15 +2,19 @@ import {
   balanceQuery,
   cashflowQuery,
   categoryStatsQuery,
+  isMonth,
+  previousMonth,
   statsQuery,
   timeseriesQuery,
 } from '@dostotinka/shared';
 import { eq, max, min } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { z } from 'zod';
 import { records } from '../db/schema';
-import { safeTimeZone } from '../lib/dates';
+import { safeTimeZone, toLocalDate } from '../lib/dates';
 import { badRequest } from '../lib/errors';
-import { currentUser } from '../plugins/auth';
+import { currentUser, sessionUser } from '../plugins/auth';
+import { monthlyReview } from '../services/review';
 import {
   balanceTrend,
   cashflow,
@@ -56,6 +60,25 @@ function scopeOf(
 
 export const statsRoutes: FastifyPluginAsyncZod = async (app) => {
   const { db } = app;
+
+  app.get(
+    '/review',
+    {
+      schema: {
+        tags: ['stats'],
+        summary: 'Monthly review (default: the month before the current one)',
+        querystring: z.object({
+          month: z.string().refine(isMonth, 'Expected a month (YYYY-MM)').optional(),
+          tz: z.string().max(64).optional(),
+        }),
+      },
+    },
+    async (req) => {
+      const tz = safeTimeZone(req.query.tz, sessionUser(req).timezone);
+      const month = req.query.month ?? previousMonth(toLocalDate(new Date(), tz).slice(0, 7));
+      return monthlyReview(db, currentUser(req), month, tz);
+    },
+  );
 
   app.get(
     '/bounds',

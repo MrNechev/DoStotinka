@@ -540,6 +540,8 @@ export const reminderSettingsInput = z.object({
   format: z.enum(NOTIFY_FORMATS).default('ntfy'),
   /** Local hour (0–23) after which the daily reminder is sent. */
   hour: z.number().int().min(0).max(23).default(8),
+  /** Also send the monthly review at the start of each month. */
+  monthlyReview: z.boolean().default(false),
 });
 export type ReminderSettingsInput = z.input<typeof reminderSettingsInput>;
 

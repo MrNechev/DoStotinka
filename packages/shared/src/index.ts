@@ -9,4 +9,5 @@ export * from './types';
 export const APP_NAME = 'DoStotinka';
 export * from './auto-import';
 export * from './notifications';
+export * from './review';
 export * from './rules';

@@ -1,6 +1,7 @@
 import { addDays, addMonths, parseISO } from 'date-fns';
+import { ClipboardList } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useCategories } from '@/api/queries';
 import {
   BalanceChart,
@@ -16,6 +17,7 @@ import {
   useStatsFilters,
 } from '@/components/stats/filters';
 import { CategoryReport } from '@/components/stats/report';
+import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { Card, CardHeader, PageHeader, Segmented } from '@/components/ui/misc';
 import { t } from '@/i18n';
@@ -57,6 +59,13 @@ export default function StatisticsPage() {
       <PageHeader
         title={t('Statistics')}
         description={t('Understand where your money comes from and where it goes.')}
+        actions={
+          <Button asChild variant="outline">
+            <Link to="/review">
+              <ClipboardList /> {t('Monthly review')}
+            </Link>
+          </Button>
+        }
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-2">

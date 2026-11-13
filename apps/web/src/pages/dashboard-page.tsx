@@ -1,6 +1,6 @@
 import { convertMinor } from '@dostotinka/shared';
 import { addMonths, startOfHour, startOfMonth, subDays } from 'date-fns';
-import { ArrowRight, Inbox, Plus } from 'lucide-react';
+import { ArrowRight, ClipboardList, Inbox, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import {
@@ -103,6 +103,25 @@ function InboxBanner() {
   );
 }
 
+/** In the first days of a month: the review of the month before is ready. */
+function ReviewBanner() {
+  const now = new Date();
+  if (now.getDate() > 7) return null;
+  const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return (
+    <Link
+      to="/review"
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+    >
+      <ClipboardList className="size-5 shrink-0 text-primary" />
+      <span className="flex-1">
+        {t('Your review of {month} is ready', { month: fmt(last, 'LLLL') })}
+      </span>
+      <ArrowRight className="size-4 text-muted-foreground" />
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
   const user = useUser();
   const { openNew } = useRecordEditor();
@@ -160,6 +179,7 @@ export default function DashboardPage() {
 
       <GettingStarted />
       <InboxBanner />
+      <ReviewBanner />
 
       {/* Accounts */}
       <section>

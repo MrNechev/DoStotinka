@@ -154,6 +154,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       : 'ntfy',
     hour: u.notifyHour,
     lastSentOn: u.lastNotifiedOn,
+    monthlyReview: u.notifyMonthlyReview,
   });
   const assertReminders = (u: UserRow) => {
     if (!app.config.NOTIFICATIONS_ENABLED) throw forbidden('Reminders are disabled on this server');
@@ -182,6 +183,7 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
           notifyUrl: req.body.url,
           notifyFormat: req.body.format,
           notifyHour: req.body.hour,
+          notifyMonthlyReview: req.body.monthlyReview,
           lastNotifiedOn: null,
         })
         .where(eq(users.id, user.id))

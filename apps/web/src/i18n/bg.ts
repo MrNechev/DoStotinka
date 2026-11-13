@@ -1695,4 +1695,38 @@ export const bg: Record<string, string> = {
   'The update check is switched off (UPDATE_CHECK)':
     'Проверката за обновления е изключена (UPDATE_CHECK)',
   'Could not reach GitHub – try again later': 'GitHub не е достъпен – опитайте по-късно',
+  // ─── Monthly review ───
+  'Your review of {month} is ready': 'Прегледът за {month} е готов',
+  'Monthly review': 'Месечен преглед',
+  'What happened with your money – compared with the months before.':
+    'Какво се случи с парите ви – в сравнение с предишните месеци.',
+  'Nothing recorded in {month}': 'Няма записи за {month}',
+  'The review appears once the month has records.': 'Прегледът се показва, щом месецът има записи.',
+  'as usual': 'както обикновено',
+  'more than usual': 'повече от обикновено',
+  'less than usual': 'по-малко от обикновено',
+  Uncategorised: 'Без категория',
+  'This month is not over yet – the numbers show it so far.':
+    'Месецът още не е свършил – числата са дотук.',
+  'Left over': 'Остават',
+  '{rate} of the income': '{rate} от приходите',
+  'in this month': 'през месеца',
+  'What was different': 'Какво беше различно',
+  'Where the money went': 'Къде отидоха парите',
+  'Top payees': 'Най-чести получатели',
+  'Payee, or the note of records without one.':
+    'Получател или бележката на записите без получател.',
+  'No payees or notes this month.': 'Няма получатели или бележки този месец.',
+  'Largest payments': 'Най-големи плащания',
+  unusual: 'необичайно',
+  'All budgets': 'Всички бюджети',
+  '{amount} over the limit': '{amount} над лимита',
+  'usually {amount}': 'обикновено {amount}',
+  'Compared with the month before.': 'В сравнение с предишния месец.',
+  'Compared with the average of the {n} months before.':
+    'В сравнение със средното за предишните {n} месеца.',
+  '{n} time': '{n} път',
+  '{n} times': '{n} пъти',
+  'Also send a short review of the month before on the 1st of each month.':
+    'Изпращай и кратък преглед на предишния месец на 1-во число всеки месец.',
 };

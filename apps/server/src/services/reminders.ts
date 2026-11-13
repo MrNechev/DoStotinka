@@ -1,10 +1,11 @@
-import { addDays, formatMoney, type NotifyFormat } from '@dostotinka/shared';
+import { addDays, formatMoney, type NotifyFormat, previousMonth } from '@dostotinka/shared';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import type { Database } from '../db';
-import { accounts, plannedPayments, type UserRow, users } from '../db/schema';
+import { accounts, categories, plannedPayments, type UserRow, users } from '../db/schema';
 import { safeTimeZone, toLocalDate } from '../lib/dates';
 import { dataOwnerOf } from './household';
 import { upcoming } from './planned';
+import { monthlyReview, reviewMessage } from './review';
 
 export interface ReminderMessage {
   title: string;
@@ -41,6 +42,9 @@ export function testReminder(language: string): ReminderMessage {
   return { title: tx.testTitle, lines: [tx.testLine], count: 0 };
 }
 
+const localeOf = (user: UserRow) =>
+  !user.locale || user.locale === 'en' || user.locale === 'auto' ? 'en-GB' : user.locale;
+
 function localHour(now: Date, tz: string): number {
   return Number(
     new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', hourCycle: 'h23' }).format(
@@ -69,8 +73,7 @@ export async function buildReminder(
     .innerJoin(accounts, eq(accounts.id, plannedPayments.accountId))
     .where(eq(plannedPayments.userId, dataUser.id));
   const byId = new Map(plans.map((p) => [p.plan.id, p]));
-  const locale =
-    !user.locale || user.locale === 'en' || user.locale === 'auto' ? 'en-GB' : user.locale;
+  const locale = localeOf(user);
 
   const lines: string[] = [];
   let overdue = 0;
@@ -149,7 +152,34 @@ export async function sendReminder(
   if (!res.ok) throw new Error(`The reminder service answered with HTTP ${res.status}`);
 }
 
-/** Sends the daily reminder to every user whose reminder hour has passed. */
+/** The monthly review of `month` as a message (null when the month had no records). */
+export async function buildReviewMessage(
+  db: Database,
+  user: UserRow,
+  dataUser: UserRow,
+  month: string,
+  now = new Date(),
+): Promise<ReminderMessage | null> {
+  const tz = safeTimeZone(user.timezone);
+  const review = await monthlyReview(db, dataUser, month, tz, now);
+  const names = new Map(
+    (
+      await db
+        .select({ id: categories.id, name: categories.name })
+        .from(categories)
+        .where(eq(categories.userId, dataUser.id))
+    ).map((c) => [c.id, c.name]),
+  );
+  const uncategorised = user.language === 'bg' ? 'Без категория' : 'Uncategorised';
+  return reviewMessage(review, user.language, localeOf(user), (id) =>
+    id ? (names.get(id) ?? uncategorised) : uncategorised,
+  );
+}
+
+/**
+ * Sends the daily reminder to every user whose reminder hour has passed – and, in the first days
+ * of a month, the review of the month before to those who asked for it.
+ */
 export async function processReminders(db: Database, now = new Date()): Promise<number> {
   const rows = await db
     .select()
@@ -157,19 +187,38 @@ export async function processReminders(db: Database, now = new Date()): Promise<
     .where(and(isNotNull(users.notifyUrl), eq(users.isDemo, false)));
   let sent = 0;
   for (const user of rows) {
-    try {
-      const tz = safeTimeZone(user.timezone);
-      const today = toLocalDate(now, tz);
-      if (user.lastNotifiedOn === today || localHour(now, tz) < user.notifyHour) continue;
-      const dataUser = user.householdOwnerId ? await dataOwnerOf(db, user) : user;
-      const message = await buildReminder(db, user, now, dataUser);
-      if (message.count > 0) {
-        await sendReminder(user.notifyUrl!, user.notifyFormat as NotifyFormat, message);
-        sent++;
+    const tz = safeTimeZone(user.timezone);
+    const today = toLocalDate(now, tz);
+    if (localHour(now, tz) < user.notifyHour) continue;
+    const dataUser = user.householdOwnerId ? await dataOwnerOf(db, user) : user;
+    if (user.lastNotifiedOn !== today) {
+      try {
+        const message = await buildReminder(db, user, now, dataUser);
+        if (message.count > 0) {
+          await sendReminder(user.notifyUrl!, user.notifyFormat as NotifyFormat, message);
+          sent++;
+        }
+        await db.update(users).set({ lastNotifiedOn: today }).where(eq(users.id, user.id));
+      } catch {
+        // Try again on the next run; one failing endpoint must not block the others.
       }
-      await db.update(users).set({ lastNotifiedOn: today }).where(eq(users.id, user.id));
-    } catch {
-      // Try again on the next run; one failing endpoint must not block the others.
+    }
+    const month = previousMonth(today.slice(0, 7));
+    if (
+      user.notifyMonthlyReview &&
+      user.lastReviewMonth !== month &&
+      Number(today.slice(8, 10)) <= 3
+    ) {
+      try {
+        const message = await buildReviewMessage(db, user, dataUser, month, now);
+        if (message) {
+          await sendReminder(user.notifyUrl!, user.notifyFormat as NotifyFormat, message);
+          sent++;
+        }
+        await db.update(users).set({ lastReviewMonth: month }).where(eq(users.id, user.id));
+      } catch {
+        // Next run.
+      }
     }
   }
   return sent;

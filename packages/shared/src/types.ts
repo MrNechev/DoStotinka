@@ -389,6 +389,7 @@ export interface ReminderSettings {
   format: 'ntfy' | 'gotify' | 'discord' | 'slack' | 'json';
   hour: number;
   lastSentOn: string | null;
+  monthlyReview: boolean;
 }
 
 export interface ImportProfile {

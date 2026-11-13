@@ -68,7 +68,7 @@ export default function RulesPage() {
           </Button>
         }
       />
-      <div className="grid gap-5">
+      <div className="grid grid-cols-1 gap-5">
         {isLoading ? (
           <Skeleton className="h-40" />
         ) : !rules?.length ? (
