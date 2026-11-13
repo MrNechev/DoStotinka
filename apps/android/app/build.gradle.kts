@@ -64,6 +64,9 @@ android {
     lint {
         // Newer AndroidX versions need a newer compileSdk – updated together on purpose.
         disable += "GradleDependency"
+        // targetSdk follows the Android Gradle plugin; the check depends on the SDKs installed on
+        // the build machine, which made CI and local builds disagree.
+        disable += "OldTargetApi"
         warningsAsErrors = true
         abortOnError = true
     }
