@@ -54,6 +54,34 @@ jobs:
               while IFS= read -r line; do echo "::error::${line}"; done
             exit 1
           fi
+      - name: UI test on the simulator (online, then offline)
+        run: |
+          set -o pipefail
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulator: $DEVICE"
+          python3 UITests/fixture_server.py 8899 & echo $! > "$RUNNER_TEMP/server.pid"
+          sleep 2
+          xcodebuild build-for-testing -project DoStotinka.xcodeproj -scheme DoStotinka -destination "id=$DEVICE" \
+            -derivedDataPath build/test CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/test.log" | grep -E "error:|BUILD" || true
+          if ! grep -q "TEST BUILD SUCCEEDED\|BUILD SUCCEEDED" "$RUNNER_TEMP/test.log"; then
+            grep -E "error:" "$RUNNER_TEMP/test.log" | sort -u | head -15 |
+              while IFS= read -r line; do echo "::error::${line}"; done
+            exit 1
+          fi
+          ok=true
+          for t in testOnline testOffline; do
+            if [ "$t" = testOffline ]; then kill "$(cat "$RUNNER_TEMP/server.pid")"; sleep 1; fi
+            xcodebuild test-without-building -project DoStotinka.xcodeproj -scheme DoStotinka \
+              -destination "id=$DEVICE" -derivedDataPath build/test \
+              -only-testing:"DoStotinkaUITests/DoStotinkaUITests/$t" 2>&1 | tee "$RUNNER_TEMP/$t.log" |
+              grep -E "Test Case|error:|TEST (SUCCEEDED|FAILED)" || true
+            if ! grep -q "TEST EXECUTE SUCCEEDED\|TEST SUCCEEDED" "$RUNNER_TEMP/$t.log"; then
+              ok=false
+              grep -E "error:|failed" "$RUNNER_TEMP/$t.log" | sort -u | head -10 |
+                while IFS= read -r line; do echo "::error::$t: ${line}"; done
+            fi
+          done
+          $ok
       - name: Build the unsigned app for iPhones
         run: |
           set -o pipefail

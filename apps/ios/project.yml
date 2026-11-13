@@ -55,11 +55,31 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_STYLE: Automatic
         ENABLE_PREVIEWS: NO
+  DoStotinkaUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+        excludes:
+          - "fixture/**"
+          - "*.py"
+    dependencies:
+      - target: DoStotinka
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.dostotinka.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: DoStotinka
 schemes:
   DoStotinka:
     build:
       targets:
         DoStotinka: all
+        DoStotinkaUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - DoStotinkaUITests
     run:
       config: Debug
     archive:
