@@ -66,6 +66,8 @@ export const users = pgTable(
     locale: text('locale').notNull().default('en'),
     /** UI language, used for texts generated on the server (reminders). */
     language: varchar('language', { length: 5 }).notNull().default('en'),
+    /** Suggest notes written before while typing a note. */
+    noteSuggestions: boolean('note_suggestions').notNull().default(true),
     isDemo: boolean('is_demo').notNull().default(false),
     isAdmin: boolean('is_admin').notNull().default(false),
     /** `sub` claim of the linked single sign-on (OpenID Connect) identity. */

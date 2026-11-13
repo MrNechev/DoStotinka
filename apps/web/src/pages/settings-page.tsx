@@ -48,7 +48,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
-import { Badge, Card, CardHeader, PageHeader } from '@/components/ui/misc';
+import { Badge, Card, CardHeader, PageHeader, Switch } from '@/components/ui/misc';
 import { applyTheme, type ThemePref } from '@/hooks/use-theme';
 import { LANGUAGES, type Language, language, setLanguage, t, tn } from '@/i18n';
 import { ago } from '@/lib/date';
@@ -255,6 +255,18 @@ function PreferencesSection() {
             </Select>
           </Field>
         </div>
+        <label className="mt-5 flex cursor-pointer items-center justify-between gap-3">
+          <span className="min-w-0">
+            <span className="block text-sm font-medium">{t('Suggest notes while typing')}</span>
+            <span className="block text-xs text-muted-foreground">
+              {t('Notes you wrote before appear below the note field.')}
+            </span>
+          </span>
+          <Switch
+            checked={user.noteSuggestions}
+            onCheckedChange={(v) => save({ noteSuggestions: v })}
+          />
+        </label>
       </fieldset>
     </Section>
   );

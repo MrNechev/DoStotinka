@@ -40,9 +40,9 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       const user = sessionUser(req);
       const input = req.body;
       if (user.isDemo) {
-        // The demo account is shared by all visitors: its profile stays as it is. The theme is
-        // applied in the browser only.
-        const { theme: _theme, ...rest } = input;
+        // The demo account is shared by all visitors: its profile stays as it is. The theme and
+        // note suggestions are applied in the browser only.
+        const { theme: _theme, noteSuggestions: _notes, ...rest } = input;
         if (Object.values(rest).some((v) => v !== undefined)) {
           throw forbidden('The settings of the shared demo account cannot be changed');
         }

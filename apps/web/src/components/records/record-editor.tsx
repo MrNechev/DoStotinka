@@ -45,7 +45,7 @@ import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Field, Input, Select, Textarea } from '@/components/ui/input';
+import { Field, Input, Select } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/misc';
 import { t } from '@/i18n';
 import { buildCategoryIndex } from '@/lib/categories';
@@ -53,6 +53,7 @@ import { fmt } from '@/lib/date';
 import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 import { AttachmentsField } from './attachments-field';
+import { NoteField } from './note-field';
 import { debtRecordTitle } from './record-list';
 import { SaveTemplateButton, TemplateChips } from './templates';
 
@@ -816,10 +817,11 @@ function RecordEditorDialog({
           )}
 
           <Field label={t('Note')} htmlFor="note">
-            <Textarea
+            <NoteField
               id="note"
               value={form.note}
-              onChange={(e) => set('note', e.target.value)}
+              onValueChange={(v) => set('note', v)}
+              suggest={user.noteSuggestions}
               placeholder={t('What was it for?')}
               maxLength={500}
               rows={2}
@@ -872,7 +874,15 @@ function RecordEditorDialog({
           )}
 
           {!debtId && (
-            <SaveTemplateButton input={templateInput} suggestedName={suggestedTemplateName} />
+            <SaveTemplateButton
+              input={templateInput}
+              suggestedName={suggestedTemplateName}
+              amountLabel={
+                !foreign && parsedAmount && parsedAmount > 0 && account
+                  ? money(parsedAmount, account.currency)
+                  : null
+              }
+            />
           )}
 
           {error && (

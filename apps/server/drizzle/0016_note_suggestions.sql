@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "note_suggestions" boolean DEFAULT true NOT NULL;

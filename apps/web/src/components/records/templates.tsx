@@ -15,7 +15,7 @@ import { IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input } from '@/components/ui/input';
-import { Card, CardHeader } from '@/components/ui/misc';
+import { Card, CardHeader, Checkbox } from '@/components/ui/misc';
 import { t } from '@/i18n';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { money } from '@/lib/format';
@@ -82,12 +82,16 @@ export function TemplateChips({
 export function SaveTemplateButton({
   input,
   suggestedName,
+  amountLabel,
 }: {
   input: () => Omit<TemplateInput, 'name'>;
   suggestedName: string;
+  /** The entered amount, formatted – offered as an option (most records differ in price). */
+  amountLabel?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [withAmount, setWithAmount] = useState(false);
   const save = useSaveTemplate();
   return (
     <>
@@ -97,6 +101,7 @@ export function SaveTemplateButton({
         className="justify-self-start text-muted-foreground"
         onClick={() => {
           setName(suggestedName);
+          setWithAmount(false);
           setOpen(true);
         }}
       >
@@ -108,7 +113,7 @@ export function SaveTemplateButton({
             size="sm"
             title={t('Save as template')}
             description={t(
-              'Templates appear at the top of the record editor and fill in all values with one tap.',
+              'Templates appear at the top of the record editor and fill in account, category, payee, note and labels with one tap.',
             )}
           >
             <form
@@ -117,7 +122,10 @@ export function SaveTemplateButton({
                 e.preventDefault();
                 e.stopPropagation();
                 try {
-                  await save.mutateAsync({ input: { ...input(), name } });
+                  const values = input();
+                  await save.mutateAsync({
+                    input: { ...values, amount: withAmount ? values.amount : null, name },
+                  });
                   toast.success(t('Template saved'));
                   setOpen(false);
                 } catch (err) {
@@ -135,6 +143,15 @@ export function SaveTemplateButton({
                   autoFocus
                 />
               </Field>
+              {amountLabel && (
+                <label className="flex cursor-pointer items-center gap-2.5 text-sm">
+                  <Checkbox
+                    checked={withAmount}
+                    onCheckedChange={(v) => setWithAmount(v === true)}
+                  />
+                  {t('Also fill in the amount ({amount})', { amount: amountLabel })}
+                </label>
+              )}
               <DialogFooter className="mt-0">
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   {t('Cancel')}
@@ -162,6 +179,7 @@ export function TemplatesSection() {
   const confirm = useConfirm();
   const [renaming, setRenaming] = useState<RecordTemplate | null>(null);
   const [name, setName] = useState('');
+  const [keepAmount, setKeepAmount] = useState(false);
 
   const describe = (tpl: RecordTemplate) => {
     const account = accounts.find((a) => a.id === tpl.accountId);
@@ -206,10 +224,11 @@ export function TemplatesSection() {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={t('Rename')}
-                  title={t('Rename')}
+                  aria-label={t('Edit')}
+                  title={t('Edit')}
                   onClick={() => {
                     setName(tpl.name);
+                    setKeepAmount(tpl.amount !== null);
                     setRenaming(tpl);
                   }}
                 >
@@ -239,14 +258,17 @@ export function TemplatesSection() {
       </div>
       <Dialog open={!!renaming} onOpenChange={(o) => !o && setRenaming(null)}>
         {renaming && (
-          <DialogContent size="sm" title={t('Rename template')}>
+          <DialogContent size="sm" title={t('Edit template')}>
             <form
               className="grid gap-4"
               onSubmit={async (e) => {
                 e.preventDefault();
                 const { id, createdAt: _created, ...rest } = renaming;
                 try {
-                  await save.mutateAsync({ id, input: { ...rest, name } });
+                  await save.mutateAsync({
+                    id,
+                    input: { ...rest, amount: keepAmount ? rest.amount : null, name },
+                  });
                   setRenaming(null);
                 } catch (err) {
                   toast.error(errorMessage(err));
@@ -263,6 +285,20 @@ export function TemplatesSection() {
                   autoFocus
                 />
               </Field>
+              {renaming.amount !== null && (
+                <label className="flex cursor-pointer items-center gap-2.5 text-sm">
+                  <Checkbox
+                    checked={keepAmount}
+                    onCheckedChange={(v) => setKeepAmount(v === true)}
+                  />
+                  {t('Also fill in the amount ({amount})', {
+                    amount: money(
+                      renaming.amount,
+                      accounts.find((a) => a.id === renaming.accountId)?.currency ?? 'EUR',
+                    ),
+                  })}
+                </label>
+              )}
               <DialogFooter className="mt-0">
                 <Button variant="outline" onClick={() => setRenaming(null)}>
                   {t('Cancel')}

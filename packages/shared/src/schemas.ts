@@ -91,6 +91,7 @@ export const updateProfileInput = z.object({
   theme: z.enum(THEMES).optional(),
   locale: z.string().max(16).optional(),
   language: z.enum(['en', 'bg']).optional(),
+  noteSuggestions: z.boolean().optional(),
 });
 export type UpdateProfileInput = z.input<typeof updateProfileInput>;
 

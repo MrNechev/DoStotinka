@@ -8,6 +8,7 @@ import {
   deleteRecord,
   deleteRecords,
   getRecord,
+  listNotes,
   listPayees,
   listRecords,
   recordSuggestions,
@@ -60,6 +61,12 @@ export const recordRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => listPayees(db, currentUser(req).id, req.query.search),
+  );
+
+  app.get(
+    '/notes',
+    { schema: { tags: ['records'], summary: 'Notes written before (for suggestions)' } },
+    async (req) => listNotes(db, currentUser(req).id),
   );
 
   app.get(

@@ -494,6 +494,30 @@ export async function listPayees(db: Database, userId: string, search?: string):
   return rows.map((r) => r.payee!).filter(Boolean);
 }
 
+export interface NoteSuggestion {
+  note: string;
+  count: number;
+}
+
+/** Notes written before, most used first – the web app filters them while a note is typed. */
+export async function listNotes(db: Database, userId: string): Promise<NoteSuggestion[]> {
+  const note = sql<string>`btrim(${records.note})`;
+  const rows = await db
+    .select({ note, count: sql<number>`count(*)::int` })
+    .from(records)
+    .where(
+      and(
+        eq(records.userId, userId),
+        isNotNull(records.note),
+        sql`length(btrim(${records.note})) between 2 and 200`,
+      ),
+    )
+    .groupBy(note)
+    .orderBy(desc(sql`count(*)`), desc(sql`max(${records.occurredAt})`))
+    .limit(2000);
+  return rows;
+}
+
 export interface RecordSummary {
   currency: string;
   income: number;

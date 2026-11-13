@@ -32,6 +32,7 @@ export function toUser(u: UserRow, dataOwner?: UserRow | null): User {
     theme: (['light', 'dark'].includes(u.theme) ? u.theme : 'system') as User['theme'],
     locale: u.locale,
     language: u.language,
+    noteSuggestions: u.noteSuggestions,
     isDemo: u.isDemo,
     isAdmin: u.isAdmin,
     twoFactorEnabled: !!u.totpSecret,

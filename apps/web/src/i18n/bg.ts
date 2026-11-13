@@ -523,8 +523,10 @@ export const bg: Record<string, string> = {
   // ─── Templates ───
   Templates: 'Шаблони',
   'Save as template': 'Запази като шаблон',
-  'Templates appear at the top of the record editor and fill in all values with one tap.':
-    'Шаблоните се показват в началото на формата за запис и попълват всички стойности с едно докосване.',
+  'Templates appear at the top of the record editor and fill in account, category, payee, note and labels with one tap.':
+    'Шаблоните се показват в началото на формата за запис и с едно докосване попълват сметка, категория, получател, бележка и етикети.',
+  'Also fill in the amount ({amount})': 'Попълвай и сумата ({amount})',
+  'Edit template': 'Редактиране на шаблон',
   'Template saved': 'Шаблонът е запазен',
   'Record templates': 'Шаблони за записи',
   'Save frequent records as templates with “Save as template” in the record editor.':
@@ -532,7 +534,6 @@ export const bg: Record<string, string> = {
   'No templates yet.': 'Все още няма шаблони.',
   Rename: 'Преименувай',
   'Delete template “{name}”?': 'Да се изтрие ли шаблонът „{name}“?',
-  'Rename template': 'Преименуване на шаблон',
   'Template not found': 'Шаблонът не е намерен',
   'You can have at most 100 templates': 'Можете да имате най-много 100 шаблона',
   'Unknown account': 'Непозната сметка',
@@ -1604,4 +1605,9 @@ export const bg: Record<string, string> = {
   'The person needs an account on this server (an administrator can create one). They accept the invitation in their settings.':
     'Човекът трябва да има акаунт на този сървър (администратор може да създаде такъв). Поканата се приема в неговите настройки.',
   invited: 'поканен',
+  // ─── Note suggestions ───
+  'Suggest notes while typing': 'Предлагай бележки при писане',
+  'Notes you wrote before appear below the note field.':
+    'Бележки, които сте писали преди, се показват под полето за бележка.',
+  'Notes you wrote before': 'Бележки, писани преди',
 };

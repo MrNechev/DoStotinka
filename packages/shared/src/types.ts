@@ -25,6 +25,8 @@ export interface User {
   locale: string;
   /** UI language used for server-generated texts (reminders). */
   language: string;
+  /** Suggest notes written before while typing a note. */
+  noteSuggestions: boolean;
   isDemo: boolean;
   isAdmin: boolean;
   /** Login requires a code from an authenticator app. */

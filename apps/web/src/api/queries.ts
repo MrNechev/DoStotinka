@@ -64,6 +64,7 @@ import {
 } from '@tanstack/react-query';
 import { language, t } from '@/i18n';
 import { prepareUpload } from '@/lib/attachments';
+import type { NoteSuggestion } from '@/lib/notes';
 import { browserTimeZone } from '@/lib/utils';
 import { ApiError, api } from './client';
 
@@ -464,6 +465,16 @@ export function usePayees() {
     queryKey: [...qk.records, 'payees'],
     queryFn: () => api<string[]>('/records/payees'),
     staleTime: 60_000,
+  });
+}
+
+/** Notes written before – loaded once and filtered while typing (`enabled` = the user setting). */
+export function useNoteSuggestions(enabled: boolean) {
+  return useQuery({
+    queryKey: [...qk.records, 'notes'],
+    queryFn: () => api<NoteSuggestion[]>('/records/notes'),
+    staleTime: 10 * 60_000,
+    enabled,
   });
 }
 
