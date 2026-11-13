@@ -2,11 +2,12 @@ import { and, eq, lt, ne } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
 import type { Config } from './config';
 import type { Database } from './db';
-import { exchangeRates, sessions, users } from './db/schema';
+import { exchangeRates, holdings, sessions, users } from './db/schema';
 import { ensureDemo } from './demo/seed';
 import { sweepOrphanAttachments } from './services/attachments';
 import { processBankSync } from './services/bank-import';
 import { purgeInbox } from './services/inbox';
+import { refreshPrices, snapshotInvestments } from './services/investments';
 import { processAutoConfirm } from './services/planned';
 import { applyReferenceRates, refreshReferenceRates } from './services/rates';
 import { processReminders } from './services/reminders';
@@ -87,6 +88,25 @@ export function startJobs(db: Database, config: Config, log: FastifyBaseLogger):
     timers.push(setInterval(() => void updateAllRates(db, config, log), 6 * HOUR));
     timers.push(setTimeout(() => void updateAllRates(db, config, log), 5_000));
   }
+
+  // Investment prices (automatic sources) and the daily snapshot for the net worth chart.
+  const investments = async () => {
+    try {
+      if (config.PRICE_UPDATES) {
+        const { updated, failed } = await refreshPrices(db, config);
+        if (updated || failed.length) log.info({ updated, failed }, 'Investment prices updated');
+      }
+      const owners = await db
+        .selectDistinct({ user: users })
+        .from(holdings)
+        .innerJoin(users, eq(users.id, holdings.userId));
+      for (const { user } of owners) await snapshotInvestments(db, user);
+    } catch (err) {
+      log.warn({ err }, 'Investment price update failed');
+    }
+  };
+  timers.push(setInterval(investments, 6 * HOUR));
+  timers.push(setTimeout(investments, 90_000));
 
   if (config.UPDATE_CHECK && config.NODE_ENV !== 'test') {
     const updates = async () => {

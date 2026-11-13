@@ -115,6 +115,10 @@ export interface Account {
   initialBalance: number;
   /** Current balance in the account currency (minor units). */
   balance: number;
+  /** Balance plus the unrealised gain of the holdings (investment accounts). */
+  value: number;
+  /** Unrealised gain of the holdings in the account currency (0 without holdings). */
+  holdingsGain: number;
   color: string;
   icon: string | null;
   excludeFromStats: boolean;

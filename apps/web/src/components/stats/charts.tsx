@@ -893,3 +893,74 @@ function hashCode(s: string) {
   for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return h;
 }
+
+/** A value over time (e.g. net worth at month ends). */
+export function ValueChart({
+  points,
+  currency,
+  label,
+  height = 260,
+  color = 'var(--primary)',
+}: {
+  points: { date: string; value: number }[];
+  currency: string;
+  label: string;
+  height?: number;
+  color?: string;
+}) {
+  const gradientId = `val-${Math.abs(hashCode(String(color)))}`;
+  return (
+    <ChartFrame loading={false} height={height}>
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        initialDimension={{ width: 400, height: 200 }}
+      >
+        <AreaChart data={points} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.16} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="date"
+            {...axisProps}
+            tickFormatter={(d: string) => bucketLabel(`${d.slice(0, 7)}-01`, 'month')}
+            minTickGap={24}
+          />
+          <YAxis
+            {...axisProps}
+            width={60}
+            domain={['auto', 'auto']}
+            tickFormatter={(v: number) => moneyAxis(v, currency)}
+          />
+          <Tooltip
+            cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeOpacity: 0.4 }}
+            content={({ active, payload, label: date }) => {
+              if (!active || !payload?.length) return null;
+              const v = Number(payload[0]!.value ?? 0);
+              return (
+                <TooltipBox
+                  title={bucketLabel(String(date), 'day', true)}
+                  rows={[{ key: 'v', label, value: money(v, currency), color }]}
+                />
+              );
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={2}
+            fill={`url(#${gradientId})`}
+            isAnimationActive={false}
+            dot={false}
+            activeDot={{ r: 5, strokeWidth: 2, stroke: 'var(--card)', fill: color }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </ChartFrame>
+  );
+}

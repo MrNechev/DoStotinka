@@ -134,6 +134,13 @@
       "when": 1794595813968,
       "tag": "0018_monthly_review",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794596235355,
+      "tag": "0019_investments",
+      "breakpoints": true
     }
   ]
 }

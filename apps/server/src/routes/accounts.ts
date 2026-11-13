@@ -13,6 +13,7 @@ import { badRequest, notFound } from '../lib/errors';
 import { currentUser } from '../plugins/auth';
 import { sweepOrphanAttachments } from '../services/attachments';
 import { toAccount } from '../services/dto';
+import { holdingGains } from '../services/investments';
 import { ensureRate } from '../services/rates';
 import { createRecord } from '../services/records';
 
@@ -50,15 +51,16 @@ export const accountRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { tags: ['accounts'], summary: 'List accounts with balances' } },
     async (req) => {
       const user = currentUser(req);
-      const [rows, t] = await Promise.all([
+      const [rows, t, gains] = await Promise.all([
         db
           .select()
           .from(accounts)
           .where(eq(accounts.userId, user.id))
           .orderBy(asc(accounts.sortOrder), asc(accounts.createdAt)),
         totals(db, user.id),
+        holdingGains(db, user),
       ]);
-      return rows.map((a) => toAccount(a, t.get(a.id)));
+      return rows.map((a) => toAccount(a, t.get(a.id), gains.get(a.id)));
     },
   );
 
@@ -68,7 +70,8 @@ export const accountRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req) => {
       const user = currentUser(req);
       const row = await getOwned(db, user.id, req.params.id);
-      return toAccount(row, (await totals(db, user.id, row.id)).get(row.id));
+      const gains = await holdingGains(db, user);
+      return toAccount(row, (await totals(db, user.id, row.id)).get(row.id), gains.get(row.id));
     },
   );
 

@@ -7,6 +7,7 @@ import { errorMessage } from '@/api/client';
 import { useAccounts, useDeleteAccountItem, useRecords } from '@/api/queries';
 import { accountIcon } from '@/components/accounts/account-card';
 import { AccountFormDialog, AdjustBalanceDialog } from '@/components/accounts/account-form';
+import { HoldingsCard } from '@/components/investments/holdings';
 import { useRecordEditor } from '@/components/records/record-editor';
 import { RecordList } from '@/components/records/record-list';
 import {
@@ -98,15 +99,25 @@ export default function AccountDetailPage() {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">{t('Current balance')}</p>
+              <p className="text-xs text-muted-foreground">
+                {account.holdingsGain ? t('Value') : t('Current balance')}
+              </p>
               <p
                 className={cn(
                   'tabular text-2xl font-semibold',
-                  account.balance < 0 && 'text-expense',
+                  account.value < 0 && 'text-expense',
                 )}
               >
-                {money(account.balance, account.currency)}
+                {money(account.value, account.currency)}
               </p>
+              {account.holdingsGain !== 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t('Paid in {amount}', { amount: money(account.balance, account.currency) })} ·{' '}
+                  <span className={account.holdingsGain > 0 ? 'text-income' : 'text-expense'}>
+                    {money(account.holdingsGain, account.currency, { sign: 'exceptZero' })}
+                  </span>
+                </p>
+              )}
             </div>
             <div className="flex w-full gap-2 sm:w-auto">
               <Button
@@ -165,6 +176,12 @@ export default function AccountDetailPage() {
         <CategoryBreakdown scope={filters.scope} type="expense" compact />
         <CategoryBreakdown scope={filters.scope} type="income" compact />
       </div>
+
+      {account.type === 'investment' && (
+        <div className="mb-6">
+          <HoldingsCard accountId={account.id} />
+        </div>
+      )}
 
       <Card className="overflow-hidden">
         <CardHeader title={t('Records')} description={filters.resolved.label} />

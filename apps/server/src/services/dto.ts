@@ -48,14 +48,22 @@ export function toUser(u: UserRow, dataOwner?: UserRow | null): User {
   };
 }
 
-export function toAccount(a: AccountRow, totals?: { sum: number; count: number }): Account {
+export function toAccount(
+  a: AccountRow,
+  totals?: { sum: number; count: number },
+  /** Unrealised gain of the holdings in the account currency. */
+  holdingsGain = 0,
+): Account {
+  const balance = a.initialBalance + (totals?.sum ?? 0);
   return {
     id: a.id,
     name: a.name,
     type: a.type,
     currency: a.currency,
     initialBalance: a.initialBalance,
-    balance: a.initialBalance + (totals?.sum ?? 0),
+    balance,
+    value: balance + holdingsGain,
+    holdingsGain,
     color: a.color,
     icon: a.icon,
     excludeFromStats: a.excludeFromStats,

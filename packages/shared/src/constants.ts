@@ -8,6 +8,7 @@ export const ACCOUNT_TYPES = [
   'credit_card',
   'deposit',
   'investment',
+  'asset',
   'loan',
   'other',
 ] as const;
@@ -21,6 +22,7 @@ export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   credit_card: 'Credit card',
   deposit: 'Deposit',
   investment: 'Investment',
+  asset: 'Property & valuables',
   loan: 'Loan / mortgage',
   other: 'Other',
 };

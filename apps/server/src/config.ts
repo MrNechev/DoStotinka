@@ -106,6 +106,14 @@ const envSchema = z.object({
     .url()
     .default('https://api.github.com/repos/MrNechev/DoStotinka/releases/latest'),
 
+  /**
+   * Update the prices of investments that use Yahoo Finance or CoinGecko (only the tickers are
+   * sent). `false` leaves only typed-in prices.
+   */
+  PRICE_UPDATES: bool(true),
+  YAHOO_FINANCE_URL: z.string().url().default('https://query1.finance.yahoo.com'),
+  COINGECKO_URL: z.string().url().default('https://api.coingecko.com'),
+
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().min(1).default(20),

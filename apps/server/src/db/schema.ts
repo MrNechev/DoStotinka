@@ -43,6 +43,7 @@ export const accountTypeEnum = pgEnum('account_type', [
   'credit_card',
   'deposit',
   'investment',
+  'asset',
   'loan',
   'other',
 ]);
@@ -640,6 +641,46 @@ export const referenceRates = pgTable('reference_rates', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Investments held in an investment account (see packages/shared/src/investments.ts). */
+export const holdings = pgTable(
+  'holdings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    symbol: text('symbol'),
+    kind: text('kind').notNull().default('etf'),
+    quantity: numeric('quantity', { precision: 30, scale: 10, mode: 'number' }).notNull(),
+    /** Price of one unit (major units of `currency`). */
+    price: numeric('price', { precision: 30, scale: 10, mode: 'number' }).notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    /** Paid for the whole position (minor units of `currency`). */
+    costBasis: money('cost_basis').notNull().default(0),
+    priceSource: text('price_source').notNull().default('manual'),
+    priceUpdatedAt: timestamp('price_updated_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index('holdings_user_idx').on(t.userId), index('holdings_account_idx').on(t.accountId)],
+);
+
+/** Daily unrealised gain of all holdings of a user (main currency) – for the net worth chart. */
+export const investmentSnapshots = pgTable(
+  'investment_snapshots',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    date: date('date', { mode: 'string' }).notNull(),
+    gain: money('gain').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.date] })],
+);
+
 /** Rules that fill in imported transactions (see packages/shared/src/rules.ts). */
 export const rules = pgTable(
   'rules',
@@ -684,3 +725,4 @@ export type BankConnectionRow = typeof bankConnections.$inferSelect;
 export type BankAccountRow = typeof bankAccounts.$inferSelect;
 export type InboxItemRow = typeof inboxItems.$inferSelect;
 export type RuleRow = typeof rules.$inferSelect;
+export type HoldingRow = typeof holdings.$inferSelect;

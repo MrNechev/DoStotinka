@@ -31,6 +31,7 @@ import { exportRoutes } from './routes/export';
 import { goalRoutes } from './routes/goals';
 import { householdRoutes } from './routes/household';
 import { importRoutes } from './routes/import';
+import { holdingRoutes, netWorthRoutes } from './routes/investments';
 import { labelRoutes } from './routes/labels';
 import { meRoutes } from './routes/me';
 import { metaRoutes } from './routes/meta';
@@ -180,6 +181,8 @@ export async function buildApp(config: Config, db: Database) {
         await authed.register(householdRoutes, { prefix: '/household' });
         await authed.register(ruleRoutes, { prefix: '/rules' });
         await authed.register(payeeRoutes, { prefix: '/payees' });
+        await authed.register(holdingRoutes, { prefix: '/holdings' });
+        await authed.register(netWorthRoutes, { prefix: '/net-worth' });
       });
       await api.register(async (admin) => {
         admin.addHook('preHandler', requireAdmin);

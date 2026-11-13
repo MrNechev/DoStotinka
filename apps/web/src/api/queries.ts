@@ -27,6 +27,8 @@ import type {
   DebtUpdateInput,
   Goal,
   GoalInput,
+  Holding,
+  HoldingInput,
   HouseholdState,
   ImportProfile,
   ImportProfileInput,
@@ -37,6 +39,7 @@ import type {
   Label,
   LabelInput,
   LoginInput,
+  NetWorth,
   PayeeUsage,
   PlannedPayment,
   PlannedPaymentInput,
@@ -1008,6 +1011,55 @@ export function useRenamePayee() {
       qc.invalidateQueries({ queryKey: ['templates'] });
       void invalidateFinancialData(qc);
     },
+  });
+}
+
+// ───────────────────────────── Investments & net worth ─────────────────────────────
+
+export function useHoldings() {
+  return useQuery({ queryKey: ['holdings'], queryFn: () => api<Holding[]>('/holdings') });
+}
+
+/** Holdings change account values and the net worth. */
+function invalidateInvestments(qc: QueryClient) {
+  void qc.invalidateQueries({ queryKey: ['holdings'] });
+  void qc.invalidateQueries({ queryKey: ['net-worth'] });
+  void qc.invalidateQueries({ queryKey: qk.accounts });
+}
+
+export function useSaveHolding() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id?: string; input: HoldingInput }) =>
+      id
+        ? api<Holding>(`/holdings/${id}`, { method: 'PUT', body: input })
+        : api<Holding>('/holdings', { method: 'POST', body: input }),
+    onSuccess: () => invalidateInvestments(qc),
+  });
+}
+
+export function useDeleteHolding() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/holdings/${id}`, { method: 'DELETE' }),
+    onSuccess: () => invalidateInvestments(qc),
+  });
+}
+
+export function useRefreshPrices() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      api<{ updated: number; failed: string[] }>('/holdings/refresh', { method: 'POST' }),
+    onSuccess: () => invalidateInvestments(qc),
+  });
+}
+
+export function useNetWorth(months: number) {
+  return useQuery({
+    queryKey: ['net-worth', months],
+    queryFn: () =>
+      api<NetWorth>(`/net-worth?months=${months}&tz=${encodeURIComponent(browserTimeZone())}`),
   });
 }
 

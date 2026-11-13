@@ -1729,4 +1729,67 @@ export const bg: Record<string, string> = {
   '{n} times': '{n} пъти',
   'Also send a short review of the month before on the 1st of each month.':
     'Изпращай и кратък преглед на предишния месец на 1-во число всеки месец.',
+  // ─── Investments & net worth ───
+  ETF: 'ETF',
+  Stock: 'Акция',
+  Fund: 'Фонд',
+  Bond: 'Облигация',
+  'Typed in': 'Ръчно',
+  Investments: 'Инвестиции',
+  'Shares, ETFs and crypto in your investment accounts, valued at their price.':
+    'Акции, ETF и криптовалути в инвестиционните ви сметки, оценени по текущата им цена.',
+  'No price for: {list}': 'Няма цена за: {list}',
+  'Prices updated': 'Цените са обновени',
+  'Update prices': 'Обнови цените',
+  'Create an account of the type “Investment” (for example your broker) to add holdings.':
+    'Създайте сметка от вид „Инвестиция“ (например брокера си), за да добавите инвестиции.',
+  'No holdings yet. Add what you own – the value updates with the price.':
+    'Все още няма инвестиции. Добавете това, което притежавате – стойността се обновява с цената.',
+  'Records of the account stay as they are.': 'Записите в сметката остават както са.',
+  'Enter how many units you own': 'Въведете колко дяла притежавате',
+  'Enter the price of one unit': 'Въведете цената на един дял',
+  'Enter what you paid in total': 'Въведете колко сте платили общо',
+  'Holding saved': 'Инвестицията е запазена',
+  'Edit holding': 'Редактиране на инвестиция',
+  'Add holding': 'Добавяне на инвестиция',
+  Price: 'Цена',
+  Coin: 'Монета',
+  Ticker: 'Тикер',
+  'The coin id from coingecko.com, e.g. bitcoin or ethereum.':
+    'Идентификаторът на монетата от coingecko.com, напр. bitcoin или ethereum.',
+  'As on finance.yahoo.com, e.g. VWCE.DE, AAPL or IWDA.AS. Only the ticker is sent.':
+    'Както във finance.yahoo.com, напр. VWCE.DE, AAPL или IWDA.AS. Изпраща се само тикерът.',
+  'Look up': 'Потърси',
+  Kind: 'Вид',
+  Units: 'Дялове',
+  'Price of one unit': 'Цена на един дял',
+  'Paid in total': 'Платено общо',
+  'What you paid for all units – the gain is measured against it. Empty = the current value.':
+    'Колко сте платили за всички дялове – печалбата се смята спрямо това. Празно = текущата стойност.',
+  'Current value: {value}': 'Текуща стойност: {value}',
+  Value: 'Стойност',
+  'Paid in {amount}': 'Вложени {amount}',
+  'Net worth': 'Нетна стойност',
+  'Money lent': 'Дадени назаем',
+  'Money borrowed': 'Взети назаем',
+  'Everything you own minus everything you owe – accounts, investments, property and debts.':
+    'Всичко, което притежавате, минус всичко, което дължите – сметки, инвестиции, имущество и дългове.',
+  'Investment gain': 'Печалба от инвестиции',
+  '1 year': '1 година',
+  '2 years': '2 години',
+  '5 years': '5 години',
+  '10 years': '10 години',
+  'The chart shows accounts and investments; money lent and borrowed is in the total.':
+    'Графиката показва сметките и инвестициите; дадените и взетите назаем пари са в общата сума.',
+  'What it is made of': 'От какво се състои',
+  'Property & valuables': 'Имущество и ценности',
+  'Holding not found': 'Инвестицията не е намерена',
+  'Holdings belong to an investment account': 'Инвестициите се добавят към инвестиционна сметка',
+  'Enter the ticker for automatic prices': 'Въведете тикер за автоматични цени',
+  'Use the ticker as shown by the price source': 'Въведете тикера както е при източника на цени',
+  'Unsupported currency': 'Неподдържана валута',
+  'Price updates are switched off (PRICE_UPDATES)':
+    'Обновяването на цени е изключено (PRICE_UPDATES)',
+  'The price service could not be reached – try again later':
+    'Услугата за цени не е достъпна – опитайте по-късно',
 };

@@ -4,6 +4,8 @@ import {
   BUDGET_PERIODS,
   CATEGORY_KINDS,
   FREQUENCIES,
+  HOLDING_KINDS,
+  PRICE_SOURCES,
   RECORD_TYPES,
   RULE_FIELDS,
   RULE_MATCHES,
@@ -19,6 +21,7 @@ import {
   debts,
   exchangeRates,
   goals,
+  holdings,
   labels,
   plannedPayments,
   recordLabels,
@@ -197,6 +200,22 @@ export const backupSchema = z.object({
     )
     .max(1000)
     .default([]),
+  holdings: z
+    .array(
+      z.object({
+        accountId: id,
+        name: z.string().min(1).max(80),
+        symbol: z.string().max(40).nullable().optional(),
+        kind: z.enum(HOLDING_KINDS).default('other'),
+        quantity: z.coerce.number().positive(),
+        price: z.coerce.number().min(0),
+        currency: z.string().length(3),
+        costBasis: money.default(0),
+        priceSource: z.enum(PRICE_SOURCES).default('manual'),
+      }),
+    )
+    .max(5000)
+    .default([]),
   rules: z
     .array(
       z.object({
@@ -238,6 +257,7 @@ export interface RestoreResult {
   templates: number;
   debts: number;
   rules: number;
+  holdings: number;
 }
 
 /** Replaces all data of `user` with the contents of a backup (all IDs are re-generated). */
@@ -250,6 +270,7 @@ export async function restoreBackup(
     // Attachments are not part of a JSON backup; they belong to records that are replaced.
     for (const table of [
       attachments,
+      holdings,
       rules,
       recordTemplates,
       records,
@@ -486,6 +507,22 @@ export async function restoreBackup(
       (c) => tx.insert(rules).values(c),
     );
 
+    const holdingRows = backup.holdings
+      .filter((h) => acc.get(h.accountId))
+      .map((h) => ({
+        userId: user.id,
+        accountId: acc.get(h.accountId)!,
+        name: h.name,
+        symbol: h.symbol ?? null,
+        kind: h.kind,
+        quantity: h.quantity,
+        price: h.price,
+        currency: h.currency,
+        costBasis: h.costBasis,
+        priceSource: h.priceSource,
+      }));
+    await chunked(holdingRows, (c) => tx.insert(holdings).values(c));
+
     const rates = backup.exchangeRates.filter(
       (r) => r.currency !== (backup.user?.baseCurrency ?? user.baseCurrency),
     );
@@ -513,6 +550,7 @@ export async function restoreBackup(
       templates: backup.templates.length,
       debts: backup.debts.length,
       rules: backup.rules.length,
+      holdings: holdingRows.length,
     };
   });
 }

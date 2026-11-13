@@ -158,7 +158,7 @@ export default function DashboardPage() {
     for (const r of currencies.rates) rates[r.currency] = r.rate;
     return accounts
       .filter((a) => !a.archived && !a.excludeFromStats)
-      .reduce((sum, a) => sum + convertMinor(a.balance, a.currency, user.baseCurrency, rates), 0);
+      .reduce((sum, a) => sum + convertMinor(a.value, a.currency, user.baseCurrency, rates), 0);
   }, [accounts, currencies, user.baseCurrency]);
 
   const records = recent.data?.pages.flatMap((p) => p.items) ?? [];

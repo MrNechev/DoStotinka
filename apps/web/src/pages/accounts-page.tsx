@@ -1,5 +1,5 @@
 import { ACCOUNT_TYPE_LABELS, type Account, convertMinor } from '@dostotinka/shared';
-import { ArrowDown, ArrowUp, Plus, Wallet } from 'lucide-react';
+import { ArrowDown, ArrowUp, Landmark, Plus, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useAccounts, useCurrencies, useReorderAccounts, useUser } from '@/api/queries';
@@ -39,13 +39,13 @@ export default function AccountsPage() {
   const archived = list.filter((a) => a.archived);
   const total = active
     .filter((a) => !a.excludeFromStats)
-    .reduce((s, a) => s + convertMinor(a.balance, a.currency, user.baseCurrency, rates), 0);
+    .reduce((s, a) => s + convertMinor(a.value, a.currency, user.baseCurrency, rates), 0);
   const assets = active
-    .filter((a) => a.balance > 0)
-    .reduce((s, a) => s + convertMinor(a.balance, a.currency, user.baseCurrency, rates), 0);
+    .filter((a) => a.value > 0)
+    .reduce((s, a) => s + convertMinor(a.value, a.currency, user.baseCurrency, rates), 0);
   const debts = active
-    .filter((a) => a.balance < 0)
-    .reduce((s, a) => s + convertMinor(a.balance, a.currency, user.baseCurrency, rates), 0);
+    .filter((a) => a.value < 0)
+    .reduce((s, a) => s + convertMinor(a.value, a.currency, user.baseCurrency, rates), 0);
 
   const move = (id: string, dir: -1 | 1) => {
     const ids = list.map((a) => a.id);
@@ -73,8 +73,8 @@ export default function AccountsPage() {
         </span>
       </Link>
       <div className="text-right">
-        <p className={cn('tabular font-semibold', a.balance < 0 && 'text-expense')}>
-          {money(a.balance, a.currency)}
+        <p className={cn('tabular font-semibold', a.value < 0 && 'text-expense')}>
+          {money(a.value, a.currency)}
         </p>
         {a.currency !== user.baseCurrency && (
           <p className="tabular text-xs text-muted-foreground">
@@ -117,9 +117,16 @@ export default function AccountsPage() {
           'Cash, bank accounts, savings, cards – each with its own balance and currency.',
         )}
         actions={
-          <Button onClick={() => setEditing('new')}>
-            <Plus /> {t('Add account')}
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <Link to="/net-worth">
+                <Landmark /> {t('Net worth')}
+              </Link>
+            </Button>
+            <Button onClick={() => setEditing('new')}>
+              <Plus /> {t('Add account')}
+            </Button>
+          </>
         }
       />
 

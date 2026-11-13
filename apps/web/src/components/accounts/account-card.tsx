@@ -13,6 +13,7 @@ export const ACCOUNT_TYPE_ICONS: Record<string, string> = {
   credit_card: 'credit-card',
   deposit: 'lock',
   investment: 'trending-up',
+  asset: 'house',
   loan: 'hand-coins',
   other: 'circle-ellipsis',
 };
@@ -44,10 +45,10 @@ export function AccountCard({ account, className }: { account: Account; classNam
       <p
         className={cn(
           'tabular truncate text-lg font-semibold',
-          account.balance < 0 && 'text-expense',
+          account.value < 0 && 'text-expense',
         )}
       >
-        {money(account.balance, account.currency)}
+        {money(account.value, account.currency)}
       </p>
     </Link>
   );
