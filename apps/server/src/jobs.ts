@@ -10,6 +10,7 @@ import { purgeInbox } from './services/inbox';
 import { processAutoConfirm } from './services/planned';
 import { applyReferenceRates, refreshReferenceRates } from './services/rates';
 import { processReminders } from './services/reminders';
+import { checkForUpdate, isNewer } from './services/update-check';
 
 const HOUR = 3_600_000;
 
@@ -85,6 +86,21 @@ export function startJobs(db: Database, config: Config, log: FastifyBaseLogger):
   if (config.EXCHANGE_RATES_AUTO_UPDATE) {
     timers.push(setInterval(() => void updateAllRates(db, config, log), 6 * HOUR));
     timers.push(setTimeout(() => void updateAllRates(db, config, log), 5_000));
+  }
+
+  if (config.UPDATE_CHECK && config.NODE_ENV !== 'test') {
+    const updates = async () => {
+      try {
+        const { latest } = await checkForUpdate(db, config);
+        if (isNewer(latest, config.version)) {
+          log.info({ latest, running: config.version }, 'A new DoStotinka version is available');
+        }
+      } catch (err) {
+        log.debug({ err }, 'Update check failed');
+      }
+    };
+    timers.push(setInterval(updates, 24 * HOUR));
+    timers.push(setTimeout(updates, 60_000));
   }
 
   if (config.DEMO_ENABLED && config.DEMO_RESET_HOURS > 0) {

@@ -14,6 +14,7 @@ import { badRequest, conflict, notFound } from '../lib/errors';
 import { sessionUser } from '../plugins/auth';
 import { seedDefaultCategories } from '../services/categories';
 import { registrationOpen, setSetting } from '../services/settings';
+import { checkForUpdate, updateStatus } from '../services/update-check';
 
 const idParams = z.object({ id: z.uuid() });
 
@@ -25,6 +26,7 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     registrationDefault: config.ALLOW_REGISTRATION,
     demoEnabled: config.DEMO_ENABLED,
     version: config.version,
+    update: await updateStatus(db, config),
   });
 
   app.get(
@@ -149,6 +151,21 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       }
       await db.delete(users).where(eq(users.id, target.id));
       return reply.status(204).send();
+    },
+  );
+
+  app.post(
+    '/update-check',
+    { schema: { tags: ['admin'], summary: 'Look for a new DoStotinka version now' } },
+    async () => {
+      if (!config.UPDATE_CHECK) throw badRequest('The update check is switched off (UPDATE_CHECK)');
+      try {
+        await checkForUpdate(db, config);
+      } catch (err) {
+        app.log.warn({ err }, 'Update check failed');
+        throw badRequest('Could not reach GitHub – try again later');
+      }
+      return settings();
     },
   );
 

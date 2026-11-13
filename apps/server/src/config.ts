@@ -96,6 +96,16 @@ const envSchema = z.object({
     .optional()
     .or(z.literal('').transform(() => undefined)),
 
+  /**
+   * Look for new DoStotinka releases once a day (one request to GitHub, nothing is sent about
+   * this server) and tell administrators in the web app.
+   */
+  UPDATE_CHECK: bool(true),
+  UPDATE_CHECK_URL: z
+    .string()
+    .url()
+    .default('https://api.github.com/repos/MrNechev/DoStotinka/releases/latest'),
+
   /** Expose interactive API documentation at /api/docs. */
   API_DOCS: bool(true),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().min(1).default(20),

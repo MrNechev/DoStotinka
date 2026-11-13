@@ -1680,4 +1680,19 @@ export const bg: Record<string, string> = {
   'Rule not found': 'Правилото не е намерено',
   'The category does not fit the type of the rule': 'Категорията не отговаря на вида на правилото',
   'You can have at most 500 rules': 'Можете да имате най-много 500 правила',
+  // ─── Update check ───
+  'A new version is available': 'Има нова версия',
+  'Looking for new versions is switched off (UPDATE_CHECK).':
+    'Проверката за нови версии е изключена (UPDATE_CHECK).',
+  'DoStotinka {latest} is available – this server runs {version}.':
+    'Излезе DoStotinka {latest} – този сървър работи с {version}.',
+  'Back up your database, then update in the folder of your docker-compose.yml:':
+    'Направете резервно копие на базата данни, след това обновете в папката на docker-compose.yml:',
+  'What’s new': 'Какво ново',
+  'This is the newest version (checked {when}).': 'Това е най-новата версия (проверено {when}).',
+  'Not checked for new versions yet.': 'Все още не е проверено за нови версии.',
+  'Check now': 'Провери сега',
+  'The update check is switched off (UPDATE_CHECK)':
+    'Проверката за обновления е изключена (UPDATE_CHECK)',
+  'Could not reach GitHub – try again later': 'GitHub не е достъпен – опитайте по-късно',
 };

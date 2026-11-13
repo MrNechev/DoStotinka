@@ -66,6 +66,20 @@ export interface AdminSettings {
   registrationDefault: boolean;
   demoEnabled: boolean;
   version: string;
+  update: UpdateStatus;
+}
+
+/** Result of the daily look for a new release (UPDATE_CHECK). */
+export interface UpdateStatus {
+  enabled: boolean;
+  /** Newest released version, null before the first successful check. */
+  latest: string | null;
+  /** Release notes of the newest version. */
+  url: string | null;
+  publishedAt: string | null;
+  checkedAt: string | null;
+  /** The newest version is newer than the running one. */
+  available: boolean;
 }
 
 export interface AuthResponse {

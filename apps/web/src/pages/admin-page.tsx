@@ -1,6 +1,16 @@
 import type { AdminSettings, AdminUser } from '@dostotinka/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { KeyRound, MoreHorizontal, Shield, ShieldOff, Trash2, UserPlus } from 'lucide-react';
+import {
+  ExternalLink,
+  KeyRound,
+  MoreHorizontal,
+  RefreshCw,
+  Shield,
+  ShieldOff,
+  Sparkles,
+  Trash2,
+  UserPlus,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { api, errorMessage } from '@/api/client';
@@ -154,6 +164,67 @@ function ResetPasswordDialog({ user, onClose }: { user: AdminUser; onClose: () =
   );
 }
 
+const UPDATE_COMMAND = 'docker compose pull && docker compose up -d';
+
+/** The running version and whether a newer release exists (checked daily by the server). */
+function UpdateNotice({ settings }: { settings: AdminSettings }) {
+  const qc = useQueryClient();
+  const check = useMutation({
+    mutationFn: () => api<AdminSettings>('/admin/update-check', { method: 'POST' }),
+    onSuccess: (data) => qc.setQueryData(adminKeys.settings, data),
+    onError: (err) => toast.error(errorMessage(err)),
+  });
+  const { update } = settings;
+  if (!update.enabled) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        {t('Looking for new versions is switched off (UPDATE_CHECK).')}
+      </p>
+    );
+  }
+  if (update.available && update.latest) {
+    return (
+      <div className="rounded-xl border border-primary/40 bg-primary-soft p-3 text-sm">
+        <p className="flex items-center gap-2 font-medium">
+          <Sparkles className="size-4 text-primary" />
+          {t('DoStotinka {latest} is available – this server runs {version}.', {
+            latest: update.latest,
+            version: settings.version,
+          })}
+        </p>
+        <p className="mt-1.5 text-muted-foreground">
+          {t('Back up your database, then update in the folder of your docker-compose.yml:')}
+        </p>
+        <code className="mt-1.5 block overflow-x-auto rounded-lg bg-card px-2.5 py-1.5 text-xs">
+          {UPDATE_COMMAND}
+        </code>
+        {update.url && (
+          <a
+            href={update.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-flex items-center gap-1 font-medium text-primary hover:underline"
+          >
+            {t('What’s new')} <ExternalLink className="size-3.5" />
+          </a>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+      <span>
+        {update.checkedAt
+          ? t('This is the newest version (checked {when}).', { when: ago(update.checkedAt) })
+          : t('Not checked for new versions yet.')}
+      </span>
+      <Button size="sm" variant="outline" loading={check.isPending} onClick={() => check.mutate()}>
+        <RefreshCw /> {t('Check now')}
+      </Button>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const me = useUser();
   const qc = useQueryClient();
@@ -240,6 +311,7 @@ export default function AdminPage() {
                 value: settings.data?.demoEnabled ? t('enabled') : t('disabled'),
               })}
             </p>
+            {settings.data && <UpdateNotice settings={settings.data} />}
           </div>
         </Card>
 

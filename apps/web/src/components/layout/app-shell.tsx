@@ -1,3 +1,5 @@
+import type { AdminSettings } from '@dostotinka/shared';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeftRight,
   CalendarClock,
@@ -22,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { api } from '@/api/client';
 import {
   useInboxCount,
   useLogout,
@@ -85,6 +88,14 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const { data: upcoming } = useUpcoming(0);
   const overdue = upcoming?.filter((o) => o.overdue).length ?? 0;
   const inbox = useInboxBadge();
+  // Administrators see a dot when a new DoStotinka version is out.
+  const adminSettings = useQuery({
+    queryKey: ['admin', 'settings'],
+    queryFn: () => api<AdminSettings>('/admin/settings'),
+    enabled: user.isAdmin,
+    staleTime: 60 * 60_000,
+  });
+  const updateAvailable = !!adminSettings.data?.update.available;
   const base = inbox.visible
     ? [
         ...NAV.slice(0, 2),
@@ -119,6 +130,12 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
             >
               {inbox.pending}
             </span>
+          )}
+          {item.to === '/admin' && updateAvailable && (
+            <span
+              className="ml-auto size-2 rounded-full bg-primary"
+              title={t('A new version is available')}
+            />
           )}
           {item.to === '/planned' && overdue > 0 && (
             <span
