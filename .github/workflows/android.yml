@@ -34,7 +34,8 @@ jobs:
           set -o pipefail
           ./gradlew --no-daemon assembleDebug lintDebug 2>&1 | tee "$RUNNER_TEMP/gradle.log" || {
             # Make the reason visible as annotations (readable without downloading the logs).
-            grep -E "error|Error|FAILURE|What went wrong|> " "$RUNNER_TEMP/gradle.log" | tail -25 |
+            grep -vE "^> Task" "$RUNNER_TEMP/gradle.log" |
+              grep -iE "^e: |error:|warning:|what went wrong|lint found|failed|exception" | head -9 |
               while IFS= read -r line; do echo "::error::${line}"; done
             exit 1
           }
