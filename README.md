@@ -359,29 +359,32 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 - [ ] **Rules** – “payee contains *LIDL* → Groceries, label *Food*, rename the payee to *Lidl*”;
   applied to the inbox, notifications, bank sync and CSV imports. Plus payee clean-up: merge and
   rename payees across the whole history.
-- [ ] **Split records** – one receipt across several categories (a supermarket bill that is part
-  groceries, part household).
+- [ ] **Templates without amounts** – a template fills in account, category, payee, note and labels;
+  the amount is optional (the price is different every time).
+- [ ] **Note suggestions** – notes you wrote before are suggested while you type (can be turned off in
+  the settings).
 - [ ] **Offline entry** in the Android app and the PWA – add records when the server is not
   reachable (away from home), they are sent when it is back.
-- [ ] **Subscriptions** – recurring payments found in the history (streaming, phone, gym …), turned
-  into planned payments with one tap, with their yearly cost and price changes.
 - [ ] **Monthly review** – at the end of the month: what was different from usual, biggest
-  categories and shops, unusual payments, budget results; also sent via ntfy / webhook.
-- [ ] **Budget rollover** – money left in a monthly budget carries over to the next month (or an
-  overspend reduces it).
-- [ ] **Cash-flow forecast** – the expected balance until the next salary from planned payments
-  *and* typical spending: “safe to spend per day”.
+  categories and payees, unusual payments, budget results; also sent via ntfy / webhook.
+- [ ] **Investments and net worth** – holdings with prices (ETFs, stocks, crypto) and assets such as
+  a car or property in a net-worth chart.
+- [ ] **“A new version is available”** in the settings of the administrator.
 
-**Later**
+**Then: an iPhone app** – the same as the Android app (your own server full-screen), with offline
+entry and a Shortcuts action so that the Wallet automation of iOS can log card payments.
 
+**Might do** – only if they turn out to be really needed (DoStotinka should stay simple)
+
+- [ ] Split records – one receipt across several categories.
+- [ ] Subscriptions – recurring payments found in the history, with their yearly cost.
+- [ ] Budget rollover – money left in a monthly budget carries over to the next month.
+- [ ] Cash-flow forecast – “safe to spend per day” until the next salary.
 - [ ] Scan the QR code of Bulgarian fiscal receipts to fill in amount, date and time.
 - [ ] Android home-screen widget and shortcuts for adding a record.
-- [ ] Investments and net worth – holdings with prices (ETFs, stocks, crypto) and assets such as a
-  car or property in a net-worth chart.
-- [ ] Operations – “a new version is available” in the admin settings, nightly backups on by
-  default with their status in the app.
-- [ ] More languages (contributions welcome)
-- [ ] Automatic import from bank e-mails (IMAP / Gmail)
+- [ ] Nightly backups on by default, with their status in the app.
+- [ ] More languages (contributions welcome).
+- [ ] Automatic import from bank e-mails (IMAP / Gmail).
 
 **Done**
 
