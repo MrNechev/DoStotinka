@@ -83,6 +83,22 @@ curl -H "Authorization: Bearer $TOKEN" \
   "https://money.example.com/api/stats/categories?from=2026-10-01T00:00:00%2B03:00&to=2026-11-01T00:00:00%2B02:00&tz=Europe/Sofia"
 ```
 
+Send `"clientId": "<a UUID you choose>"` with a new record to make retries safe: the same
+`clientId` creates the record only once (the second request answers `200` with the existing
+record). The web app uses this for records saved offline.
+
+The monthly review of October and the net worth with 24 months of history:
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" "https://money.example.com/api/stats/review?month=2026-10&tz=Europe/Sofia"
+curl -H "Authorization: Bearer $TOKEN" "https://money.example.com/api/net-worth?months=24"
+```
+
+Rules, payees and holdings: `GET/POST /api/rules`, `PUT/DELETE /api/rules/<id>`,
+`POST /api/rules/<id>/apply` (`{"dryRun": true}` only counts), `GET /api/payees`,
+`POST /api/payees/rename` (`{"from": "LIDL 123", "to": "Lidl"}`), `GET/POST /api/holdings`,
+`GET /api/holdings/quote?source=yahoo&symbol=VWCE.DE`. All endpoints are listed at `/api/docs`.
+
 ## Recipe: add an expense from an iPhone (Shortcuts)
 
 1. Create a token in DoStotinka (**Settings → API tokens**).

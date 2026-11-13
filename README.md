@@ -34,14 +34,19 @@ leaves it.
 - **Multiple users** – everyone has their own private data. The first user becomes the
   administrator and can add users, reset passwords and close sign-ups from the web UI.
 - **Two-factor login** with any authenticator app (TOTP) and one-time recovery codes.
-- **Accounts** – cash, food vouchers, bank, savings, credit cards, deposits, investments, loans …
+- **Accounts** – cash, food vouchers, bank, savings, credit cards, deposits, investments, property,
+  loans …
   each with its own balance, currency, colour and icon – including the logos of DSK Bank, UBB,
   Revolut, Pluxee and Edenred. Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
-- **Templates** for records you enter often (“Morning coffee”, “Move to savings”) – one tap fills
-  in account, category, amount, payee, note and labels. Frequent combinations are also suggested
-  automatically.
+  Notes you wrote before are suggested while you type (can be switched off).
+- **Templates** for records you enter often (“Lidl”, “Move to savings”) – one tap fills in account,
+  category, payee, note and labels; the amount only if you want. Frequent combinations are also
+  suggested automatically.
+- **Rules** – “payee contains *LIDL* → *Groceries*, payee *Lidl*, label *Food*”: they fill in
+  imported transactions, pick the category while you type and can clean up past records. Payees
+  can be renamed or merged across all records.
 - **Receipts & files** – attach photos of receipts or PDF invoices to any record. Photos are
   scaled down in the browser before uploading; files are stored in the database (so they are part
   of the database backup).
@@ -59,6 +64,11 @@ leaves it.
     or a custom range
   - for all accounts, a single account or any combination of accounts
 - **Account details** – the same statistics for every individual account.
+- **Monthly review** – what was different from usual, where the money went, the largest and
+  unusual payments and how the budgets ended; optionally sent to your phone on the 1st.
+- **Net worth & investments** – everything you own and owe in one number with its history.
+  Holdings (ETFs, shares, crypto) with prices typed in or updated from Yahoo Finance / CoinGecko;
+  property such as a car or flat.
 - **Planned payments** – rent, taxes, subscriptions, salary … one-time or recurring (daily, weekly,
   monthly, yearly, every N periods). Mark them as paid (creates the record), skip them, or let them be
   recorded automatically on the due date. Overdue payments are highlighted, and a daily reminder can
@@ -96,13 +106,17 @@ leaves it.
 - **Export & restore** – CSV export of records, a full JSON backup and restoring it.
 - **Android app** – your own server full-screen, with built-in import of payment notifications
   (no extra automation app needed). See [apps/android](apps/android/README.md).
+- **iPhone app** – your own server full-screen, with a Shortcuts action for the Wallet
+  “Transaction” automation that sends card payments to the inbox. See [apps/ios](apps/ios/README.md).
+- **Offline entry** – add records without a connection to your server (away from home); they are
+  sent when it is reachable again. Works in the apps over plain http, too.
 - **Dark mode**, responsive design for phones (installable as a PWA) and a keyboard shortcut
   (<kbd>N</kbd>) for adding records.
 - **English and Bulgarian** interface (including the category tree and dates) – more languages are
   easy to add, see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
 - **Demo account** with a full year of realistic example data.
 - **REST API** with interactive OpenAPI documentation at `/api/docs` and personal API tokens –
-  ready for automations and a future mobile app.
+  ready for automations.
 
 The [user guide](docs/USER_GUIDE.md) explains every feature in detail.
 
@@ -215,6 +229,8 @@ All settings are environment variables (set them in `.env` when using Docker Com
 | `NOTIFICATIONS_ENABLED` | `true` | Allow users to send payment reminders to a URL of their choice (ntfy, Gotify, Discord, Slack, webhook). Disable on servers with untrusted users. |
 | `PUBLIC_URL` | – | Public address of the app (e.g. `https://money.example.com`); used for single sign-on and bank redirects. |
 | `AUTOMATIC_IMPORT` | `true` | Offer the automatic import (phone notifications, open banking). Every user still switches it on for themselves. |
+| `PRICE_UPDATES` | `true` | Update the prices of investments that use Yahoo Finance or CoinGecko every 6 hours (only the tickers are sent). `false` = typed-in prices only. |
+| `UPDATE_CHECK` | `true` | Look for a new DoStotinka release once a day (one anonymous request to GitHub) and show it to administrators. |
 | `ENCRYPTION_KEY` | – | Any long random string, used to encrypt the users' bank access keys in the database. Without it a key is generated and stored in the database itself. Keep it when moving the server. |
 | `OIDC_ISSUER_URL` | – | OpenID Connect provider (issuer URL) – enables single sign-on, see below. |
 | `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | – | Client credentials registered at the provider. |
@@ -336,6 +352,8 @@ pnpm dev   # API on http://localhost:8742, web app with hot reload on http://loc
 apps/
   server/        Fastify REST API (routes, services, Drizzle schema & migrations, demo data)
   web/           React single page app
+  android/       Android app (Kotlin): your server full-screen + notification import
+  ios/           iPhone app (SwiftUI): your server full-screen + Shortcuts action
 packages/
   shared/        Code shared by both: validation schemas, API types, categories, currencies,
                  money and recurrence helpers
@@ -354,25 +372,10 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 
 ## Roadmap
 
-**Next** – less typing, better answers
+**Next**
 
-- [ ] **Rules** – “payee contains *LIDL* → Groceries, label *Food*, rename the payee to *Lidl*”;
-  applied to the inbox, notifications, bank sync and CSV imports. Plus payee clean-up: merge and
-  rename payees across the whole history.
-- [ ] **Templates without amounts** – a template fills in account, category, payee, note and labels;
-  the amount is optional (the price is different every time).
-- [ ] **Note suggestions** – notes you wrote before are suggested while you type (can be turned off in
-  the settings).
-- [ ] **Offline entry** in the Android app and the PWA – add records when the server is not
-  reachable (away from home), they are sent when it is back.
-- [ ] **Monthly review** – at the end of the month: what was different from usual, biggest
-  categories and payees, unusual payments, budget results; also sent via ntfy / webhook.
-- [ ] **Investments and net worth** – holdings with prices (ETFs, stocks, crypto) and assets such as
-  a car or property in a net-worth chart.
-- [ ] **“A new version is available”** in the settings of the administrator.
-
-**Then: an iPhone app** – the same as the Android app (your own server full-screen), with offline
-entry and a Shortcuts action so that the Wallet automation of iOS can log card payments.
+- [ ] **iPhone app in the App Store / TestFlight** (needs a paid Apple developer account) – until
+  then it is installed with AltStore / SideStore or built with Xcode.
 
 **Might do** – only if they turn out to be really needed (DoStotinka should stay simple)
 
@@ -388,6 +391,14 @@ entry and a Shortcuts action so that the Wallet automation of iOS can log card p
 
 **Done**
 
+- [x] **iPhone app** (first version) – your server full-screen, offline entry, a Shortcuts action for
+  card payments (0.9.0)
+- [x] **Rules** and payee clean-up (0.9.0)
+- [x] **Templates without amounts** and **note suggestions** (0.9.0)
+- [x] **Offline entry** in the Android app, the iPhone app and the browser (0.9.0)
+- [x] **Monthly review**, also sent with the reminders (0.9.0)
+- [x] **Investments and net worth** (0.9.0)
+- [x] “A new version is available” for administrators (0.9.0)
 - [x] **Android app** that connects to your own server, with a built-in notification listener for
   the automatic import (0.7.0)
 - [x] Saved CSV import profiles per bank (0.7.0)

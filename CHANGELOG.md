@@ -6,6 +6,35 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- **Rules:** “payee, note or bank text contains *LIDL* → category *Groceries*, payee *Lidl*, note,
+  labels”. They fill in the transactions of the inbox (phone notifications, bank connection) and of
+  CSV imports, pick the category of a new record while you type and can be applied to past
+  records. *Categories → Rules* (also linked from the inbox).
+- **Payee clean-up:** rename or merge payees in all records, templates and planned payments.
+- **Note suggestions:** notes written before are suggested while typing a note (Settings →
+  Preferences to switch it off).
+- **Monthly review** (*Statistics → Monthly review*): income, expenses and what was left, what was
+  different from the months before, categories and top payees, the largest and unusual payments,
+  the monthly budgets. Optionally sent with the reminders on the 1st of each month.
+- **Net worth** (*Accounts → Net worth*): accounts, investments, property and open debts with the
+  history of up to 10 years.
+- **Investments:** holdings (ETFs, shares, funds, crypto …) in investment accounts with prices typed
+  in or updated every 6 hours from Yahoo Finance or CoinGecko (`PRICE_UPDATES`). Investment
+  accounts show their value including the gain. New account type **Property & valuables**.
+- **Offline entry:** records added while the server cannot be reached are kept on the device and
+  sent automatically later (each only once). The Android app keeps a copy of the web app and opens
+  even when the server is not reachable – over plain http too.
+- **iPhone app** (apps/ios): your server full-screen, offline entry and a Shortcuts action
+  “Add payment to DoStotinka” for the Wallet *Transaction* automation, which sends card payments
+  to the inbox. Releases include an unsigned `.ipa` for AltStore / SideStore.
+- Administrators see when a **new version** is available (`UPDATE_CHECK`, once a day).
+- Rules and holdings are part of the JSON backup.
+
+### Changed
+- Templates no longer store the amount unless *Also fill in the amount* is ticked; existing
+  templates can drop their amount in Settings.
+
 ## [0.8.0] – 2026-11-13
 
 Upgrading: `docker compose pull && docker compose up -d` (a small

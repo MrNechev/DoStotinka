@@ -7,7 +7,10 @@ This guide explains how DoStotinka works from a user's point of view. For instal
 - [Accounts](#accounts)
 - [Records](#records)
 - [Categories and labels](#categories-and-labels)
+- [Rules and payees](#rules-and-payees)
 - [Statistics and reports](#statistics-and-reports)
+- [Monthly review](#monthly-review)
+- [Net worth and investments](#net-worth-and-investments)
 - [Calendar](#calendar)
 - [Planned payments](#planned-payments)
 - [Budgets](#budgets)
@@ -15,8 +18,12 @@ This guide explains how DoStotinka works from a user's point of view. For instal
 - [Debts](#debts)
 - [Currencies](#currencies)
 - [Import and export](#import-and-export)
+- [Automatic import](#automatic-import)
+- [Households](#households)
 - [Settings and security](#settings-and-security)
 - [Keyboard shortcuts and tips](#keyboard-shortcuts-and-tips)
+- [Using DoStotinka on your phone](#using-dostotinka-on-your-phone) (Android app, iPhone app,
+  offline entry)
 
 ## First steps
 
@@ -61,12 +68,18 @@ A record is an **expense**, an **income** or a **transfer** between two of your 
   amount is converted into the account currency and the original amount is kept in the note.
 - **Transfers** between accounts in different currencies ask for the received amount, suggested
   from your exchange rates. Transfers are never counted as income or expenses.
-- **Payee**, **note** and **labels** are optional.
+- **Payee**, **note** and **labels** are optional. While you type a note, notes you wrote before
+  are suggested above the field (tap one, or use ↓ / ↑ and Enter). Switch this off in
+  *Settings → Preferences → Suggest notes while typing*.
+- **Category from rules** – when a [rule](#rules-and-payees) matches the payee or note of a new
+  record, it picks the category (until you choose one yourself).
 - **Receipts & files** – attach photos or PDFs (up to 10 per record). Photos are scaled down
   before uploading. A paperclip in the list marks records with files.
-- **Templates** – “Save as template” stores the current values (account, category, amount, payee,
-  note, labels). Templates appear at the top of the editor; one tap fills everything in. Manage
-  them in Settings. **Quick add** suggestions are learned automatically from your frequent records.
+- **Templates** – “Save as template” stores account, category, payee, note and labels – e.g. a
+  template “Lidl” with the category *Groceries* and the note “Lidl”. The amount is only stored when
+  you tick *Also fill in the amount* (handy for fixed prices like a bus ticket). Templates appear
+  at the top of the editor; one tap fills everything in, then you type the amount. Edit, remove
+  the amount from or delete templates in Settings. **Quick add** suggestions are learned automatically from your frequent records.
 - **Duplicate** creates a copy dated now.
 
 On the Records page you can filter by period, accounts, category, label and type, and search
@@ -83,6 +96,29 @@ records to the parent group (or leaves them uncategorized).
 
 **Labels** cut across categories – e.g. “Vacation” on flights, hotels and restaurants of a trip.
 
+## Rules and payees
+
+**Rules** (*Categories → Rules*, or *Inbox → Rules*) fill in transactions for you: “when the payee,
+note or bank text **contains** *LIDL* → category *Groceries*, rename the payee to *Lidl*, note
+*Groceries*, label *Food*”. A rule can also match only the start or the whole text, only expenses
+or income and only one account.
+
+Rules are used
+
+- for every transaction in the **inbox** (phone notifications, bank connection) – before the
+  category learned from your records;
+- in the **CSV import** (categories from the file are kept; switch rules off for one import with
+  the API option `applyRules: false`);
+- in the **record editor**: a matching rule picks the category of a new record.
+
+Rules higher up win when several set the same thing; labels of all matching rules are added.
+**Apply to past records** (in the ⋯ menu of a rule) shows how many records would change and then
+changes them – categories already set are only replaced when you tick the box.
+
+**Payees** lists every payee with the number of records. Rename one (e.g. “LIDL BULGARIA EOOD 123”
+→ “Lidl”) to change it in all records, templates and planned payments; renaming to an existing payee
+merges the two.
+
 ## Statistics and reports
 
 The Statistics page shows, for the chosen period and accounts:
@@ -98,6 +134,41 @@ The Statistics page shows, for the chosen period and accounts:
 
 Periods: last 7 / 30 days, last 12 weeks, last 6 / 12 months, the current week / month / year
 (with arrows to go back), all time, or any custom range. Weeks start on the day chosen in Settings.
+
+## Monthly review
+
+*Statistics → Monthly review* (and, in the first days of a month, a card on the dashboard) shows
+what happened in a month compared with the up to six months before:
+
+- income, expenses, what was left over (and which share of the income), and the change of the
+  balance;
+- **what was different** – categories with clearly more or less than usual;
+- **where the money went** (categories) and the **top payees** (or the note of records without a
+  payee);
+- the **largest payments** – marked *unusual* when they are much higher than usual for their
+  category;
+- how the **monthly budgets** ended.
+
+Use the arrows to look at earlier months. With [reminders](#settings-and-security) switched on, tick
+*Monthly review* to get a short summary on the 1st of each month (ntfy, Gotify, Discord, Slack or a
+webhook).
+
+## Net worth and investments
+
+*Accounts → Net worth* adds up everything you own and owe: all accounts, investments, property and
+open debts (money lent counts as yours, money borrowed as owed). It shows the parts and a chart of
+the last 1 – 10 years (month ends; the chart leaves out money lent and borrowed).
+
+- **Property & valuables** is an account type for a car, a flat or anything else of value. Set its
+  value with *Adjust balance* whenever it changes.
+- **Investments**: in an account of the type *Investment* (your broker) add the **holdings** –
+  ETFs, shares, funds, bonds or crypto – with the number of units, the price of one unit and what
+  you paid in total. Prices can be typed in or updated automatically every 6 hours from **Yahoo
+  Finance** (tickers like `VWCE.DE`, `AAPL`, `IWDA.AS`) or **CoinGecko** (coins like `bitcoin`).
+  *Look up* fills in name, price and currency. Only the ticker is sent to these services; the
+  server administrator can switch it off with `PRICE_UPDATES=false`.
+- An investment account shows its **value**: the balance from its records (what you paid in) plus
+  the gain or loss of its holdings. Statistics keep using the records.
 
 ## Calendar
 
@@ -265,18 +336,22 @@ the household (or are removed by the owner). Records they added for the househol
 ## Settings and security
 
 - **Profile and preferences** – name, e-mail, base currency, time zone, first day of the week,
-  number format, theme and language (English, Bulgarian).
+  number format, theme, language (English, Bulgarian) and whether notes are suggested while typing.
 - **Two-factor login** – protect your account with an authenticator app (Aegis, 2FAS, Google
   Authenticator, 1Password …); turning it on asks for your password. Keep the ten recovery codes
   somewhere safe; each works once. After five wrong codes, logging in is blocked for 15 minutes.
 - **Sessions** – see where you are logged in and sign out other devices.
 - **API tokens** – for scripts and phone automations, see the [API guide](API.md).
-- **Reminders** – daily messages about due payments via ntfy, Gotify, Discord, Slack or a webhook.
+- **Reminders** – daily messages about due payments via ntfy, Gotify, Discord, Slack or a webhook,
+  and optionally the [monthly review](#monthly-review) on the 1st of each month.
 - **Single sign-on** – if your administrator connected an identity provider, use “Log in with SSO”.
   If you already had an account, connect it once in Settings → Security → Single sign-on.
 
 Administrators additionally see **Administration**: add users, reset passwords, switch off
 two-factor login for a user who lost their phone, grant administrator rights and close sign-ups.
+When a new DoStotinka version is released, Administration shows it (with the release notes and the
+update command) and the menu item gets a dot – the server looks for it once a day
+(`UPDATE_CHECK=false` switches this off).
 
 ## Keyboard shortcuts and tips
 
@@ -303,6 +378,25 @@ can import payment notifications by itself:
    switch on the ones to import. Only these are sent, and only to your server.
 
 **Settings → App** shows the server the app is connected to and lets you change it.
+
+### The iPhone app
+
+The iPhone app works like the Android app – your server full-screen, offline entry – and adds the
+Shortcuts action **Add payment to DoStotinka** for card payments (iOS does not let apps read
+notifications). See [apps/ios](../apps/ios/README.md) for installing it (AltStore / SideStore or
+Xcode) and for setting up the Wallet *Transaction* automation.
+
+### Offline entry
+
+Away from home, when your server cannot be reached, you can still add records:
+
+- In the **Android and iPhone apps** DoStotinka opens from the copy kept on the phone.
+- In the **browser** an already open DoStotinka keeps working; a page loaded fresh needs the server
+  (or HTTPS, then the browser keeps a copy too).
+
+New records are saved on the device – a yellow bar shows how many wait – and are sent by themselves
+as soon as the server can be reached again (or tap **Send now**). Each record is created only once,
+even when sending is repeated. Files (receipts) cannot be attached offline.
 
 ### In the browser
 
