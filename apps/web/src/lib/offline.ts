@@ -86,12 +86,17 @@ export function cachedUser(): User | null {
  */
 export function keepListsOffline(qc: QueryClient): () => void {
   const saved = read<{ user: string; entries: CacheEntry[] } | null>(CACHE_KEY, null);
-  if (saved) {
+  // Restored once the logged-in user is known – and only that user's lists (the app shows its
+  // pages only after that).
+  let restored = false;
+  const restore = (me: User) => {
+    restored = true;
+    if (!saved || saved.user !== me.id) return;
     for (const e of saved.entries) {
       if ((e.key as unknown[])[0] === 'me') continue;
       if (qc.getQueryData(e.key) === undefined) qc.setQueryData(e.key, e.data, { updatedAt: 1 });
     }
-  }
+  };
   let timer: ReturnType<typeof setTimeout> | undefined;
   const save = () => {
     const me = qc.getQueryData<User | null>(['me']);
@@ -107,6 +112,11 @@ export function keepListsOffline(qc: QueryClient): () => void {
   };
   const unsubscribe = qc.getQueryCache().subscribe((event) => {
     if (event.type !== 'updated' || !isKept(event.query.queryKey)) return;
+    const me =
+      (event.query.queryKey as unknown[])[0] === 'me'
+        ? (event.query.state.data as User | null)
+        : null;
+    if (me && !restored) restore(me);
     clearTimeout(timer);
     timer = setTimeout(save, 1000);
   });
