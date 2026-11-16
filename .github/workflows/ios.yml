@@ -60,7 +60,6 @@ jobs:
           DEVICE=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
           echo "Simulator: $DEVICE"
           python3 UITests/fixture_server.py 8899 & echo $! > "$RUNNER_TEMP/server.pid"
-          sleep 2
           xcodebuild build-for-testing -project DoStotinka.xcodeproj -scheme DoStotinka -destination "id=$DEVICE" \
             -derivedDataPath build/test CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/test.log" | grep -E "error:|BUILD" || true
           if ! grep -q "TEST BUILD SUCCEEDED\|BUILD SUCCEEDED" "$RUNNER_TEMP/test.log"; then
@@ -70,7 +69,13 @@ jobs:
           fi
           ok=true
           for t in testOnline testOffline; do
-            if [ "$t" = testOffline ]; then kill "$(cat "$RUNNER_TEMP/server.pid")"; sleep 1; fi
+            if [ "$t" = testOnline ]; then
+              # The fixture server must answer before the app is pointed at it.
+              for i in $(seq 1 30); do curl -sf http://127.0.0.1:8899/api/health >/dev/null && break; sleep 1; done
+              curl -sf http://127.0.0.1:8899/api/health || { echo "::error::fixture server not reachable"; exit 1; }
+            else
+              kill "$(cat "$RUNNER_TEMP/server.pid")"; sleep 1
+            fi
             xcodebuild test-without-building -project DoStotinka.xcodeproj -scheme DoStotinka \
               -destination "id=$DEVICE" -derivedDataPath build/test \
               -only-testing:"DoStotinkaUITests/DoStotinkaUITests/$t" 2>&1 | tee "$RUNNER_TEMP/$t.log" |

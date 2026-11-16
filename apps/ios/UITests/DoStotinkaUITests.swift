@@ -34,11 +34,22 @@ final class DoStotinkaUITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 60), "setup screen: \(screen(app))")
         field.tap()
         field.typeText("127.0.0.1:8899")
-        app.buttons["Connect"].tap()
-        app.tap()  // lets the interruption monitor handle an alert
+
+        // The first request of a freshly booted simulator can time out: try Connect up to 3 times.
+        let bridge = text(app, "platform:ios")
+        let failed = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Could not connect")).firstMatch
+        for _ in 0..<3 {
+            app.buttons["Connect"].tap()
+            app.tap()  // lets the interruption monitor handle an alert
+            let deadline = Date().addingTimeInterval(60)
+            while Date() < deadline && !bridge.exists && !failed.exists {
+                _ = bridge.waitForExistence(timeout: 2)
+            }
+            if bridge.exists { break }
+        }
 
         // The page comes through the app's scheme handler and sees the bridge.
-        XCTAssertTrue(text(app, "platform:ios").waitForExistence(timeout: 90), "bridge: \(screen(app))")
+        XCTAssertTrue(bridge.waitForExistence(timeout: 30), "bridge: \(screen(app))")
         XCTAssertTrue(text(app, "server:http://127.0.0.1:8899").exists, screen(app))
         XCTAssertTrue(text(app, "api:ok").waitForExistence(timeout: 30), "API: \(screen(app))")
     }
