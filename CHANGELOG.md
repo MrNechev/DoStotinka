@@ -6,6 +6,31 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.10.0] – 2026-11-16
+
+Upgrading: `docker compose pull && docker compose up -d` (no database changes).
+
+### Added
+- **Bank logos for accounts:** every Bulgarian bank and payment provider (UniCredit Bulbank, DSK,
+  UBB, Postbank, Fibank, CCB, ProCredit, Allianz, BACB, Investbank, Municipal Bank, TBI, iCard,
+  Paysera, myPOS …), the largest banks of 34 other European countries, Revolut, Wise, PayPal, N26 and
+  more. The icon picker of an account has a country list and a search.
+- **Shop logos:** about 140 shops and services – supermarkets (Lidl, Kaufland, Billa, Fantastico,
+  T Market, Metro), drugstores and pharmacies, fashion (LC Waikiki, Terranova, H&M, Zara, Sinsay …),
+  electronics and telecoms (Technopolis, Zora, eMAG, Xiaomi, A1, Yettel, Vivacom), books and home
+  (Orange Center, Helikon, IKEA, JYSK, Praktiker), restaurants, fuel, transport, bills and
+  subscriptions. They are recognised in payees (also “LIDL BULGARIA EOOD 123” or “Кауфланд”, and in
+  short notes of older records) and shown with their logo in records, templates, the inbox,
+  planned payments and the monthly review.
+- **Payee suggestions:** while typing a payee, payees used before and known shops are suggested
+  (with logos). Choosing one picks the category used most with it – or the usual category of a
+  known shop (Lidl → Groceries), also for transactions in the inbox.
+- Templates can be **created and edited completely** in Settings (type, account, category, payee,
+  note, labels, optional amount) – before only the name could be changed.
+
+### Changed
+- The setting *Suggest notes while typing* is now *Suggestions while typing* and covers payees too.
+
 ## [0.9.0] – 2026-11-13
 
 Upgrading: `docker compose pull && docker compose up -d`. The migrations add tables for rules and
@@ -303,7 +328,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/MrNechev/DoStotinka/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/MrNechev/DoStotinka/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/MrNechev/DoStotinka/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/MrNechev/DoStotinka/compare/v0.6.0...v0.7.0
