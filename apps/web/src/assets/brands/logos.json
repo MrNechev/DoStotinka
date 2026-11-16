@@ -1,0 +1,1511 @@
+{
+  "a1": {
+    "style": "contain",
+    "file": "a1.webp",
+    "source": "https://www.a1.bg/favicon.ico",
+    "size": 32
+  },
+  "abn-amro": {
+    "style": "contain",
+    "file": "abn-amro.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/ABN_AMRO_logo_%28cropped%29.svg/330px-ABN_AMRO_logo_%28cropped%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "adidas": {
+    "style": "contain",
+    "file": "adidas.svg",
+    "padding": 0.2,
+    "source": "simple-icons:adidas",
+    "size": 999
+  },
+  "aib": {
+    "style": "cover",
+    "file": "aib.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://aib.ie&size=256",
+    "size": 152
+  },
+  "aik": {
+    "style": "contain",
+    "file": "aik.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://aikbanka.rs&size=256",
+    "size": 48
+  },
+  "aiko": {
+    "style": "cover",
+    "file": "aiko.webp",
+    "source": "https://aiko-bg.com/media/favicon/stores/1/favicon.ico",
+    "size": 48
+  },
+  "airbnb": {
+    "style": "contain",
+    "file": "airbnb.webp",
+    "source": "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-Favicons/original/d1fcc0b3-865f-485a-b28b-43ca0bf7c891.png?im_w=240",
+    "size": 240
+  },
+  "aliexpress": {
+    "style": "contain",
+    "file": "aliexpress.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://aliexpress.com&size=256",
+    "size": 192
+  },
+  "allianz-bank": {
+    "style": "contain",
+    "file": "allianz-bank.webp",
+    "source": "https://www.allianz.bg/content/dam/onemarketing/cee/azbg/favicon/Allianz_favicon.png/_jcr_content/renditions/cq5dam.web.180.180.png",
+    "size": 180
+  },
+  "alpha-bank": {
+    "style": "cover",
+    "file": "alpha-bank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://alpha.gr&size=256",
+    "size": 256
+  },
+  "amazon": {
+    "style": "contain",
+    "file": "amazon.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://amazon.com&size=256",
+    "size": 48
+  },
+  "answear": {
+    "style": "cover",
+    "file": "answear.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://answear.bg&size=256",
+    "size": 180
+  },
+  "apple": {
+    "style": "cover",
+    "file": "apple.webp",
+    "source": "https://www.apple.com/apple-touch-icon.png",
+    "size": 152
+  },
+  "ardes": {
+    "style": "contain",
+    "file": "ardes.webp",
+    "source": "https://ardes.bg/apple-touch-icon.png",
+    "size": 180
+  },
+  "arion": {
+    "style": "cover",
+    "file": "arion.webp",
+    "source": "https://www.arionbanki.is/apple-touch-icon.png",
+    "size": 180
+  },
+  "bacb": {
+    "style": "cover",
+    "file": "bacb.webp",
+    "source": "https://www.bacb.bg/web/frontend/images/favicon/apple-touch-icon.png",
+    "size": 180
+  },
+  "banca-transilvania": {
+    "style": "contain",
+    "file": "banca-transilvania.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bancatransilvania.ro&size=256",
+    "size": 50
+  },
+  "bank-austria": {
+    "style": "contain",
+    "file": "bank-austria.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Bank_Austria_logo.svg/330px-Bank_Austria_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "bank-of-cyprus": {
+    "style": "cover",
+    "file": "bank-of-cyprus.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bankofcyprus.com&size=256",
+    "size": 192
+  },
+  "bank-of-ireland": {
+    "style": "contain",
+    "file": "bank-of-ireland.webp",
+    "source": "https://boi-public-assets.s3-eu-west-1.amazonaws.com/images/icons/android-chrome-192x192.png",
+    "size": 192
+  },
+  "barclays": {
+    "style": "contain",
+    "file": "barclays.webp",
+    "source": "https://www.barclays.co.uk/content/dam/icons/favicons/barclays/apple-touch-icon-180x180.png",
+    "size": 180
+  },
+  "bbva": {
+    "style": "cover",
+    "file": "bbva.webp",
+    "source": "https://www.bbva.com/wp-content/themes/coronita-bbvacom/assets/images/comun/favicon.ico",
+    "size": 48
+  },
+  "bcr": {
+    "style": "contain",
+    "file": "bcr.webp",
+    "source": "https://cdn.erstegroup.com/content/dam/common/brand/icons/others/apple-touch-icon.png",
+    "size": 180
+  },
+  "bdb": {
+    "style": "contain",
+    "file": "bdb.webp",
+    "source": "https://bbr.bg/static/src/assets/images/favicon/1/apple/apple-touch-icon.png",
+    "size": 180
+  },
+  "bdz": {
+    "style": "cover",
+    "file": "bdz.webp",
+    "source": "https://www.bdz.bg/i/icon-512.png",
+    "size": 512
+  },
+  "belfius": {
+    "style": "contain",
+    "file": "belfius.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://belfius.be&size=256",
+    "size": 48
+  },
+  "benetton": {
+    "style": "contain",
+    "file": "benetton.webp",
+    "source": "https://it.benetton.com/cdn/shop/files/punto_maglia64x64_green.png?v=1772011637&width=180",
+    "size": 64
+  },
+  "bershka": {
+    "style": "contain",
+    "file": "bershka.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bershka.com&size=256",
+    "size": 180
+  },
+  "bgl": {
+    "style": "cover",
+    "file": "bnp-fortis.webp",
+    "source": "same as bnp-fortis",
+    "size": 192
+  },
+  "billa": {
+    "style": "cover",
+    "file": "billa.webp",
+    "source": "https://assets-eu-01.kc-usercontent.com:443/67ab30e1-a5ea-0103-0955-0146e30b09e6/a10cde79-6bb6-4486-b501-b74b0107facc/favicon.png",
+    "size": 192
+  },
+  "bnp-bg": {
+    "style": "cover",
+    "file": "bnp-fortis.webp",
+    "source": "same as bnp-fortis",
+    "size": 192
+  },
+  "bnp-fortis": {
+    "style": "cover",
+    "file": "bnp-fortis.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bnpparibasfortis.be&size=256",
+    "size": 192
+  },
+  "bnp-paribas": {
+    "style": "cover",
+    "file": "bnp-fortis.webp",
+    "source": "same as bnp-fortis",
+    "size": 192
+  },
+  "bolt": {
+    "style": "cover",
+    "file": "bolt.webp",
+    "source": "https://assets.homepage.bolt.eu/1.24.31/public/common-assets/android-chrome-512x512.png",
+    "size": 512
+  },
+  "booking": {
+    "style": "cover",
+    "file": "booking.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://booking.com&size=256",
+    "size": 256
+  },
+  "boursobank": {
+    "style": "contain",
+    "file": "boursobank.webp",
+    "source": "https://www.boursobank.com/build/img/favicons/boursobank/apple-touch-icon.f18fe5fad5e229ab43cb78077f9a8a37.png",
+    "size": 180
+  },
+  "bov": {
+    "style": "cover",
+    "file": "bov.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bov.com&size=256",
+    "size": 32
+  },
+  "boxnow": {
+    "style": "contain",
+    "file": "boxnow.webp",
+    "source": "https://www.boxnow.bg/BoxNow.Theme/img/favicons/apple-touch-icon.png",
+    "size": 180
+  },
+  "brd": {
+    "style": "contain",
+    "file": "brd.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/BRD_logo.svg/330px-BRD_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "bulgaria-air": {
+    "style": "contain",
+    "file": "bulgaria-air.webp",
+    "source": "https://air.bg/apple-touch-icon.png",
+    "size": 180
+  },
+  "bunq": {
+    "style": "contain",
+    "file": "bunq.svg",
+    "padding": 0.2,
+    "source": "simple-icons:bunq",
+    "size": 999
+  },
+  "burger-king": {
+    "style": "contain",
+    "file": "burger-king.svg",
+    "padding": 0.2,
+    "source": "simple-icons:burgerking",
+    "size": 999
+  },
+  "c-and-a": {
+    "style": "contain",
+    "file": "c-and-a.webp",
+    "source": "https://www.c-and-a.com/static/assets/favicon.ico",
+    "size": 32
+  },
+  "caixabank": {
+    "style": "contain",
+    "file": "caixabank.svg",
+    "padding": 0.2,
+    "source": "simple-icons:caixabank",
+    "size": 999
+  },
+  "calzedonia": {
+    "style": "contain",
+    "file": "calzedonia.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Calzedonia_-_logo_%28Italy%2C_2011-%29.svg/330px-Calzedonia_-_logo_%28Italy%2C_2011-%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "cba": {
+    "style": "contain",
+    "file": "cba.webp",
+    "source": "https://cba.bg/images/cba_logo.png",
+    "size": 173
+  },
+  "ccb": {
+    "style": "contain",
+    "file": "ccb.webp",
+    "source": "https://www.ccbank.bg/web/frontend/images/apple-touch-icon.png",
+    "size": 180
+  },
+  "ccc": {
+    "style": "cover",
+    "file": "ccc.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ccc.eu&size=256",
+    "size": 180
+  },
+  "ceska-sporitelna": {
+    "style": "contain",
+    "file": "ceska-sporitelna.webp",
+    "source": "https://cdn.erstegroup.com/content/dam/cz/csas/www_csas_cz/obrazky/ikony/favicon-touch.png",
+    "size": 268
+  },
+  "cgd": {
+    "style": "contain",
+    "file": "cgd.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/CGD_Logo_2017.png/330px-CGD_Logo_2017.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "ciela": {
+    "style": "contain",
+    "file": "ciela.webp",
+    "source": "https://www.ciela.com/media/favicon/websites/1/favicon.png",
+    "size": 18
+  },
+  "cinema-city": {
+    "style": "contain",
+    "file": "cinema-city.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Cinema_City.svg/330px-Cinema_City.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "citadele": {
+    "style": "cover",
+    "file": "citadele.webp",
+    "source": "https://www.citadele.lv/storage/app/media/favicons/apple-logo-180.png",
+    "size": 180
+  },
+  "citibank": {
+    "style": "contain",
+    "file": "citibank.webp",
+    "source": "https://www.citi.com/cbol-hp-static-assets/assets/favicon.ico",
+    "size": 367
+  },
+  "colins": {
+    "style": "contain",
+    "file": "colins.webp",
+    "source": "https://static-colinstr.mncdn.com/Themes/Branch/Content/images/colins_apple_icon.png?v=1.0.1.163",
+    "size": 144
+  },
+  "commerzbank": {
+    "style": "cover",
+    "file": "commerzbank.webp",
+    "source": "https://www.commerzbank.de/ms/media/favicons/apple-touch-icon-152x152_A.png",
+    "size": 152
+  },
+  "costa": {
+    "style": "contain",
+    "file": "costa.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://costa.co.uk&size=256",
+    "size": 256
+  },
+  "credit-agricole": {
+    "style": "contain",
+    "file": "credit-agricole.webp",
+    "source": "https://www.credit-agricole.fr/content/dam/assetsca/npc/logos/icone_ca_pwa.png",
+    "size": 192
+  },
+  "cropp": {
+    "style": "contain",
+    "file": "cropp.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Cropp_logo.svg/330px-Cropp_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "csob": {
+    "style": "cover",
+    "file": "csob.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://csob.cz&size=256",
+    "size": 180
+  },
+  "danske-bank": {
+    "style": "contain",
+    "file": "danske-bank.webp",
+    "source": "https://danskebank.com/~/media/Danske%20Bank/favicons/Apple/apple-touch-icon-180x180.png",
+    "size": 180
+  },
+  "dbank": {
+    "style": "cover",
+    "file": "dbank.webp",
+    "source": "https://www.dbank.bg/wp-content/uploads/2026/02/favicon.png",
+    "size": 32
+  },
+  "decathlon": {
+    "style": "cover",
+    "file": "decathlon.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://decathlon.bg&size=256",
+    "size": 256
+  },
+  "defacto": {
+    "style": "contain",
+    "file": "defacto.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://defacto.com&size=256",
+    "size": 180
+  },
+  "deichmann": {
+    "style": "cover",
+    "file": "deichmann.webp",
+    "source": "https://www.deichmann.com/bg-bg/assets/concepts/DSE/icons/apple-touch-icon-180x180.png",
+    "size": 180
+  },
+  "deutsche-bank": {
+    "style": "cover",
+    "file": "deutsche-bank.webp",
+    "source": "https://www.deutsche-bank.de/etc/designs/db-eccs-pws-pwcc/assets/db-favicon-310x310.png",
+    "size": 310
+  },
+  "disney-plus": {
+    "style": "cover",
+    "file": "disney-plus.webp",
+    "source": "https://static-assets.bamgrid.com/product/disneyplus/favicons/msftpwa-512x512-aurora.b544236c6734eb78083b1f4f31d6f873.png",
+    "size": 512
+  },
+  "dkb": {
+    "style": "contain",
+    "file": "dkb.webp",
+    "source": "https://www.dkb.de/apple-touch-icon-180x180.png",
+    "size": 180
+  },
+  "dm": {
+    "style": "contain",
+    "file": "dm.webp",
+    "source": "https://www.dm-drogeriemarkt.bg/icon-512.png",
+    "size": 512
+  },
+  "dnb": {
+    "style": "cover",
+    "file": "dnb.webp",
+    "source": "https://www.dnb.no/webframe/static/dnb/favicon-180x180.png",
+    "size": 180
+  },
+  "dominos": {
+    "style": "contain",
+    "file": "dominos.webp",
+    "source": "https://www.dominos.bg/images/favicons/android-icon-192x192.png",
+    "size": 192
+  },
+  "douglas": {
+    "style": "contain",
+    "file": "douglas.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://douglas.bg&size=256",
+    "size": 192
+  },
+  "dsk": {
+    "manual": true,
+    "file": "dsk.svg",
+    "style": "contain",
+    "padding": 0.16
+  },
+  "easypay": {
+    "style": "contain",
+    "file": "easypay.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Easypay_logo_AM.svg/330px-Easypay_logo_AM.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "econt": {
+    "style": "contain",
+    "file": "econt.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://econt.com&size=256",
+    "size": 180
+  },
+  "edenred": {
+    "manual": true,
+    "file": "edenred.svg",
+    "style": "contain",
+    "padding": 0.08
+  },
+  "eko": {
+    "style": "contain",
+    "file": "eko.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Eko_Logo-Lockup.png/330px-Eko_Logo-Lockup.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "electrohold": {
+    "style": "contain",
+    "file": "electrohold.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://electrohold.bg&size=256",
+    "size": 180
+  },
+  "emag": {
+    "style": "cover",
+    "file": "emag.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://emag.bg&size=256",
+    "size": 180
+  },
+  "energo-pro": {
+    "style": "contain",
+    "file": "energo-pro.webp",
+    "source": "https://cdn.prod.website-files.com/68dcdb4b714cb35e8aa1751b/68e8bbefe3531c0930726e4a_webclip.png",
+    "size": 256
+  },
+  "epay": {
+    "style": "contain",
+    "file": "epay.webp",
+    "source": "https://online.epay.bg/v3/img/favicon.ico",
+    "size": 16
+  },
+  "erste-at": {
+    "style": "contain",
+    "file": "erste-at.webp",
+    "source": "https://cdn.erstegroup.com/content/dam/common/brand/icons/others/apple-touch-icon.png",
+    "size": 180
+  },
+  "erste-hr": {
+    "style": "contain",
+    "file": "erste-hr.webp",
+    "source": "https://cdn.erstegroup.com/content/dam/hr/ebc/common/favicon.ico",
+    "size": 256
+  },
+  "eurobank": {
+    "style": "cover",
+    "file": "eurobank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://eurobank.gr&size=256",
+    "size": 180
+  },
+  "evn": {
+    "style": "cover",
+    "file": "evn.webp",
+    "source": "https://evn.bg/App_Themes/EVNBG/img/favicon/apple-touch-icon.png",
+    "size": 180
+  },
+  "fantastico": {
+    "style": "cover",
+    "file": "fantastico.webp",
+    "source": "https://www.fantastico.bg/images/favicon/fantastico-96x96.png",
+    "size": 96
+  },
+  "fashion-days": {
+    "style": "contain",
+    "file": "fashion-days.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://fashiondays.bg&size=256",
+    "size": 180
+  },
+  "fibank": {
+    "style": "cover",
+    "file": "fibank.webp",
+    "source": "https://www.fibank.bg/web/frontend/images/icon-192x192.png",
+    "size": 192
+  },
+  "foodpanda": {
+    "style": "contain",
+    "file": "foodpanda.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://foodpanda.bg&size=256",
+    "size": 192
+  },
+  "garanti": {
+    "style": "contain",
+    "file": "garanti.webp",
+    "source": "https://www.garantibbva.com.tr/apple-touch-icon-180x180.png",
+    "size": 180
+  },
+  "glovo": {
+    "style": "contain",
+    "file": "glovo.webp",
+    "source": "https://glovoapp.com/favicon.ico?de37b08259df3750",
+    "size": 192
+  },
+  "google": {
+    "style": "contain",
+    "file": "google.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://google.com&size=256",
+    "size": 144
+  },
+  "guess": {
+    "style": "contain",
+    "file": "guess.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://guess.eu&size=256",
+    "size": 152
+  },
+  "handelsbanken": {
+    "style": "cover",
+    "file": "handelsbanken.webp",
+    "source": "https://www.handelsbanken.se/sv/sepu//196x196.png",
+    "size": 196
+  },
+  "happy": {
+    "style": "cover",
+    "file": "happy.webp",
+    "source": "https://happy.bg/assets/images/favicon.png",
+    "size": 32
+  },
+  "hbo-max": {
+    "style": "contain",
+    "file": "hbo-max.webp",
+    "source": "https://www.hbomax.com/dotcom/img/hbomax/apple-touch-icon.png",
+    "size": 180
+  },
+  "helikon": {
+    "style": "cover",
+    "file": "helikon.webp",
+    "source": "https://helikon.bg/templates/design/img/new_favicon/Favicon.jpg?1=1",
+    "size": 65
+  },
+  "hellenic-bank": {
+    "style": "cover",
+    "file": "hellenic-bank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hellenicbank.com&size=256",
+    "size": 180
+  },
+  "hippoland": {
+    "style": "contain",
+    "file": "hippoland.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hippoland.net&size=256",
+    "size": 32
+  },
+  "hm": {
+    "style": "contain",
+    "file": "hm.svg",
+    "padding": 0.2,
+    "source": "simple-icons:handm",
+    "size": 999
+  },
+  "house": {
+    "style": "contain",
+    "file": "house.webp",
+    "source": "https://www.housebrand.com/bg/bg/media/favicon/default/logo-trans-96x96.png",
+    "size": 96
+  },
+  "hsbc": {
+    "style": "contain",
+    "file": "hsbc.webp",
+    "source": "https://www.hsbc.com/apple-touch-icon.png",
+    "size": 180
+  },
+  "hsbc-mt": {
+    "style": "contain",
+    "file": "hsbc-mt.webp",
+    "source": "https://www.hsbc.com.mt/etc.clientlibs/dpws/clientlibs-public/clientlib-site/resources/favicons/android-chrome-192x192.png",
+    "size": 192
+  },
+  "humanic": {
+    "style": "contain",
+    "file": "humanic.webp",
+    "source": "https://www.humanic.net/_ui/responsive/theme-hum/images/favicon.ico",
+    "size": 128
+  },
+  "iabank": {
+    "style": "contain",
+    "file": "iabank.webp",
+    "source": "https://www.iabank.bg/icon-512.png",
+    "size": 512
+  },
+  "icard": {
+    "style": "contain",
+    "file": "icard.webp",
+    "source": "https://cdn.icard.com/icard.com/img/common/favicons/apple-touch-icon.png?59",
+    "size": 181
+  },
+  "ikea": {
+    "style": "contain",
+    "file": "ikea.svg",
+    "padding": 0.2,
+    "source": "simple-icons:ikea",
+    "size": 999
+  },
+  "ing": {
+    "style": "contain",
+    "file": "ing-de.webp",
+    "source": "same as ing-de",
+    "size": 512
+  },
+  "ing-bg": {
+    "style": "contain",
+    "file": "ing-de.webp",
+    "source": "same as ing-de",
+    "size": 512
+  },
+  "ing-de": {
+    "style": "contain",
+    "file": "ing-de.webp",
+    "source": "https://cdn.ing.de/ing-cms-ui/156.0.1/assets/favicons/icon-512.png",
+    "size": 512
+  },
+  "investbank": {
+    "style": "cover",
+    "file": "investbank.webp",
+    "source": "https://ibank.bg/web/frontend/favicons/apple-touch-icon-1024x1024.png",
+    "size": 1024
+  },
+  "isbank": {
+    "style": "cover",
+    "file": "isbank.webp",
+    "source": "https://gorsel.isbank.com.tr/sttk/StaticFiles/Isbank/images/icons/isbank-apple-touch-icon-57x57.jpg",
+    "size": 57
+  },
+  "jumbo": {
+    "style": "contain",
+    "file": "jumbo.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://jumbo.bg&size=256",
+    "size": 96
+  },
+  "jysk": {
+    "style": "contain",
+    "file": "jysk.webp",
+    "source": "https://jysk.bg/themes/custom/jysk_bootstrap/favicon/android-chrome-512x512.png",
+    "size": 512
+  },
+  "jyske-bank": {
+    "style": "contain",
+    "file": "jyske-bank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://jyskebank.dk&size=256",
+    "size": 256
+  },
+  "kaufland": {
+    "style": "cover",
+    "file": "kaufland.webp",
+    "source": "https://www.kaufland.bg/etc.clientlibs/kaufland/clientlibs/clientlib-klsite/resources/frontend/img/icon/android-chrome-512x512-9ce29aa998.png",
+    "size": 512
+  },
+  "kbc": {
+    "style": "cover",
+    "file": "kbc.webp",
+    "source": "https://wcmassets.kbc.be/content/dam/kdl-assets/favicons/kbc/touch-144.png.cdn.res/last-modified/1731696615559/touch-144.png",
+    "size": 144
+  },
+  "kfc": {
+    "style": "contain",
+    "file": "kfc.webp",
+    "source": "https://kfc.bg/assets/app_icons/android-icon-192x192-651be57c54e9c279071da5801f8440ce054b5a926881ffc76687a3183509d5a1.png",
+    "size": 192
+  },
+  "kh-bank": {
+    "style": "cover",
+    "file": "kh-bank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kh.hu&size=256",
+    "size": 152
+  },
+  "kik": {
+    "style": "contain",
+    "file": "kik.svg",
+    "padding": 0.2,
+    "source": "simple-icons:kik",
+    "size": 999
+  },
+  "kino-arena": {
+    "style": "contain",
+    "file": "kino-arena.webp",
+    "source": "https://www.kinoarena.com/images/frontend/favicon.ico",
+    "size": 16
+  },
+  "komercijalna": {
+    "style": "contain",
+    "file": "komercijalna.webp",
+    "source": "https://www.kb.mk/images/favicon/android-icon-192x192.png",
+    "size": 192
+  },
+  "komercni-banka": {
+    "style": "contain",
+    "file": "komercni-banka.webp",
+    "source": "https://www.kb.cz/img/favicon/favicon-512x512.png",
+    "size": 512
+  },
+  "koton": {
+    "style": "contain",
+    "file": "koton.webp",
+    "source": "https://ktnimg2.mncdn.com/cms/2023/12/08/a99b013d-998f-446c-9fd3-bd60ebfa2a4b.png",
+    "size": 32
+  },
+  "landsbankinn": {
+    "style": "cover",
+    "file": "landsbankinn.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://landsbankinn.is&size=256",
+    "size": 256
+  },
+  "lc-waikiki": {
+    "style": "contain",
+    "file": "lc-waikiki.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/LC_Waikiki_logo.svg/330px-LC_Waikiki_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "levis": {
+    "style": "contain",
+    "file": "levis.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://levi.com&size=256",
+    "size": 180
+  },
+  "lhv": {
+    "style": "contain",
+    "file": "lhv.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Lhv-logo_2.svg/330px-Lhv-logo_2.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "lidl": {
+    "style": "cover",
+    "file": "lidl.webp",
+    "source": "https://www.lidl.bg/cdn/assets/logos/1.0.1/android-chrome-512x512.png",
+    "size": 512
+  },
+  "lilly": {
+    "style": "contain",
+    "file": "lilly.webp",
+    "source": "https://lillydrogerie.bg/media/favicon/default/favicon-32x32.png",
+    "size": 32
+  },
+  "lloyds": {
+    "style": "cover",
+    "file": "lloyds.webp",
+    "source": "https://www.lloydsbank.com/apple-touch-icon.png",
+    "size": 460
+  },
+  "lukoil": {
+    "style": "contain",
+    "file": "lukoil.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Lukoil_company_logo.svg/330px-Lukoil_company_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "luminor": {
+    "style": "cover",
+    "file": "luminor.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://luminor.lt&size=256",
+    "size": 152
+  },
+  "mango": {
+    "style": "cover",
+    "file": "mango.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mango.com&size=256",
+    "size": 256
+  },
+  "massimo-dutti": {
+    "style": "contain",
+    "file": "massimo-dutti.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://massimodutti.com&size=256",
+    "size": 152
+  },
+  "mbank": {
+    "style": "cover",
+    "file": "mbank.webp",
+    "source": "https://www.mbank.pl/favicon/android-chrome-256x256.png",
+    "size": 256
+  },
+  "mcdonalds": {
+    "style": "contain",
+    "file": "mcdonalds.webp",
+    "source": "https://mcdonalds.bg/wp-content/uploads/2023/05/logo-01.png",
+    "size": 139
+  },
+  "metro": {
+    "style": "cover",
+    "file": "metro.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://metro.bg&size=256",
+    "size": 180
+  },
+  "microsoft": {
+    "style": "cover",
+    "file": "microsoft.webp",
+    "source": "https://www.microsoft.com/favicon.ico?v2",
+    "size": 128
+  },
+  "millennium": {
+    "style": "cover",
+    "file": "millennium.webp",
+    "source": "https://www.millenniumbcp.pt/media/kq1jrxfx/apple-touch-icon.png",
+    "size": 180
+  },
+  "mohito": {
+    "style": "contain",
+    "file": "mohito.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Mohito_logo.svg/330px-Mohito_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "monobank": {
+    "style": "contain",
+    "file": "monobank.webp",
+    "source": "https://monobank.ua/assets/icon-CZao4z2I.png",
+    "size": 256
+  },
+  "monzo": {
+    "style": "cover",
+    "file": "monzo.webp",
+    "source": "https://monzo.com/images/icons/maskable-icon-x1024.png",
+    "size": 1024
+  },
+  "mr-bricolage": {
+    "style": "contain",
+    "file": "mr-bricolage.webp",
+    "source": "https://mr-bricolage.bg/favicon.ico",
+    "size": 256
+  },
+  "municipal-bank": {
+    "style": "contain",
+    "file": "municipal-bank.webp",
+    "source": "https://municipalbank.bg/img/ob.ico",
+    "size": 32
+  },
+  "mypos": {
+    "style": "cover",
+    "file": "mypos.webp",
+    "source": "https://static.mypos.com/public/info/images/fav/apple-touch-icon.png",
+    "size": 180
+  },
+  "n26": {
+    "style": "contain",
+    "file": "n26.webp",
+    "source": "https://n26.com/_build/logo-256x256.png",
+    "size": 256
+  },
+  "nbg": {
+    "style": "contain",
+    "file": "nbg.webp",
+    "source": "https://www.nbg.gr/dist/nbgportal/browser/assets/images/favicon.ico",
+    "size": 48
+  },
+  "netflix": {
+    "style": "contain",
+    "file": "netflix.svg",
+    "padding": 0.2,
+    "source": "simple-icons:netflix",
+    "size": 999
+  },
+  "new-yorker": {
+    "style": "cover",
+    "file": "new-yorker.webp",
+    "source": "https://www.newyorker.de/apple-touch-icon-512px.png",
+    "size": 128
+  },
+  "nike": {
+    "style": "contain",
+    "file": "nike.webp",
+    "source": "https://www.nike.com/android-icon-192x192.png",
+    "size": 192
+  },
+  "nkbm": {
+    "style": "contain",
+    "file": "nkbm.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nkbm.si&size=256",
+    "size": 64
+  },
+  "nlb": {
+    "style": "contain",
+    "file": "nlb.webp",
+    "source": "https://www.nlb.si/etc.clientlibs/nlb/clientlibs/clientlib-site/resources/images/favicon/nlb-android-chrome-512x512.png",
+    "size": 512
+  },
+  "nordea": {
+    "style": "contain",
+    "file": "nordea.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Nordea_logo.svg/330px-Nordea_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "notino": {
+    "style": "cover",
+    "file": "notino.webp",
+    "source": "https://notino.bg/apple-touch-icon.png",
+    "size": 180
+  },
+  "novo-banco": {
+    "style": "contain",
+    "file": "novo-banco.webp",
+    "source": "https://www.novobanco.pt/etc.clientlibs/novobancopublicsites/clientlibs/clientlib-resources/resources/icon-192x192.png",
+    "size": 192
+  },
+  "omv": {
+    "style": "contain",
+    "file": "omv.webp",
+    "source": "https://www.omv.bg/bg/apple-icon?501ffb4766b99abf",
+    "size": 196
+  },
+  "op": {
+    "style": "contain",
+    "file": "op.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/OP_Financial_Group.svg/330px-OP_Financial_Group.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "openai": {
+    "style": "cover",
+    "file": "openai.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://openai.com&size=256",
+    "size": 180
+  },
+  "orange-center": {
+    "style": "contain",
+    "file": "orange-center.webp",
+    "source": "https://www.orangecenter.com/media/favicon/default/favicon-32x32.png",
+    "size": 32
+  },
+  "otp": {
+    "style": "contain",
+    "file": "otp.webp",
+    "source": "https://www.otpbank.hu/favicon.ico",
+    "size": 48
+  },
+  "overgas": {
+    "style": "cover",
+    "file": "overgas.webp",
+    "source": "https://www.overgas.bg/wp-content/uploads/2021/08/cropped-cropped-favico-192x192.png",
+    "size": 192
+  },
+  "ozone": {
+    "style": "contain",
+    "file": "ozone.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ozone.bg&size=256",
+    "size": 32
+  },
+  "pandora": {
+    "style": "cover",
+    "file": "pandora.webp",
+    "source": "https://pandorabulgaria.net/assets/images/favicon/apple-touch-icon.png",
+    "size": 180
+  },
+  "paypal": {
+    "style": "contain",
+    "file": "paypal.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://paypal.com&size=256",
+    "size": 256
+  },
+  "paysera": {
+    "style": "contain",
+    "file": "paysera.webp",
+    "source": "https://www.paysera.bg/v2/compiled/favicon-194x194-v2.47f932d187c2d6259e52f00a4055a2b1.png",
+    "size": 194
+  },
+  "pekao": {
+    "style": "cover",
+    "file": "pekao.webp",
+    "source": "https://www.pekao.com.pl/.resources/pekao-module/webresources/dist/favicon/apple-touch-icon.png",
+    "size": 180
+  },
+  "pepco": {
+    "style": "contain",
+    "file": "pepco.webp",
+    "source": "https://pepco.bg/favicon.ico",
+    "size": 256
+  },
+  "petrol": {
+    "style": "contain",
+    "file": "petrol.webp",
+    "source": "https://www.petrol.bg/wp-content/uploads/2020/04/favicon.png",
+    "size": 32
+  },
+  "piraeus": {
+    "style": "cover",
+    "file": "piraeus.webp",
+    "source": "https://www.piraeusbank.gr/dist/piraeusbank/browser/assets/images/favicon.ico",
+    "size": 48
+  },
+  "pko": {
+    "style": "cover",
+    "file": "pko.webp",
+    "source": "https://www.pkobp.pl/static/redesign/_front/_img/_layout/favicon_new.png",
+    "size": 180
+  },
+  "playstation": {
+    "style": "cover",
+    "file": "playstation.webp",
+    "source": "https://gmedia.playstation.com/is/image/SIEPDC/ps-logo-favicon?$icon-196-196--t$",
+    "size": 400
+  },
+  "pluxee": {
+    "manual": true,
+    "file": "pluxee.svg",
+    "style": "contain",
+    "padding": 0.08
+  },
+  "postbank": {
+    "style": "contain",
+    "file": "postbank.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Postbank_Bulgaria_logo.svg/330px-Postbank_Bulgaria_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "poste-italiane": {
+    "style": "contain",
+    "file": "poste-italiane.webp",
+    "source": "https://www.poste.it/assets-custom/favicons/android-chrome-512x512.png",
+    "size": 512
+  },
+  "postfinance": {
+    "style": "contain",
+    "file": "postfinance.webp",
+    "source": "https://www.postfinance.ch/etc.clientlibs/pfch/clientlibs/publish/resources/images/app-icons/android-chrome-512x512.png",
+    "size": 512
+  },
+  "praktiker": {
+    "style": "contain",
+    "file": "praktiker.webp",
+    "source": "https://praktiker.bg/assets/images/favicons/apple-icon-180x180.png",
+    "size": 180
+  },
+  "privatbank": {
+    "style": "contain",
+    "file": "privatbank.webp",
+    "source": "https://privatbank.ua/sites/pb/img/favicon/favicon-192x192.png",
+    "size": 190
+  },
+  "procredit": {
+    "style": "contain",
+    "file": "procredit.webp",
+    "source": "https://www.procreditbank.bg/web/images/favicons/apple-touch-icon.png",
+    "size": 180
+  },
+  "pull-and-bear": {
+    "style": "contain",
+    "file": "pull-and-bear.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://pullandbear.com&size=256",
+    "size": 180
+  },
+  "pulse-fitness": {
+    "style": "contain",
+    "file": "pulse-fitness.webp",
+    "source": "https://pulsefit.bg/wp-content/uploads/cropped-favico-1-192x192.webp",
+    "size": 192
+  },
+  "puma": {
+    "style": "cover",
+    "file": "puma.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://puma.com&size=256",
+    "size": 192
+  },
+  "rabobank": {
+    "style": "contain",
+    "file": "rabobank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://rabobank.nl&size=256",
+    "size": 180
+  },
+  "raiffeisen-at": {
+    "style": "cover",
+    "file": "raiffeisen-at.webp",
+    "source": "https://www.raiffeisen.at/resources/rbg/logos/favicon.png.imgTransformer/favIcon/xl/1620387371373/favicon.png",
+    "size": 192
+  },
+  "remedium": {
+    "style": "contain",
+    "file": "remedium.webp",
+    "source": "https://remedium.bg/media/favicon/default/favicon-r.png",
+    "size": 48
+  },
+  "reserved": {
+    "style": "contain",
+    "file": "reserved.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/RESERVED_logo.svg/330px-RESERVED_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "revolut": {
+    "manual": true,
+    "file": "revolut.svg",
+    "style": "contain",
+    "padding": 0.22
+  },
+  "rompetrol": {
+    "style": "contain",
+    "file": "rompetrol.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Rompetrol_wordmark.svg/330px-Rompetrol_wordmark.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "ryanair": {
+    "style": "cover",
+    "file": "ryanair.webp",
+    "source": "https://assets.ryanair.com/resources/ui/ryanair3.0/favicons/apple-touch-icon-152x152.png",
+    "size": 152
+  },
+  "samsung": {
+    "style": "contain",
+    "file": "samsung.webp",
+    "source": "https://resources.samsung.com/etc.clientlibs/samsung/clientlibs/consumer/global/clientlib-common/resources/images/app_ico.png",
+    "size": 144
+  },
+  "santander": {
+    "style": "contain",
+    "file": "santander.webp",
+    "source": "https://www.santander.com/android-chrome-512x512.png",
+    "size": 512
+  },
+  "seb": {
+    "style": "cover",
+    "file": "seb.webp",
+    "source": "https://seb.se/android-chrome-512x512.png",
+    "size": 512
+  },
+  "sephora": {
+    "style": "contain",
+    "file": "sephora.webp",
+    "source": "https://www.sephora.com/img/ufe/favicon.ico",
+    "size": 48
+  },
+  "shein": {
+    "style": "cover",
+    "file": "shein.webp",
+    "source": "https://sc.ltwebstatic.com/she_dist/images/touch-icon-ipad-144-47ceee2d97.png",
+    "size": 144
+  },
+  "shell": {
+    "style": "contain",
+    "file": "shell.webp",
+    "source": "https://www.shell.bg/etc.clientlibs/amidala/clientlibs/theme-base/resources/favicon/google-touch-icon.png",
+    "size": 512
+  },
+  "sinsay": {
+    "style": "contain",
+    "file": "sinsay.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Sinsay_logo.svg/330px-Sinsay_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "skechers": {
+    "style": "cover",
+    "file": "skechers.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://skechers.com&size=256",
+    "size": 180
+  },
+  "skrill": {
+    "style": "contain",
+    "file": "skrill.webp",
+    "source": "https://www.skrill.com/typo3conf/ext/sitepackage/Resources/Public/images/icons/android-chrome-512x512.png",
+    "size": 512
+  },
+  "slsp": {
+    "style": "contain",
+    "file": "slsp.webp",
+    "source": "https://cdn.erstegroup.com/content/dam/sk/slsp/common/favicon.ico",
+    "size": 256
+  },
+  "societe-generale": {
+    "style": "cover",
+    "file": "societe-generale.webp",
+    "source": "https://particuliers.sg.fr/static/Resources/img/favicon.ico",
+    "size": 48
+  },
+  "sofiyska-voda": {
+    "style": "cover",
+    "file": "sofiyska-voda.webp",
+    "source": "https://sofiyskavoda.bg/images/favicons/apple-icon-180x180.png",
+    "size": 180
+  },
+  "sopharmacy": {
+    "style": "contain",
+    "file": "sopharmacy.webp",
+    "source": "https://sopharmacy.bg/favicon.ico",
+    "size": 16
+  },
+  "sparebank1": {
+    "style": "contain",
+    "file": "sparebank1.webp",
+    "source": "https://www.sparebank1.no/etc.clientlibs/settings/wcm/designs/sb1/nettsider/clientlib_base/resources/favicon.png",
+    "size": 144
+  },
+  "sparkasse": {
+    "style": "contain",
+    "file": "sparkasse.webp",
+    "source": "https://www.sparkasse.de/android-chrome-512x512.png",
+    "size": 512
+  },
+  "speedy": {
+    "style": "contain",
+    "file": "speedy.webp",
+    "source": "https://speedy.bg/apple-touch-icon.png",
+    "size": 129
+  },
+  "sport-depot": {
+    "style": "contain",
+    "file": "sport-depot.webp",
+    "source": "https://www.sportdepot.bg/templates/sportdepot/favicons/android-chrome-512x512.png",
+    "size": 512
+  },
+  "sportisimo": {
+    "style": "cover",
+    "file": "sportisimo.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sportisimo.bg&size=256",
+    "size": 180
+  },
+  "spotify": {
+    "style": "contain",
+    "file": "spotify.svg",
+    "padding": 0.2,
+    "source": "simple-icons:spotify",
+    "size": 999
+  },
+  "spuerkeess": {
+    "style": "cover",
+    "file": "spuerkeess.webp",
+    "source": "https://www.spuerkeess.lu/static/favicons/android-icon-192x192.png",
+    "size": 192
+  },
+  "starbucks": {
+    "style": "contain",
+    "file": "starbucks.webp",
+    "source": "https://www.starbucks.com/pwa-icon.png",
+    "size": 512
+  },
+  "steam": {
+    "style": "contain",
+    "file": "steam.webp",
+    "source": "https://store.steampowered.com/favicon.ico",
+    "size": 256
+  },
+  "stopanska": {
+    "style": "contain",
+    "file": "stopanska.webp",
+    "source": "https://stb.com.mk/apple-touch-icon.png",
+    "size": 180
+  },
+  "stradivarius": {
+    "style": "contain",
+    "file": "stradivarius.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stradivarius.com&size=256",
+    "size": 48
+  },
+  "subra": {
+    "style": "contain",
+    "file": "subra.webp",
+    "source": "https://subra.bg/favicon.png",
+    "size": 512
+  },
+  "subway": {
+    "style": "contain",
+    "file": "subway.webp",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/d/da/Subway-logo-green_2016.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "size": 152
+  },
+  "swarovski": {
+    "style": "cover",
+    "file": "swarovski.webp",
+    "source": "https://swarovski.com/apple-touch-icon.png",
+    "size": 152
+  },
+  "swedbank": {
+    "style": "contain",
+    "file": "swedbank.webp",
+    "source": "https://www.swedbank.com/content/dam/assets/android-chrome-512x512.png",
+    "size": 512
+  },
+  "t-market": {
+    "style": "contain",
+    "file": "t-market.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://tmarket.bg&size=256",
+    "size": 64
+  },
+  "tatra-banka": {
+    "style": "cover",
+    "file": "tatra-banka.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://tatrabanka.sk&size=256",
+    "size": 180
+  },
+  "tbi-bank": {
+    "style": "contain",
+    "file": "tbi-bank.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://tbibank.bg&size=256",
+    "size": 180
+  },
+  "tchibo": {
+    "style": "cover",
+    "file": "tchibo.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/Tchibo_Logo_Kachel_Ohne_Schutzzone_2017.svg/330px-Tchibo_Logo_Kachel_Ohne_Schutzzone_2017.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "technomarket": {
+    "style": "contain",
+    "file": "technomarket.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Technomarket_2011-Now.svg/330px-Technomarket_2011-Now.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "technopolis": {
+    "style": "contain",
+    "file": "technopolis.webp",
+    "source": "https://www.technopolis.bg/assets/images/favicons/apple-icon-180x180.png",
+    "size": 180
+  },
+  "temu": {
+    "style": "contain",
+    "file": "temu.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://temu.com&size=256",
+    "size": 256
+  },
+  "terranova": {
+    "style": "cover",
+    "file": "terranova.webp",
+    "source": "https://www.terranovastyle.com/cdn/shop/files/favicon-n.png?crop=center&height=32&v=1758025452&width=32",
+    "size": 32
+  },
+  "texim-bank": {
+    "style": "contain",
+    "file": "texim-bank.webp",
+    "source": "https://teximbank.bg/Icon-144.png",
+    "size": 144
+  },
+  "tezenis": {
+    "style": "contain",
+    "file": "tezenis.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Tezenis_logo.svg/330px-Tezenis_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "tokuda-bank": {
+    "style": "contain",
+    "file": "tokuda-bank.webp",
+    "source": "https://tokudabank.bg/static/favicon.05673eeec0de.ico",
+    "size": 16
+  },
+  "tommy-hilfiger": {
+    "style": "cover",
+    "file": "tommy-hilfiger.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://tommy.com&size=256",
+    "size": 256
+  },
+  "toplofikacia-sofia": {
+    "style": "contain",
+    "file": "toplofikacia-sofia.webp",
+    "source": "https://toplo.bg/favicon.ico",
+    "size": 48
+  },
+  "trade-republic": {
+    "style": "contain",
+    "file": "trade-republic.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://traderepublic.com&size=256",
+    "size": 256
+  },
+  "ubb": {
+    "manual": true,
+    "file": "ubb.svg",
+    "style": "contain",
+    "padding": 0.16
+  },
+  "uber": {
+    "style": "contain",
+    "file": "uber.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://uber.com&size=256",
+    "size": 180
+  },
+  "ubs": {
+    "style": "contain",
+    "file": "ubs.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ubs.com&size=256",
+    "size": 192
+  },
+  "unicredit": {
+    "style": "contain",
+    "file": "unicredit.webp",
+    "source": "https://content.ucgstatic.eu/etc/designs/ucpublic/it/img/favicon/favicon-192x192.png",
+    "size": 192
+  },
+  "unicredit-bulbank": {
+    "style": "cover",
+    "file": "unicredit-bulbank.webp",
+    "source": "https://www.unicreditbulbank.bg/static/apple-touch-icon.1793210537f9.png",
+    "size": 180
+  },
+  "videnov": {
+    "style": "cover",
+    "file": "videnov.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://videnov.bg&size=256",
+    "size": 256
+  },
+  "vivacom": {
+    "style": "cover",
+    "file": "vivacom.webp",
+    "source": "https://www.vivacom.bg/favicon-192x192.png",
+    "size": 192
+  },
+  "vivid": {
+    "style": "contain",
+    "file": "vivid.webp",
+    "source": "https://website-static.vivid.money/static/images/favicons/256x256.png",
+    "size": 256
+  },
+  "wise": {
+    "style": "contain",
+    "file": "wise.webp",
+    "source": "https://wise.com/public-resources/assets/icons/wise-personal/apple_touch_icon.png",
+    "size": 180
+  },
+  "wizz-air": {
+    "style": "cover",
+    "file": "wizz-air.webp",
+    "source": "https://www.wizzair.com/assets/images/apple-touch-icon.png",
+    "size": 512
+  },
+  "wolt": {
+    "style": "cover",
+    "file": "wolt.webp",
+    "source": "https://wolt-com-static-assets.wolt.com/android-icon-192x192.png",
+    "size": 192
+  },
+  "xiaomi": {
+    "style": "cover",
+    "file": "xiaomi.webp",
+    "source": "https://i02.appmifile.com/i18n/images/pwa/maskable-512x512.png",
+    "size": 512
+  },
+  "yettel": {
+    "style": "contain",
+    "file": "yettel.webp",
+    "source": "https://www.yettel.bg/sites/default/files/yettel-favicon.ico",
+    "size": 48
+  },
+  "youtube": {
+    "style": "contain",
+    "file": "youtube.webp",
+    "source": "https://www.gstatic.com/youtube/img/web/maskable/logo_512x512.png",
+    "size": 512
+  },
+  "yves-rocher": {
+    "style": "contain",
+    "file": "yves-rocher.webp",
+    "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Yves_Rocher_logo.png/330px-Yves_Rocher_logo.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "size": 330
+  },
+  "zaba": {
+    "style": "contain",
+    "file": "zaba.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zaba.hr&size=256",
+    "size": 144
+  },
+  "zara": {
+    "style": "cover",
+    "file": "zara.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zara.com&size=256",
+    "size": 180
+  },
+  "ziraat": {
+    "style": "contain",
+    "file": "ziraat.webp",
+    "source": "https://www.ziraatbank.com.tr/SiteAssets/images/favicon.ico",
+    "size": 48
+  },
+  "zora": {
+    "style": "contain",
+    "file": "zora.webp",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://zora.bg&size=256",
+    "size": 64
+  }
+}

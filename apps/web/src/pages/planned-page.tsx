@@ -25,11 +25,12 @@ import { PlannedFormDialog } from '@/components/planned/planned-form';
 import { plannedIcon, UpcomingList } from '@/components/planned/upcoming-list';
 import { useRecordLookups } from '@/components/records/record-list';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { Badge, Card, CardHeader, EmptyState, PageHeader, Skeleton } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
+import { recordBrand } from '@/lib/brand-icons';
 import { fmt } from '@/lib/date';
 import { dueLabel, money, recurrenceLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -84,12 +85,17 @@ export default function PlannedPage() {
 
   const renderRow = (p: PlannedPayment) => {
     const { icon, color } = plannedIcon(p, lookups);
+    const brand = p.type === 'transfer' ? undefined : recordBrand(p.payee, p.name);
     const account = accounts.find((a) => a.id === p.accountId);
     const to = p.toAccountId ? accounts.find((a) => a.id === p.toAccountId) : undefined;
     const isOverdue = !!p.nextDueDate && p.nextDueDate < fmt(new Date(), 'yyyy-MM-dd');
     return (
       <div key={p.id} className="flex items-center gap-3 px-4 py-3">
-        <IconBadge icon={icon} color={color} size="md" />
+        {brand ? (
+          <BrandBadge brand={brand} ring={color} size="md" />
+        ) : (
+          <IconBadge icon={icon} color={color} size="md" />
+        )}
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2">
             <span className="truncate font-medium">{p.name}</span>

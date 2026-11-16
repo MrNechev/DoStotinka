@@ -81,6 +81,8 @@ export interface PayeeUsage {
   payee: string;
   count: number;
   lastUsed: string;
+  /** The category used most often with this payee. */
+  categoryId: string | null;
 }
 
 /** What a rule is matched against. */

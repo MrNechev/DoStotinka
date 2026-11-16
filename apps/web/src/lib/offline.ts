@@ -58,6 +58,7 @@ const KEPT = new Set([
   'templates',
   'currencies',
   'rules',
+  'payees',
 ]);
 const KEPT_RECORD_LISTS = new Set(['suggestions', 'payees', 'notes']);
 

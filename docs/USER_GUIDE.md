@@ -39,12 +39,14 @@ The dashboard shows a checklist until these steps are done. Coming from another 
 ## Accounts
 
 An account has a name, a type (cash, food vouchers, bank account, savings, credit card, deposit,
-investment, loan, other), a currency, a colour and an icon. Its **balance** is the starting balance
+investment, property & valuables, loan, other), a currency, a colour and an icon. Its **balance** is the starting balance
 plus all records of the account.
 
 - **Icon:** tap the round icon next to the name. Besides general icons you can pick the logo of your
-  bank or voucher provider (currently DSK Bank, UBB, Revolut, Pluxee and Edenred). The logo is
-  shown on a white disc with a ring in the account's colour.
+  bank: every Bulgarian bank and payment provider, the largest banks of 34 other European countries
+  (choose the country), payment services (Revolut, Wise, PayPal, N26 …) and meal vouchers (Pluxee,
+  Edenred). The search finds banks of all countries. The logo is shown on a white disc with a ring
+  in the account's colour.
 - **Food vouchers** (meal vouchers such as Pluxee or Edenred cards) are money your employer gives
   you that can only be spent on food. Give them their own account so they don't mix with your
   bank money; groceries paid with them are normal expenses from that account.
@@ -75,11 +77,17 @@ A record is an **expense**, an **income** or a **transfer** between two of your 
   record, it picks the category (until you choose one yourself).
 - **Receipts & files** – attach photos or PDFs (up to 10 per record). Photos are scaled down
   before uploading. A paperclip in the list marks records with files.
+- **Payee** – payees you used before and known shops are suggested while you type, with their
+  logo. Choosing one also picks the category you use most with it (or the usual one of a known
+  shop: Lidl → Groceries). About 140 shops and services from Bulgarian malls and bills are known –
+  also when the bank writes them as “LIDL BULGARIA EOOD 123” or in Cyrillic (“Кауфланд”) – and are
+  shown with their logo in records, templates, the inbox and planned payments.
 - **Templates** – “Save as template” stores account, category, payee, note and labels – e.g. a
   template “Lidl” with the category *Groceries* and the note “Lidl”. The amount is only stored when
   you tick *Also fill in the amount* (handy for fixed prices like a bus ticket). Templates appear
-  at the top of the editor; one tap fills everything in, then you type the amount. Edit, remove
-  the amount from or delete templates in Settings. **Quick add** suggestions are learned automatically from your frequent records.
+  at the top of the editor; one tap fills everything in, then you type the amount. In Settings
+  you can create templates and change everything of them (type, account, category, payee, note,
+  labels and the optional amount) or delete them. **Quick add** suggestions are learned automatically from your frequent records.
 - **Duplicate** creates a copy dated now.
 
 On the Records page you can filter by period, accounts, category, label and type, and search

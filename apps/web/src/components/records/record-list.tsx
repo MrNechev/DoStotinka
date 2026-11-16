@@ -4,9 +4,10 @@ import { CalendarClock, Check, Inbox, Paperclip } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useAccounts, useCategories, useDebts, useLabels } from '@/api/queries';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
+import { recordBrand } from '@/lib/brand-icons';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { fmt } from '@/lib/date';
 import { dayLabel, money, timeLabel } from '@/lib/format';
@@ -83,6 +84,7 @@ export function RecordRow({
   const parentName =
     !isTransfer && record.categoryId ? cat.parentOf(record.categoryId)?.name : undefined;
   const details = [record.payee, record.note].filter(Boolean).join(' · ');
+  const brand = isTransfer || isDebt ? undefined : recordBrand(record.payee, record.note);
   const amountClass =
     isTransfer || isDebt ? 'text-foreground' : record.amount < 0 ? 'text-expense' : 'text-income';
 
@@ -113,6 +115,8 @@ export function RecordRow({
         <IconBadge icon="handshake" color="#0EA5E9" size="md" />
       ) : isTransfer ? (
         <IconBadge icon="arrow-left-right" color="#64748B" size="md" />
+      ) : brand ? (
+        <BrandBadge brand={brand} ring={cat.colorOf(record.categoryId)} size="md" />
       ) : (
         <IconBadge
           icon={cat.iconOf(record.categoryId)}

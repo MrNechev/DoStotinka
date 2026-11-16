@@ -5,6 +5,7 @@ import {
   type InboxConfirmInput,
   type InboxItem,
   type InboxStatus,
+  recognizeBrand,
 } from '@dostotinka/shared';
 import { and, desc, eq, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import type { Database } from '../db';
@@ -146,7 +147,21 @@ export async function suggestCategory(
     .groupBy(records.categoryId)
     .orderBy(desc(sql`count(*)`), desc(sql`max(${records.occurredAt})`))
     .limit(1);
-  return row?.categoryId ?? null;
+  if (row?.categoryId) return row.categoryId;
+  // A known shop (Lidl → Groceries …): the matching category of the default tree.
+  const brand = recognizeBrand(payee);
+  if (!brand?.category || type !== 'expense') return null;
+  const [cat] = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(
+      and(
+        eq(categories.userId, userId),
+        eq(categories.systemKey, brand.category),
+        eq(categories.archived, false),
+      ),
+    );
+  return cat?.id ?? null;
 }
 
 /** Signed record amount an item corresponds to, when its currency is the account currency. */

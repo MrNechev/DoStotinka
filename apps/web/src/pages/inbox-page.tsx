@@ -29,11 +29,12 @@ import {
 import { accountIcon } from '@/components/accounts/account-card';
 import { CategoryButton, CategoryPickerPanel } from '@/components/categories/category-picker';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input, Select } from '@/components/ui/input';
 import { Badge, Card, EmptyState, PageHeader, Segmented, Spinner } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
+import { payeeBrand } from '@/lib/brand-icons';
 import { ago } from '@/lib/date';
 import { longDate, money, timeLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -75,7 +76,9 @@ function PendingCard({ item, accounts }: { item: InboxItem; accounts: Account[] 
   return (
     <Card className="p-4">
       <div className="flex items-start gap-3">
-        {account ? (
+        {payeeBrand(item.payee) ? (
+          <BrandBadge brand={payeeBrand(item.payee)!} ring={account?.color} size="md" />
+        ) : account ? (
           <IconBadge icon={accountIcon(account)} color={account.color} size="md" />
         ) : (
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">

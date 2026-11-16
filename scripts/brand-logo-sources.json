@@ -1,0 +1,66 @@
+{
+  "_comment": "Logos that the automatic search gets wrong or cannot find: a Wikimedia Commons file or the logo of another brand.",
+  "ing": {
+    "same": "ing-de"
+  },
+  "ing-bg": {
+    "same": "ing-de"
+  },
+  "bnp-paribas": {
+    "same": "bnp-fortis"
+  },
+  "bnp-bg": {
+    "same": "bnp-fortis"
+  },
+  "bgl": {
+    "same": "bnp-fortis"
+  },
+  "intesa-sanpaolo": {
+    "none": "only a thin wordmark – unreadable on a badge"
+  },
+  "pbz": {
+    "none": "only a thin wordmark – unreadable on a badge"
+  },
+  "vub": {
+    "none": "only a thin wordmark – unreadable on a badge"
+  },
+  "banca-intesa-rs": {
+    "none": "only a thin wordmark – unreadable on a badge"
+  },
+  "lukoil": {
+    "commons": "File:Lukoil company logo.svg"
+  },
+  "rompetrol": {
+    "commons": "File:Rompetrol wordmark.svg"
+  },
+  "tchibo": {
+    "commons": "File:Tchibo Logo Kachel Ohne Schutzzone 2017.svg"
+  },
+  "subway": {
+    "commons": "File:Subway-logo-green 2016.png"
+  },
+  "cinema-city": {
+    "commons": "File:Cinema City.svg"
+  },
+  "technomarket": {
+    "commons": "File:Technomarket 2011-Now.svg"
+  },
+  "abn-amro": {
+    "commons": "File:ABN AMRO logo (cropped).svg"
+  },
+  "op": {
+    "commons": "File:OP Financial Group.svg"
+  },
+  "cgd": {
+    "commons": "File:CGD Logo 2017.png"
+  },
+  "intimissimi": {
+    "none": "only a thin wordmark – unreadable on a badge"
+  },
+  "tezenis": {
+    "commons": "File:Tezenis logo.svg"
+  },
+  "ciela": {
+    "url": "https://www.ciela.com/media/favicon/websites/1/favicon.png"
+  }
+}

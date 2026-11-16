@@ -281,6 +281,7 @@ export async function listPayeeUsage(db: Database, userId: string): Promise<Paye
       payee: records.payee,
       count: sql<number>`count(*)::int`,
       lastUsed: sql<string>`max(${records.occurredAt})`,
+      categoryId: sql<string | null>`mode() within group (order by ${records.categoryId})`,
     })
     .from(records)
     .where(and(eq(records.userId, userId), isNotNull(records.payee), ne(records.payee, '')))
@@ -291,6 +292,7 @@ export async function listPayeeUsage(db: Database, userId: string): Promise<Paye
     payee: r.payee!,
     count: r.count,
     lastUsed: new Date(r.lastUsed).toISOString(),
+    categoryId: r.categoryId,
   }));
 }
 

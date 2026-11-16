@@ -16,6 +16,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Brand logos stay separate files: only the ones shown are downloaded.
+    assetsInlineLimit: (file: string) => (file.includes('/assets/brands/') ? false : undefined),
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {

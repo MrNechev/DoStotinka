@@ -10,6 +10,7 @@ import {
   type RecordItem,
   type RecordTemplate,
   type RecordType,
+  recognizeBrand,
 } from '@dostotinka/shared';
 import { ArrowDown, Copy, Handshake, Minus, Plus, Repeat, Trash2 } from 'lucide-react';
 import {
@@ -31,7 +32,7 @@ import {
   useDebts,
   useDeleteRecord,
   useLabels,
-  usePayees,
+  usePayeeUsage,
   useRecordSuggestions,
   useRules,
   useSaveRecord,
@@ -56,6 +57,7 @@ import { money } from '@/lib/format';
 import { cn, storage } from '@/lib/utils';
 import { AttachmentsField } from './attachments-field';
 import { NoteField } from './note-field';
+import { PayeeField } from './payee-field';
 import { debtRecordTitle } from './record-list';
 import { SaveTemplateButton, TemplateChips } from './templates';
 
@@ -212,10 +214,14 @@ function RecordEditorDialog({
   const user = useUser();
   const { data: accounts = [] } = useAccounts();
   const { data: labels = [] } = useLabels();
-  const { data: payees = [] } = usePayees();
+  const { data: payeeUsage = [] } = usePayeeUsage();
   const { data: suggestions = [] } = useRecordSuggestions();
   const { data: categories } = useCategories();
   const categoryIndex = useMemo(() => buildCategoryIndex(categories), [categories]);
+  const categoryBySystemKey = useMemo(
+    () => new Map((categories ?? []).filter((c) => c.systemKey).map((c) => [c.systemKey!, c.id])),
+    [categories],
+  );
   const { data: currencies } = useCurrencies();
   const save = useSaveRecord();
   const uploadFiles = useUploadAttachments();
@@ -252,15 +258,27 @@ function RecordEditorDialog({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  // Rules suggest the category from the payee and note of a new record.
+  // The category of a new record follows its payee (and note) until the user picks one: rules
+  // first, then the category used most with this payee, then the usual one of a known shop.
   useEffect(() => {
-    if (isEdit || form.type === 'transfer' || !rules.length) return;
+    if (isEdit || form.type === 'transfer') return;
     if (form.categoryId && form.categoryId !== ruleCategory.current) return;
-    const next = applyRules(
-      rules,
-      { type: form.type, accountId: form.accountId, payee: form.payee, note: form.note },
-      (id) => categoryIndex.byId.get(id)?.kind,
-    ).categoryId;
+    const kindOf = (id: string) => categoryIndex.byId.get(id)?.kind;
+    const fits = (id: string | null | undefined) =>
+      id && kindOf(id) === form.type && !categoryIndex.byId.get(id)?.archived ? id : null;
+    const payee = form.payee.trim().toLocaleLowerCase();
+    const next =
+      (rules.length
+        ? applyRules(
+            rules,
+            { type: form.type, accountId: form.accountId, payee: form.payee, note: form.note },
+            kindOf,
+          ).categoryId
+        : null) ??
+      fits(
+        payee ? payeeUsage.find((p) => p.payee.toLocaleLowerCase() === payee)?.categoryId : null,
+      ) ??
+      fits(categoryBySystemKey.get(recognizeBrand(form.payee)?.category ?? ''));
     if (next === form.categoryId || (!next && !ruleCategory.current)) return;
     ruleCategory.current = next;
     setForm((f) => ({ ...f, categoryId: next }));
@@ -273,6 +291,8 @@ function RecordEditorDialog({
     form.note,
     form.categoryId,
     categoryIndex,
+    payeeUsage,
+    categoryBySystemKey,
   ]);
 
   const activeAccounts = accounts.filter(
@@ -838,21 +858,16 @@ function RecordEditorDialog({
 
           {form.type !== 'transfer' && (
             <Field label={form.type === 'income' ? t('Payer') : t('Payee')} htmlFor="payee">
-              <Input
+              <PayeeField
                 id="payee"
-                list="payee-options"
                 value={form.payee}
-                onChange={(e) => set('payee', e.target.value)}
+                onValueChange={(v) => set('payee', v)}
+                suggest={user.noteSuggestions}
                 placeholder={
                   form.type === 'income' ? t('Who paid you?') : t('Shop, company or person')
                 }
                 maxLength={120}
               />
-              <datalist id="payee-options">
-                {payees.map((p) => (
-                  <option key={p} value={p} />
-                ))}
-              </datalist>
             </Field>
           )}
 

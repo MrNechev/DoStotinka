@@ -230,3 +230,30 @@ describe('backup', () => {
     expect(rule.categoryId).not.toBeNull();
   });
 });
+
+describe('known shops', () => {
+  it('give the inbox their usual category and the payee list its category', async () => {
+    const u = await setup();
+    await u.call('PATCH', '/api/automatic-import', { notificationsEnabled: true });
+    const source = (await u.call('POST', '/api/automatic-import/sources', { name: 'Phone' })).body;
+    await ctx.app.inject({
+      method: 'POST',
+      url: '/api/ingest/notification',
+      headers: { authorization: `Bearer ${source.token}` },
+      payload: { app: 'com.revolut.revolut', title: 'Kaufland', text: 'You paid €8.20' },
+    });
+    const [item] = (await u.call<any[]>('GET', '/api/inbox')).body;
+    const cats = (await u.call<any[]>('GET', '/api/categories')).body;
+    const groceries = cats.find((c) => c.systemKey === 'food.groceries');
+    expect(item.categoryId).toBe(groceries.id);
+
+    await u.expense({ payee: 'Kaufland', categoryId: u.expenseCat.id });
+    await u.expense({ payee: 'Kaufland', categoryId: u.expenseCat.id });
+    await u.expense({ payee: 'Kaufland', categoryId: u.otherExpense.id });
+    const payees = (await u.call<any[]>('GET', '/api/payees')).body;
+    expect(payees.find((p) => p.payee === 'Kaufland')).toMatchObject({
+      count: 3,
+      categoryId: u.expenseCat.id,
+    });
+  });
+});

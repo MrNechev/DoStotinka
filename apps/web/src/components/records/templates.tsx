@@ -1,5 +1,5 @@
 import type { RecordTemplate, TemplateInput } from '@dostotinka/shared';
-import { BookmarkPlus, Pencil, Trash2 } from 'lucide-react';
+import { BookmarkPlus, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { errorMessage } from '@/api/client';
@@ -11,15 +11,41 @@ import {
   useTemplates,
 } from '@/api/queries';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input } from '@/components/ui/input';
 import { Card, CardHeader, Checkbox } from '@/components/ui/misc';
 import { t } from '@/i18n';
+import { recordBrand } from '@/lib/brand-icons';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { TemplateEditor } from './template-editor';
+
+/** A template's shop logo (payee or note), otherwise its category icon. */
+function TemplateIcon({
+  tpl,
+  categories,
+  size,
+}: {
+  tpl: RecordTemplate;
+  categories: CategoryIndex;
+  size: 'xs' | 'sm';
+}) {
+  if (tpl.type === 'transfer')
+    return <IconBadge icon="arrow-left-right" color="#64748B" size={size} />;
+  const brand = recordBrand(tpl.payee, tpl.note);
+  if (brand)
+    return <BrandBadge brand={brand} ring={categories.colorOf(tpl.categoryId)} size={size} />;
+  return (
+    <IconBadge
+      icon={categories.iconOf(tpl.categoryId)}
+      color={categories.colorOf(tpl.categoryId)}
+      size={size}
+    />
+  );
+}
 
 /** Saved templates as a row of chips at the top of the record editor. */
 export function TemplateChips({
@@ -53,11 +79,7 @@ export function TemplateChips({
                 .join(' · ')}
               className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-primary/50 py-1 pl-1 pr-3 text-xs hover:bg-primary-soft"
             >
-              <IconBadge
-                icon={isTransfer ? 'arrow-left-right' : categories.iconOf(tpl.categoryId)}
-                color={isTransfer ? '#64748B' : categories.colorOf(tpl.categoryId)}
-                size="xs"
-              />
+              <TemplateIcon tpl={tpl} categories={categories} size="xs" />
               <span className="max-w-36 truncate font-medium">{tpl.name}</span>
               {tpl.amount !== null && account && (
                 <span
@@ -168,18 +190,15 @@ export function SaveTemplateButton({
   );
 }
 
-/** Settings card listing the templates with rename and delete. */
+/** Settings card listing the templates with edit and delete. */
 export function TemplatesSection() {
   const { data: templates = [] } = useTemplates();
   const { data: accounts = [] } = useAccounts();
   const { data: categoryList } = useCategories();
   const categories = useMemo(() => buildCategoryIndex(categoryList), [categoryList]);
-  const save = useSaveTemplate();
   const remove = useDeleteTemplate();
   const confirm = useConfirm();
-  const [renaming, setRenaming] = useState<RecordTemplate | null>(null);
-  const [name, setName] = useState('');
-  const [keepAmount, setKeepAmount] = useState(false);
+  const [editing, setEditing] = useState<RecordTemplate | 'new' | null>(null);
 
   const describe = (tpl: RecordTemplate) => {
     const account = accounts.find((a) => a.id === tpl.accountId);
@@ -202,6 +221,11 @@ export function TemplatesSection() {
         description={t(
           'Save frequent records as templates with “Save as template” in the record editor.',
         )}
+        action={
+          <Button size="sm" variant="outline" onClick={() => setEditing('new')}>
+            <Plus /> {t('New template')}
+          </Button>
+        }
       />
       <div className="px-5 pb-5 pt-2">
         {templates.length === 0 ? (
@@ -210,13 +234,7 @@ export function TemplatesSection() {
           <ul className="divide-y divide-border rounded-xl border border-border">
             {templates.map((tpl) => (
               <li key={tpl.id} className="flex items-center gap-3 px-3 py-2.5">
-                <IconBadge
-                  icon={
-                    tpl.type === 'transfer' ? 'arrow-left-right' : categories.iconOf(tpl.categoryId)
-                  }
-                  color={tpl.type === 'transfer' ? '#64748B' : categories.colorOf(tpl.categoryId)}
-                  size="sm"
-                />
+                <TemplateIcon tpl={tpl} categories={categories} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{tpl.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{describe(tpl)}</p>
@@ -226,11 +244,7 @@ export function TemplatesSection() {
                   size="icon-sm"
                   aria-label={t('Edit')}
                   title={t('Edit')}
-                  onClick={() => {
-                    setName(tpl.name);
-                    setKeepAmount(tpl.amount !== null);
-                    setRenaming(tpl);
-                  }}
+                  onClick={() => setEditing(tpl)}
                 >
                   <Pencil />
                 </Button>
@@ -256,59 +270,12 @@ export function TemplatesSection() {
           </ul>
         )}
       </div>
-      <Dialog open={!!renaming} onOpenChange={(o) => !o && setRenaming(null)}>
-        {renaming && (
-          <DialogContent size="sm" title={t('Edit template')}>
-            <form
-              className="grid gap-4"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const { id, createdAt: _created, ...rest } = renaming;
-                try {
-                  await save.mutateAsync({
-                    id,
-                    input: { ...rest, amount: keepAmount ? rest.amount : null, name },
-                  });
-                  setRenaming(null);
-                } catch (err) {
-                  toast.error(errorMessage(err));
-                }
-              }}
-            >
-              <Field label={t('Name')} htmlFor="rename-template">
-                <Input
-                  id="rename-template"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={60}
-                  required
-                  autoFocus
-                />
-              </Field>
-              {renaming.amount !== null && (
-                <label className="flex cursor-pointer items-center gap-2.5 text-sm">
-                  <Checkbox
-                    checked={keepAmount}
-                    onCheckedChange={(v) => setKeepAmount(v === true)}
-                  />
-                  {t('Also fill in the amount ({amount})', {
-                    amount: money(
-                      renaming.amount,
-                      accounts.find((a) => a.id === renaming.accountId)?.currency ?? 'EUR',
-                    ),
-                  })}
-                </label>
-              )}
-              <DialogFooter className="mt-0">
-                <Button variant="outline" onClick={() => setRenaming(null)}>
-                  {t('Cancel')}
-                </Button>
-                <Button type="submit" loading={save.isPending}>
-                  {t('Save')}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        {editing && (
+          <TemplateEditor
+            template={editing === 'new' ? null : editing}
+            onClose={() => setEditing(null)}
+          />
         )}
       </Dialog>
     </Card>

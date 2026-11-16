@@ -36,13 +36,18 @@ leaves it.
 - **Two-factor login** with any authenticator app (TOTP) and one-time recovery codes.
 - **Accounts** – cash, food vouchers, bank, savings, credit cards, deposits, investments, property,
   loans …
-  each with its own balance, currency, colour and icon – including the logos of DSK Bank, UBB,
-  Revolut, Pluxee and Edenred. Set or adjust balances at any time, archive old accounts, reorder them.
+  each with its own balance, currency, colour and icon – or the logo of its bank: every Bulgarian
+  bank, the largest banks of every European country, Revolut, Wise, PayPal, Pluxee, Edenred and more.
+  Set or adjust balances at any time, archive old accounts, reorder them.
 - **Records** – expenses and income with amount, date & time, category, payee, note and labels.
   Amount fields understand simple maths (`12.40+3.10`) and both `,` and `.` as decimal separator.
-  Notes you wrote before are suggested while you type (can be switched off).
+  Payees and notes you used before are suggested while you type (can be switched off).
+- **Shop logos** – about 140 shops and services found in Bulgarian malls and bills (Lidl, Kaufland,
+  Billa, Fantastico, LC Waikiki, Terranova, A1, Yettel, Technopolis, Shell, Netflix …) are
+  recognised in payees – also as “LIDL BULGARIA EOOD” or “Кауфланд” – and shown with their logo.
+  They are suggested while typing the payee and pick the usual category (Lidl → Groceries).
 - **Templates** for records you enter often (“Lidl”, “Move to savings”) – one tap fills in account,
-  category, payee, note and labels; the amount only if you want. Frequent combinations are also
+  category, payee, note and labels; the amount only if you want. Create and edit them in Settings. Frequent combinations are also
   suggested automatically.
 - **Rules** – “payee contains *LIDL* → *Groceries*, payee *Lidl*, label *Food*”: they fill in
   imported transactions, pick the category while you type and can clean up past records. Payees
@@ -391,6 +396,9 @@ Shortcut that logs a cash expense). All amounts are integers in minor units (cen
 
 **Done**
 
+- [x] **Bank and shop logos**: all Bulgarian banks and the largest of every European country for
+  accounts; ~140 shops and services recognised in payees, with payee suggestions; templates can be
+  edited completely (0.10.0)
 - [x] **iPhone app** (first version) – your server full-screen, offline entry, a Shortcuts action for
   card payments (0.9.0)
 - [x] **Rules** and payee clean-up (0.9.0)

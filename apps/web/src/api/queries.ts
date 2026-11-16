@@ -1027,10 +1027,13 @@ export function useApplyRule() {
   });
 }
 
-export function usePayeeUsage() {
+/** All payees with their use (rules page, payee suggestions). */
+export function usePayeeUsage(enabled = true) {
   return useQuery({
     queryKey: ['payees'],
     queryFn: () => api<PayeeUsage[]>('/payees'),
+    staleTime: 5 * 60_000,
+    enabled,
   });
 }
 

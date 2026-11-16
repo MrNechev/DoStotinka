@@ -1,12 +1,20 @@
-import { COLOR_PALETTE } from '@dostotinka/shared';
+import { COLOR_PALETTE, normalizeBrandText } from '@dostotinka/shared';
 import { Check, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { t } from '@/i18n';
-import { BRANDS } from '@/lib/brand-icons';
+import { BRANDS, brandOf, COUNTRY_NAMES } from '@/lib/brand-icons';
+
 import { ICON_NAMES } from '@/lib/icon-registry';
 import { cn } from '@/lib/utils';
 import { Icon, IconBadge } from './category-icon';
-import { Input } from './input';
+import { Input, Select } from './input';
+
+/** Logos offered for accounts: banks, payment services and meal vouchers (not shops). */
+const ACCOUNT_BRANDS = BRANDS.filter((b) => b.kind !== 'shop');
+const SERVICES = 'services';
+const OTHER_COUNTRIES = [
+  ...new Set(ACCOUNT_BRANDS.map((b) => b.country).filter((c): c is string => !!c && c !== 'BG')),
+].sort((a, b) => (COUNTRY_NAMES[a] ?? a).localeCompare(COUNTRY_NAMES[b] ?? b));
 
 export function ColorPicker({ value, onChange }: { value: string; onChange: (c: string) => void }) {
   return (
@@ -64,23 +72,69 @@ export function IconPicker({
     const q = search.trim().toLowerCase();
     return q ? ICON_NAMES.filter((n) => n.includes(q)) : ICON_NAMES;
   }, [search]);
+  const [bankSearch, setBankSearch] = useState('');
+  const [country, setCountry] = useState(() => {
+    const current = brandOf(value);
+    if (!current) return 'BG';
+    return current.kind === 'bank' ? (current.country ?? 'BG') : SERVICES;
+  });
   const brandList = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return q ? BRANDS.filter((b) => b.name.toLowerCase().includes(q)) : BRANDS;
-  }, [search]);
+    const q = normalizeBrandText(bankSearch);
+    if (q) {
+      return ACCOUNT_BRANDS.filter(
+        (b) => normalizeBrandText(b.name).includes(q) || b.key.includes(q),
+      ).slice(0, 40);
+    }
+    return country === SERVICES
+      ? ACCOUNT_BRANDS.filter((b) => b.kind !== 'bank')
+      : ACCOUNT_BRANDS.filter((b) => b.kind === 'bank' && b.country === country);
+  }, [bankSearch, country]);
   return (
     <div>
-      {brands && brandList.length > 0 && (
+      {brands && (
         <div className="mb-3">
           <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-            {t('Banks & food vouchers')}
+            {t('Bank or card logo')}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <Select
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setBankSearch('');
+              }}
+              aria-label={t('Country')}
+              className="h-9"
+            >
+              <option value="BG">{t(COUNTRY_NAMES.BG!)}</option>
+              <option value={SERVICES}>{t('Payment services & vouchers')}</option>
+              {OTHER_COUNTRIES.map((c) => (
+                <option key={c} value={c}>
+                  {t(COUNTRY_NAMES[c] ?? c)}
+                </option>
+              ))}
+            </Select>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={bankSearch}
+                onChange={(e) => setBankSearch(e.target.value)}
+                placeholder={t('Search banks…')}
+                className="h-9 pl-9"
+                aria-label={t('Search banks…')}
+              />
+            </div>
+          </div>
+          {brandList.length === 0 && (
+            <p className="py-2 text-sm text-muted-foreground">{t('No bank found.')}</p>
+          )}
+          <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto">
             {brandList.map((b) => (
               <button
                 key={b.id}
                 type="button"
                 onClick={() => onChange(b.id)}
+                title={b.name}
                 className={cn(
                   'flex w-16 cursor-pointer flex-col items-center gap-1 rounded-xl p-1.5 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
                   value === b.id && 'bg-muted text-foreground',

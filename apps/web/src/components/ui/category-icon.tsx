@@ -1,5 +1,5 @@
 import { CircleHelp } from 'lucide-react';
-import { brandOf } from '@/lib/brand-icons';
+import { type Brand, brandOf } from '@/lib/brand-icons';
 import { ICONS } from '@/lib/icon-registry';
 import { cn } from '@/lib/utils';
 
@@ -40,25 +40,7 @@ export function IconBadge({
   className?: string;
 }) {
   const brand = brandOf(icon);
-  if (brand) {
-    // A logo keeps its own colours on a white disc; the chosen colour stays visible as a ring.
-    return (
-      <span
-        className={cn(
-          'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white',
-          SIZES[size],
-          className,
-        )}
-        style={{
-          boxShadow: `inset 0 0 0 ${size === 'xs' || size === 'sm' ? 1.5 : 2}px ${color}`,
-          padding: Math.round(SIZE_PX[size] * brand.padding),
-        }}
-        title={brand.name}
-      >
-        <img src={brand.src} alt="" className="size-full object-contain" draggable={false} />
-      </span>
-    );
-  }
+  if (brand) return <BrandBadge brand={brand} ring={color} size={size} className={className} />;
   return (
     <span
       className={cn(
@@ -73,6 +55,48 @@ export function IconBadge({
       }
     >
       <Icon name={icon} strokeWidth={2.1} />
+    </span>
+  );
+}
+
+/**
+ * A logo on a white disc. Square app icons fill the circle, other logos sit inside it; `ring`
+ * (the account or category colour) stays visible around it.
+ */
+export function BrandBadge({
+  brand,
+  ring,
+  size = 'md',
+  className,
+}: {
+  brand: Brand;
+  ring?: string;
+  size?: keyof typeof SIZES;
+  className?: string;
+}) {
+  const width = size === 'xs' || size === 'sm' ? 1.5 : 2;
+  return (
+    <span
+      className={cn(
+        'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white',
+        SIZES[size],
+        className,
+      )}
+      style={{ padding: Math.round(SIZE_PX[size] * brand.padding) }}
+      title={brand.name}
+    >
+      <img
+        src={brand.src}
+        alt=""
+        loading="lazy"
+        className={cn('size-full', brand.cover ? 'object-cover' : 'object-contain')}
+        draggable={false}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-full"
+        style={{ boxShadow: `inset 0 0 0 ${width}px ${ring ?? 'var(--border)'}` }}
+      />
     </span>
   );
 }

@@ -257,9 +257,11 @@ function PreferencesSection() {
         </div>
         <label className="mt-5 flex cursor-pointer items-center justify-between gap-3">
           <span className="min-w-0">
-            <span className="block text-sm font-medium">{t('Suggest notes while typing')}</span>
+            <span className="block text-sm font-medium">{t('Suggestions while typing')}</span>
             <span className="block text-xs text-muted-foreground">
-              {t('Notes you wrote before appear below the note field.')}
+              {t(
+                'Payees and notes you used before (and known shops) are suggested in the record editor.',
+              )}
             </span>
           </span>
           <Switch

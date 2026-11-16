@@ -7,9 +7,10 @@ import { errorMessage } from '@/api/client';
 import { usePlanned, useSkipPlanned, useUpcoming } from '@/api/queries';
 import { useRecordLookups } from '@/components/records/record-list';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { Badge, EmptyState, Skeleton } from '@/components/ui/misc';
 import { t } from '@/i18n';
+import { recordBrand } from '@/lib/brand-icons';
 import { fmt } from '@/lib/date';
 import { dueLabel, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -61,13 +62,18 @@ export function UpcomingList({ days = 14, limit }: { days?: number; limit?: numb
           const isNext = !seen.has(p.id);
           seen.add(p.id);
           const { icon, color } = plannedIcon(p, lookups);
+          const brand = p.type === 'transfer' ? undefined : recordBrand(p.payee, p.name);
           const signed = p.type === 'expense' ? -p.amount : p.amount;
           return (
             <li
               key={`${o.plannedPaymentId}-${o.dueDate}`}
               className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-muted/60"
             >
-              <IconBadge icon={icon} color={color} size="sm" />
+              {brand ? (
+                <BrandBadge brand={brand} ring={color} size="sm" />
+              ) : (
+                <IconBadge icon={icon} color={color} size="sm" />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.name}</p>
                 <p

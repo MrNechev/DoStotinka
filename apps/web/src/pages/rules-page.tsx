@@ -27,7 +27,7 @@ import {
 } from '@/api/queries';
 import { CategoryButton, CategoryPickerPanel } from '@/components/categories/category-picker';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input, Select } from '@/components/ui/input';
@@ -42,6 +42,7 @@ import {
   Switch,
 } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
+import { payeeBrand } from '@/lib/brand-icons';
 import { buildCategoryIndex } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 
@@ -634,6 +635,11 @@ function PayeesCard() {
           <ul className="max-h-96 divide-y divide-border overflow-y-auto rounded-xl border border-border">
             {shown.map((p) => (
               <li key={p.payee} className="flex items-center gap-3 px-3 py-2">
+                {payeeBrand(p.payee) ? (
+                  <BrandBadge brand={payeeBrand(p.payee)!} size="xs" />
+                ) : (
+                  <span className="size-6 shrink-0 rounded-full bg-muted" aria-hidden />
+                )}
                 <span className="min-w-0 flex-1 truncate text-sm">{p.payee}</span>
                 <span className="tabular shrink-0 text-xs text-muted-foreground">
                   {tn(p.count, '{n} record', '{n} records')}

@@ -12,7 +12,7 @@ import { Link, useSearchParams } from 'react-router';
 import { api } from '@/api/client';
 import { useCategories } from '@/api/queries';
 import { Button } from '@/components/ui/button';
-import { IconBadge } from '@/components/ui/category-icon';
+import { BrandBadge, IconBadge } from '@/components/ui/category-icon';
 import {
   Badge,
   Card,
@@ -23,6 +23,7 @@ import {
   Skeleton,
 } from '@/components/ui/misc';
 import { t, tn } from '@/i18n';
+import { type Brand, payeeBrand, recordBrand } from '@/lib/brand-icons';
 import { buildCategoryIndex, type CategoryIndex } from '@/lib/categories';
 import { fmtCap } from '@/lib/date';
 import { money, percent, shortDate } from '@/lib/format';
@@ -245,6 +246,7 @@ function ReviewContent({
             <ul className="divide-y divide-border px-5 pb-3">
               {review.payees.map((p) => (
                 <li key={p.name} className="flex items-center gap-3 py-2.5 text-sm">
+                  <PayeeLogo name={p.name} />
                   <span className="min-w-0 flex-1 truncate">{p.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {tn(p.count, '{n} time', '{n} times')}
@@ -266,10 +268,10 @@ function ReviewContent({
         <ul className="divide-y divide-border px-5 pb-3">
           {review.largest.map((r) => (
             <li key={r.recordId} className="flex items-center gap-3 py-2.5 text-sm">
-              <IconBadge
+              <RecordIcon
+                brand={recordBrand(r.payee, r.note)}
                 icon={r.categoryId ? categories.iconOf(r.categoryId) : 'circle-help'}
                 color={r.categoryId ? categories.colorOf(r.categoryId) : '#64748B'}
-                size="sm"
               />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">
@@ -326,6 +328,24 @@ function ReviewContent({
         </Card>
       )}
     </div>
+  );
+}
+
+/** A payee's logo – or a neutral dot, so that names stay aligned. */
+function PayeeLogo({ name }: { name: string }) {
+  const brand = payeeBrand(name);
+  return brand ? (
+    <BrandBadge brand={brand} size="xs" />
+  ) : (
+    <span className="size-6 shrink-0 rounded-full bg-muted" aria-hidden />
+  );
+}
+
+function RecordIcon({ brand, icon, color }: { brand?: Brand; icon: string; color: string }) {
+  return brand ? (
+    <BrandBadge brand={brand} ring={color} size="sm" />
+  ) : (
+    <IconBadge icon={icon} color={color} size="sm" />
   );
 }
 
