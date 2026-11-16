@@ -758,20 +758,36 @@ function BankSetup() {
         <Step n={2}>
           <p>
             {t(
-              'In its control panel register a new application: environment “Production”, key “Generate in the browser” (a .pem file is downloaded). As redirect URL enter:',
+              'In its control panel register a new application: environment “Production”, key “Generate in the browser” (a .pem file is downloaded). The form asks for three addresses:',
             )}
           </p>
-          <div className="mt-2">
-            <CopyField value={https ? own : fallback} />
-          </div>
-          {!https && (
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {t(
-                'Enable Banking only accepts https addresses. Because DoStotinka is opened over http here, use this address – after confirming at the bank you paste the address of the page you land on into DoStotinka. With https (e.g. a reverse proxy) use {url} instead and everything happens automatically.',
-                { url: `https://…/bank-callback` },
+          <ul className="mt-2 grid gap-2">
+            <li>
+              <p>
+                <span className="font-medium">{t('Allowed redirect URLs')}</span> –{' '}
+                {t(
+                  'after you confirm at your bank, the bank sends your browser to this address with a one-time code. DoStotinka uses it automatically. Enter:',
+                )}
+              </p>
+              <div className="mt-1.5">
+                <CopyField value={https ? own : fallback} />
+              </div>
+              {!https && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {t(
+                    'Enable Banking only accepts https addresses, and DoStotinka is opened over http here. So this address is a placeholder: the page will not load, but its address contains the code – you copy it and paste it into DoStotinka. With https (e.g. a reverse proxy) use {url} instead and everything happens automatically.',
+                    { url: `https://…/bank-callback` },
+                  )}
+                </p>
               )}
-            </p>
-          )}
+            </li>
+            <li>
+              <span className="font-medium">{t('Privacy URL and Terms URL')}</span> –{' '}
+              {t(
+                'only shown as links on the consent page, for you. DoStotinka does not use them: any https address is fine, e.g. the same one.',
+              )}
+            </li>
+          </ul>
         </Step>
         <Step n={3}>
           {t(
@@ -1251,6 +1267,35 @@ function BankSection({ state, accounts }: { state: AutomaticImportState; account
                   </Button>
                 </div>
               </div>
+              {state.bank.connections.length === 0 && (
+                <div className="grid gap-2 rounded-xl border border-primary/30 bg-primary-soft/50 p-3 text-sm">
+                  <p className="font-medium">
+                    {t('The application and key work. Nothing is imported yet – next:')}
+                  </p>
+                  <ol className="grid gap-2">
+                    <Step n={1}>
+                      {t(
+                        'Below choose country and bank and click “Connect”. Your bank’s page opens.',
+                      )}
+                    </Step>
+                    <Step n={2}>
+                      {manual
+                        ? t(
+                            'Confirm the read-only access at the bank. You end up on a page that does not load ({url}…) – that is expected. Copy its whole address from the address bar and paste it into the window DoStotinka shows (or “Paste the address from the bank”).',
+                            { url: state.bank.redirectUrl },
+                          )
+                        : t(
+                            'Confirm the read-only access at the bank. You come back here by yourself.',
+                          )}
+                    </Step>
+                    <Step n={3}>
+                      {t(
+                        'Choose the DoStotinka account for every bank account. From then on new transactions arrive in the Inbox up to four times a day – “Update now” fetches them right away.',
+                      )}
+                    </Step>
+                  </ol>
+                </div>
+              )}
               {state.bank.connections.map((c) => (
                 <ConnectionCard key={c.id} connection={c} accounts={accounts} />
               ))}

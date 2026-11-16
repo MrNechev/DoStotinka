@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.10.1] – 2026-11-16
+
+Upgrading: `docker compose pull && docker compose up -d` (no database changes).
+
+### Changed
+- **Bank connection setup explained better.** The setup now says what each of the three addresses
+  Enable Banking asks for does: the redirect URL brings the one-time code back to DoStotinka (with
+  `http://` it is a placeholder whose address you paste), privacy and terms URLs are only links.
+  After the key is saved, a checklist shows that nothing is imported yet and what comes next:
+  connect a bank, confirm, paste the address, choose the accounts. User guide updated to match.
+
 ## [0.10.0] – 2026-11-16
 
 Upgrading: `docker compose pull && docker compose up -d` (no database changes).
@@ -328,7 +339,8 @@ First alpha release.
 - Bulk editing on the Records page: select records to change their category, move them to another
   account, add/remove labels or delete them.
 
-[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/MrNechev/DoStotinka/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/MrNechev/DoStotinka/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/MrNechev/DoStotinka/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/MrNechev/DoStotinka/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/MrNechev/DoStotinka/compare/v0.7.0...v0.8.0

@@ -308,17 +308,30 @@ Banks only give account data to licensed providers. DoStotinka uses your own fre
 goes from the bank via Enable Banking straight to your server, and your bank password is never
 entered in DoStotinka.
 
-1. Create an account at Enable Banking and register an application (*Production*, key generated in the
-   browser – a `.pem` file is downloaded). As **redirect URL** enter the address DoStotinka shows you.
-   Enable Banking only accepts `https://` addresses: if you open DoStotinka over plain `http://`,
-   register `https://localhost/dostotinka-bank-callback` – after confirming at the bank you land on a
-   page that does not load; copy its address and paste it into DoStotinka.
+1. Create an account at Enable Banking and register an application: environment *Production*, key
+   *Generate in the browser* (a `.pem` file is downloaded). The form asks for three addresses:
+   - **Allowed redirect URLs** – after you confirm at your bank, the bank sends your browser to this
+     address with a one-time code that DoStotinka needs. Enter the address DoStotinka shows you
+     (*Settings → Automatic import → Bank connection*), e.g. `https://money.example.com/bank-callback`.
+     Enable Banking only accepts `https://` addresses: if you open DoStotinka over plain `http://`,
+     enter `https://localhost/dostotinka-bank-callback` instead. That is a placeholder – the page will
+     not load, but its address contains the code, and you paste it into DoStotinka (step 5).
+   - **Privacy URL** and **Terms URL** – only shown as links on the consent page, for you.
+     DoStotinka does not use them; any `https://` address is fine, e.g. the same placeholder.
 2. Click **Activate by linking accounts** in the Enable Banking control panel and log in to your banks
    there – in the free mode only accounts linked this way can be read.
-3. In DoStotinka switch on **Bank connection**, enter the application ID and choose the `.pem` file.
-4. **Connect a bank**: choose country and bank, confirm at the bank, and pick the DoStotinka account
-   for every bank account. Only transactions from **Import from** onwards are imported (default: the
-   day you connected), so your existing records are not duplicated.
+3. In DoStotinka switch on **Bank connection**, enter the application ID and choose the `.pem` file,
+   then **Save and check**. DoStotinka asks Enable Banking with this key right away: if the
+   application ID and the redirect URL appear afterwards, the key works. **Nothing is imported yet.**
+4. **Connect a bank**: choose country and bank and click **Connect**. Your bank's page opens; log in
+   and confirm the read-only access.
+5. With `https://`, the bank sends you back to DoStotinka by itself. With the `http://` placeholder you
+   end up on a page that does not load (`https://localhost/dostotinka-bank-callback?state=…&code=…`) –
+   that is expected. Copy its **whole address** from the address bar and paste it into the window
+   DoStotinka shows (or **Paste the address from the bank**).
+6. Choose the DoStotinka account for every bank account. Only transactions from **Import from**
+   onwards are imported (default: the day you connected), so your existing records are not
+   duplicated. The bank shows **Connected**, and new transactions arrive in the **Inbox**.
 
 DoStotinka fetches new booked transactions up to four times a day (**Update now** fetches them right
 away) and shows the bank's balance next to the DoStotinka balance. About every 180 days the bank asks

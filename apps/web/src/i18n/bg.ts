@@ -1415,10 +1415,26 @@ export const bg: Record<string, string> = {
   'Tell your phone to send payment notifications to DoStotinka.':
     'Настройте телефона да изпраща известията за плащания към DoStotinka.',
   'Create a free account at Enable Banking': 'Създайте безплатен акаунт в Enable Banking',
-  'In its control panel register a new application: environment “Production”, key “Generate in the browser” (a .pem file is downloaded). As redirect URL enter:':
-    'В контролния панел регистрирайте ново приложение: среда „Production“, ключ „Generate in the browser“ (изтегля се .pem файл). Като redirect URL въведете:',
-  'Enable Banking only accepts https addresses. Because DoStotinka is opened over http here, use this address – after confirming at the bank you paste the address of the page you land on into DoStotinka. With https (e.g. a reverse proxy) use {url} instead and everything happens automatically.':
-    'Enable Banking приема само https адреси. Тъй като тук DoStotinka е отворен през http, използвайте този адрес – след потвърждението в банката поставяте в DoStotinka адреса на страницата, на която попаднете. С https (напр. reverse proxy) използвайте {url} и всичко става автоматично.',
+  'In its control panel register a new application: environment “Production”, key “Generate in the browser” (a .pem file is downloaded). The form asks for three addresses:':
+    'В контролния панел регистрирайте ново приложение: среда „Production“, ключ „Generate in the browser“ (изтегля се .pem файл). Формулярът иска три адреса:',
+  'Allowed redirect URLs': 'Allowed redirect URLs (разрешени адреси за връщане)',
+  'after you confirm at your bank, the bank sends your browser to this address with a one-time code. DoStotinka uses it automatically. Enter:':
+    'след потвърждението в банката тя връща браузъра ви на този адрес с еднократен код. DoStotinka го използва автоматично. Въведете:',
+  'Enable Banking only accepts https addresses, and DoStotinka is opened over http here. So this address is a placeholder: the page will not load, but its address contains the code – you copy it and paste it into DoStotinka. With https (e.g. a reverse proxy) use {url} instead and everything happens automatically.':
+    'Enable Banking приема само https адреси, а тук DoStotinka е отворен през http. Затова този адрес е заместител: страницата няма да се зареди, но адресът ѝ съдържа кода – копирате го и го поставяте в DoStotinka. С https (напр. reverse proxy) използвайте {url} и всичко става автоматично.',
+  'Privacy URL and Terms URL': 'Privacy URL и Terms URL',
+  'only shown as links on the consent page, for you. DoStotinka does not use them: any https address is fine, e.g. the same one.':
+    'показват се само като връзки на страницата за съгласие, за вас. DoStotinka не ги използва: става всеки https адрес, напр. същият.',
+  'The application and key work. Nothing is imported yet – next:':
+    'Приложението и ключът работят. Още нищо не се импортира – следва:',
+  'Below choose country and bank and click “Connect”. Your bank’s page opens.':
+    'Отдолу изберете държава и банка и натиснете „Свържи“. Отваря се страницата на банката ви.',
+  'Confirm the read-only access at the bank. You end up on a page that does not load ({url}…) – that is expected. Copy its whole address from the address bar and paste it into the window DoStotinka shows (or “Paste the address from the bank”).':
+    'Потвърдете достъпа само за четене в банката. Попадате на страница, която не се зарежда ({url}…) – така трябва. Копирайте целия ѝ адрес от адресната лента и го поставете в прозореца, който показва DoStotinka (или „Постави адреса от банката“).',
+  'Confirm the read-only access at the bank. You come back here by yourself.':
+    'Потвърдете достъпа само за четене в банката. Връщате се тук автоматично.',
+  'Choose the DoStotinka account for every bank account. From then on new transactions arrive in the Inbox up to four times a day – “Update now” fetches them right away.':
+    'Изберете сметката в DoStotinka за всяка банкова сметка. Оттам нататък новите трансакции идват във „Входящи“ до четири пъти на ден – „Обнови сега“ ги изтегля веднага.',
   'Click “Activate by linking accounts” and log in to your banks there. In the free mode only accounts linked this way can be read.':
     'Натиснете „Activate by linking accounts“ и влезте в банките си там. В безплатния режим могат да се четат само сметки, свързани по този начин.',
   'Saved – this is a sandbox application with test banks only':
